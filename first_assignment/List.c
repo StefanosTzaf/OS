@@ -1,15 +1,15 @@
 #include "List.h"
 
-//η λιστα θα είναι ένας pointer σε αυτό το struct
+//Η λιστα θα είναι ένας pointer σε αυτό το struct
 struct list {
 	ListNode head;
 	ListNode last;
 	int size;
-	DestroyFunc destroy_value;	// Συνάρτηση που καταστρέφει ένα στοιχείο της λίστας.
+	DestroyFunc destroyValue;
 };
 
 struct list_node {
-	ListNode next;				// Δείκτης στον επόμενο κόμβο
+	ListNode next;// Δείκτης στον επόμενο κόμβο
 	Pointer value;
 };
 
@@ -18,29 +18,25 @@ List listCreate(DestroyFunc destroyValue) {
 	// Πρώτα δημιουργούμε το stuct
 	List list = malloc(sizeof(*list));
 	list->size = 0;
-	list->last = LIST_EOF;
-	list->head = LIST_BOF;
-	list->destroy_value = destroyValue;
-
+	list->last = NULL;
+	list->head = NULL;
+	list->destroyValue = destroyValue;
 	return list;
 }
 
 void listInsert(List list, Pointer value) {
-	
 	ListNode new = malloc(sizeof(*new));
 	new->value = value;
 	new->next = NULL;
 	//Εαν υπάρχει κόμβος μέσα στην λίστα
-	if (list->last != LIST_BOF){
+	if (list->last != NULL){
 		list->last->next = new;
 	}
 	else{
 		list->head = new;
 	}
 	list->last = new;
-
 	list->size++;
-
 }
 
 
@@ -49,7 +45,7 @@ void deleteNode(List list, Pointer value, CompareFunc compare) {
     ListNode prev = NULL;
 
     // Έλεγχος αν η λίστα είναι άδεια
-    if (current == LIST_BOF) {
+    if (current == NULL) {
         return;
     }
 
@@ -67,7 +63,7 @@ void deleteNode(List list, Pointer value, CompareFunc compare) {
     }
 
     // Αν ο κόμβος δεν βρέθηκε
-    if (current == LIST_EOF) {
+    if (current == NULL) {
         return;
     }
 
@@ -75,22 +71,22 @@ void deleteNode(List list, Pointer value, CompareFunc compare) {
     prev->next = current->next;
 
     // Απελευθέρωση μνήμης του κόμβου που διαγράφηκε
-    list->destroy_value(current->value);
+    list->destroyValue(current->value);
 }
 
 
 
 void listDestroy(List list) {
-
 	ListNode node = list->head;
 	while (node != NULL) {
 		ListNode next = node->next;
-		list->destroy_value(node->value);
+		//κανουμε destroy τον κάθε κόμβπ βάση της συνάρτησης destroyValue
+		//(o Pointer μπορει να δειχνει σε διαφορετικο τύπο δεδομένων αρα κάθε φορά πρέπει να χειριζίμαστε αλλιώς τπ free για να μην έχουμε leaks)
+		list->destroyValue(node->value);
 		free(node);
 		node = next;
 	}
-
-	// Τέλος free το ίδιο το struct
+	//free τον χώρο που έχει δεσμευτεί για το struct
 	free(list);
 }
 

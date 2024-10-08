@@ -22,3 +22,6 @@ clean:
 
 run: $(EXEC)
 	./$(EXEC) $(ARGS)
+
+valgrind: $(EXEC)
+	valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all ./$(EXEC) $(ARGS)

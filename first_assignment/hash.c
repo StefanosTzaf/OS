@@ -181,12 +181,11 @@ MapNode mapFindNode(Map map, char* key) {
 	return MAP_EOF;
 }
 
-// Απελευθέρωση μνήμης που δεσμεύει το map
+//κάνουμε μόνο τους δείκτες NULL γιατί η destroyGraph έχει αποδεσμέυσει την μνήμη των κόμβων
 void map_destroy(Map map) {
 	for (int i = 0; i < map->capacity; i++) {
 		if (map->array[i].state == OCCUPIED) {
-			free(map->array[i].keyId);
-			free(map->array[i].value);
+			map->array[i].value = NULL;
 		}
 	}
 	free(map->array);
