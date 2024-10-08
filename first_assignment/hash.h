@@ -18,6 +18,7 @@ typedef int (*CompareFunc)(Pointer a, Pointer b);
 // Αν destroyKey ή/και destroyValue != NULL, τότε καλείται destroyKey(key)
 // ή/και destroyValue(value) κάθε φορά που αφαιρείται ένα στοιχείο.
 
+int compareId(Pointer a, Pointer b);
 Map mapCreate();
 
 // Επιστρέφει τον αριθμό στοιχείων που περιέχει το map.

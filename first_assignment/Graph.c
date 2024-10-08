@@ -25,8 +25,10 @@ struct vertex{
 
 //------------------------------------------------------Συναρτήσεις που θα δώσπουμε στις λίστες---------------------------------------------------
 //τυπου compare function για την σύγριση των id των κόμβων
-int compareId(Pointer a, Pointer b){
-    return strcmp((char*)a, (char*)b);
+int compareGraphNodes(Pointer a, Pointer b){
+    char* id1 = ((GraphNode)a)->id;
+    char* id2 = ((GraphNode)b)->id;
+    return strcmp(id1, id2);
 }
 
 //Συνάρτηση που μας λέει στην λίστα απο Graphnodes πως να καταστρέψει κάθε κομβο της
@@ -69,41 +71,28 @@ void graphAddNode(Graph graph, char* id, Map map){
     //Προσθέτω τον κόμβο στην λίστα από κόμβους
     listInsert(graph->nodes, node);
     //ενημέρωση και του hash table
-    mapInsert(map, id, node);//Στο map αποθηκευουμε GraphNode
+    mapInsert(map, node->id, node);//Στο map αποθηκευουμε GraphNode
     graph->size++;
 
 }
 
-void destroyGraphNode(GraphNode node, Map map){
-    //δίνουμε εντολή στο hash να μην δείχνει πιά σε αυτον τον κόμβο γιατι δεν υπάρχει πιά
-    mapRemove(map, (node)->id);
-    //διαγράφουμε τον κόμβο και από τον γράφο
-    free(node->id);
-    listDestroy(node->adjencyLists);
-    free(node);
-}
-
-void destroyGraph(Graph graph, Map map){
-    //όλη η δουλειά γίνεται στην destroyGraphListNode που περνάμε στην λίστα
-    listDestroy(graph->nodes);
-    map_destroy(map);
-    free(graph);
-}
 
 void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char* id2, Map map){
     //Ψάχνω τον κόμβο με id1, μου επιστρέφει Graphnode*
     GraphNode node1 = mapFind(map, id1);
-
-
     GraphNode node2 = mapFind(map, id2);
+
+    //Αν κάποιος κόμβος δεν υπάρχει τότε τον δημιουργώ
     if (node1 == NULL) {
-        printf("Error: Node with id %s not found!\n", id1);
-        return;
+        graphAddNode(graph, id1, map);
+        node1 = mapFind(map, id1);
+
     }
     if (node2 == NULL) {
-        printf("Error: Node with id %s not found!\n", id2);
-        return;
+        graphAddNode(graph, id2, map);
+        node2 = mapFind(map, id2);
     }
+
     //Δημιουργώ έναν κόμβο με την ημερομηνία dateOfTransaction
     Vertex vertex = malloc(sizeof(*vertex));
     vertex->dateOfTransaction = malloc(strlen(dateOfTransaction) + 1);
@@ -114,6 +103,27 @@ void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char
     listInsert(node1->adjencyLists, vertex);
     
 }
+
+
+void removeGraphNode(char* id, Map map, Graph graph){
+    //δίνουμε εντολή στο hash να μην δείχνει πιά σε αυτον τον κόμβο γιατι δεν υπάρχει πιά
+    GraphNode node = mapFind(map, id);
+    if(node == NULL){
+        printf("Node with id %s does not exist\n", id);
+        return;
+    }
+    listDeleteNode(graph->nodes, node , compareGraphNodes);
+    graph->size--;
+}
+
+void destroyGraph(Graph graph, Map map){
+    //όλη η δουλειά γίνεται στην destroyGraphListNode που περνάμε στην λίστα
+    listDestroy(graph->nodes);
+    map_destroy(map);
+    free(graph);
+}
+
+
 
 void displayGraph(Graph graph, Map map){
     printf("\nGraph with %d nodes\n\n", graph->size);
@@ -126,7 +136,7 @@ void displayGraph(Graph graph, Map map){
         ListNode adjencyLists = listGetFirst(node->adjencyLists);
         while(adjencyLists != NULL){
             Vertex vertex = listNodeValue(adjencyLists);
-            printf("     Date of transmission: %s - Ammount of Transmission : %d$\n", vertex->dateOfTransaction, vertex->amount);
+            printf("     Date of transaction: %s - Ammount of Transaction : %d$\n", vertex->dateOfTransaction, vertex->amount);
             printf("     Destination node: %s\n", ((vertex->nodeDestination)) -> id);
             adjencyLists = listGetNext(adjencyLists);
         }

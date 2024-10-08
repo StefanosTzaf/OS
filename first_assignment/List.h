@@ -16,15 +16,12 @@ List listCreate(DestroyFunc destroyValue);
 
 void listInsert(List list, Pointer value);
 
-void deleteNode(List list, Pointer value, CompareFunc compare);
+void listDeleteNode(List list, Pointer value ,CompareFunc compare);
 
 void listDestroy(List list);
 
 //ψαχνει την τιμη value στην λιστα list με την βοηθεια της συναρτησης compare
-Pointer listFind(List list, Pointer value, CompareFunc compare);
-
-//ψαχνει τον κομβο που περιεχει την τιμη value στην λιστα list με την βοηθεια της συναρτησης compare
-ListNode listFindNode(List list, Pointer value, CompareFunc compare);
+ListNode listFind(List list, Pointer value, CompareFunc compare);
 
 ListNode listGetLast(List list);
 ListNode listGetFirst(List list);

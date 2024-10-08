@@ -1,5 +1,6 @@
 #include "List.h"
-
+#include <stdio.h>
+//διπλα συνδεδεμενη λιστα θα την χρειαστουμε για την διαγραφη
 //Η λιστα θα είναι ένας pointer σε αυτό το struct
 struct list {
 	ListNode head;
@@ -9,7 +10,8 @@ struct list {
 };
 
 struct list_node {
-	ListNode next;// Δείκτης στον επόμενο κόμβο
+	ListNode next;
+	ListNode prev;
 	Pointer value;
 };
 
@@ -27,12 +29,13 @@ List listCreate(DestroyFunc destroyValue) {
 void listInsert(List list, Pointer value) {
 	ListNode new = malloc(sizeof(*new));
 	new->value = value;
-	new->next = NULL;
+	new->next = NULL;	//προσθέτουμε τον κόμβο στο τέλος της λίστας
+	new->prev = list->last;	
 	//Εαν υπάρχει κόμβος μέσα στην λίστα
 	if (list->last != NULL){
 		list->last->next = new;
 	}
-	else{
+	else{//αν η λιστα είναι κενή
 		list->head = new;
 	}
 	list->last = new;
@@ -40,38 +43,39 @@ void listInsert(List list, Pointer value) {
 }
 
 
-void deleteNode(List list, Pointer value, CompareFunc compare) {
-    ListNode current = list->head;
-    ListNode prev = NULL;
-
+void listDeleteNode(List list, Pointer value ,CompareFunc compare){
     // Έλεγχος αν η λίστα είναι άδεια
-    if (current == NULL) {
-        return;
+
+	ListNode node = listFind(list, value, compare);
+	
+    if (node == NULL) {
+	    return;
     }
 
-    // Έλεγχος αν η κεφαλή περιέχει την τιμή που θέλουμε να διαγράψουμε
-    if (current != NULL && compare(current->value, value) == 0) {
-        list->head = current->next;  // Η νέα κεφαλή γίνεται ο επόμενος κόμβος
-        free(current);              // Απελευθέρωση μνήμης της παλιάς κεφαλής
-        return;
-    }
+	ListNode previousNode = node->prev;
+	ListNode nextNode = node->next;
 
-    // Αναζήτηση του κόμβου με την τιμή που πρέπει να διαγραφεί
-    while (current != NULL && compare(current->value, value)) {
-        prev = current;
-        current = current->next;
-    }
+	if (previousNode == NULL && nextNode == NULL) {
+		list->head = NULL;
+		list->last = NULL;
+	}
+	else if (previousNode == NULL) {//ο κόμβος ήταν στην αρχή αλλά έχει επόμενο
+		list->head = nextNode;
+		nextNode->prev = NULL;
+	}
+	else if (nextNode == NULL) {//ο κόμβος ήταν στο τέλος αλλά έχει προηγούμενο
+		list->last = previousNode;
+		previousNode->next = NULL;
+	}
+	else {
+		previousNode->next = nextNode;
+		nextNode->prev = previousNode;
+	}
+	// Απελευθέρωση μνήμης του κόμβου που διαγράφηκε
+	list->destroyValue(node->value);
+	free(node);
+	list->size--;
 
-    // Αν ο κόμβος δεν βρέθηκε
-    if (current == NULL) {
-        return;
-    }
-
-    // Παρακάμψτε τον κόμβο
-    prev->next = current->next;
-
-    // Απελευθέρωση μνήμης του κόμβου που διαγράφηκε
-    list->destroyValue(current->value);
 }
 
 
@@ -88,19 +92,18 @@ void listDestroy(List list) {
 	}
 	//free τον χώρο που έχει δεσμευτεί για το struct
 	free(list);
+	
 }
 
 
-Pointer listFind(List list, Pointer value, CompareFunc compare) {
-	ListNode node = listFindNode(list, value, compare);
-	return node == NULL ? NULL : node->value;
-}
 
 //αν εχει ππολλαπλες τιμες με την ιδια τιμη!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-ListNode listFindNode(List list, Pointer value, CompareFunc compare) {
+ListNode listFind(List list, Pointer value, CompareFunc compare) {
 	// διάσχιση όλης της λίστας, καλούμε την compare μέχρι να επιστρέψει 0
 	for (ListNode node = list->head; node != NULL; node = node->next)
-		if (compare(value, node->value) == 0)
+		//συγκρινουμε Graphnodes με βάση το id τους
+		if (compare(value, listNodeValue(node)) == 0)
+		//γυρναμε ListNode
 			return node;
 	return NULL;	// δεν υπάρχει
 }

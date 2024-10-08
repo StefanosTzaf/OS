@@ -34,6 +34,9 @@ struct map {
     CompareFunc compare;
 };
 
+int compareId(Pointer a, Pointer b){
+    return strcmp((char*)a, (char*)b);
+}
 
 Map mapCreate() {
 
