@@ -2,26 +2,33 @@
 #include <string.h>
 #include <stdlib.h>
 #include "List.h"
-#include <string.h>
 #include "hash.h"
 
 typedef struct graph* Graph;
 typedef struct graph_node* GraphNode;
 typedef struct vertex* Vertex;
-//συναρτηση compare για την συγκριση των id των κομβων στην λιστα από κόμβους
+
+
+//συναρτηση compare για την συγκριση των id των κομβων στην λιστα από κόμβους(διαφέρει απο την compareId του map εκείνη δέχεται τα Id)
 int compareGraphNodes(Pointer a, Pointer b);
-void destroyGraphListNode(Pointer value);
-void destroyAdjencyListNode(Pointer value);
+//συνάρτηση compare για vertex
+int compareVertices(Pointer a, Pointer b);
 
-//συναρτηση destroy για την λίστα από κόμβους.Καταστρεφει τον κόμβο με id value
-void removeGraphNode(char* id, Map map, Graph graph);
-
-void destroyVertex(Pointer value);
+//καταστρέφει κόμβους της λίστα του γράφου
+void destroyGraphListNode(Pointer nodeToDelete);
+//καταστρέφει τους κόμβους της λίστας από vertex
+void destroyAdjencyListNode(Pointer vertexToDelete);
 
 
 Graph graphCreate();
+
 void graphAddNode(Graph graph, char* id, Map map);
+
+//αφαιρεί έναν κόμβο βάση του Id του
+void removeGraphNode(char* id, Map map, Graph graph);
+
 void addVertex(Graph graph, char* dateOfTransmission, int amount, char* id1, char* id2, Map map);
 
 void displayGraph(Graph graph, Map map);
+
 void destroyGraph(Graph graph, Map map);

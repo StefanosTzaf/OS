@@ -136,7 +136,7 @@ void mapInsert(Map map, char* key, Pointer value) {
 // Διαργραφή απο το Hash Table του κλειδιού με τιμή key
 bool mapRemove(Map map, char* key) {
 	MapNode node = mapFindNode(map, key);
-	if (node == MAP_EOF){
+	if (node == NULL){
 		return false;
 	}
 	else{
@@ -155,7 +155,7 @@ bool mapRemove(Map map, char* key) {
 Pointer mapFind(Map map, char* key) {
 	MapNode node = mapFindNode(map, key);
 
-	if (node != MAP_EOF){
+	if (node != NULL){
 		return node->value;
 	}
 	else
@@ -181,7 +181,7 @@ MapNode mapFindNode(Map map, char* key) {
 			break;
 	}
 	
-	return MAP_EOF;
+	return NULL;
 }
 
 //κάνουμε μόνο τους δείκτες NULL γιατί η destroyGraph έχει αποδεσμέυσει την μνήμη των κόμβων
@@ -204,8 +204,9 @@ Pointer map_node_value(Map map, MapNode node) {
 	return node->value;
 }
 
+
+// djb2 hash function
 unsigned int hashFunction(char* value) {
-	// djb2 hash function, απλή
     unsigned int  hash = 5381;
     for (char* s = value; *s != '\0'; s++)
 		hash = (hash << 5) + hash + *s;			// hash = (hash * 33) + *s. Το foo << 5 είναι γρηγορότερη εκδοχή του foo * 32.

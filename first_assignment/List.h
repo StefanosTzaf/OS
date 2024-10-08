@@ -1,29 +1,35 @@
+//--------------------------------------Υλοποίση διπλά συνδεδεμένης λίστας-----------------------------------------
 #include <stdlib.h>
 
-//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχε pointer σε στοιχεία τύπου void(είτε Graphnode είτε vertex )
+//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχε pointer σε στοιχεία τύπου void(είτε Graphnode είτε vertex)
+//τα Struct ορίζονται incomplete η υλοποιίηση τους είναι στο List.c.Για να μην μπορούν οιχρήστες
+// (στην προκειμένη περίπτωση ο Γράφος) να έχουν πρόσβαση στα πεδία τους και να μπορούν να τα μεταβάλουν απευθείας
 typedef void* Pointer;
 typedef struct list* List;
 typedef struct list_node* ListNode;
 
-// Δείκτης σε συνάρτηση που συγκρίνει 2 στοιχεία a και b και επιστρέφει:
-// 0  αν a και b είναι ίσα βάση της συνάρτησης, επομένως αν θέλουμε να συγκρινουμε id πελατών θα δώσουμε την συνάρτηση compareId
+//Χρησιμοποιύμε δείκτη σε συνάρτηση για συγκριση 2 στοιχείων, επιστρέφει:
+// 0 αν είναι ίσα βάση της συνάρτησης (όχι αναγκαστικά *a == *b μπορει να έχουμε να κάνουμε με struct αρα η compare θα είναι διαφορετική και αυτή είναι η αξία της)
+//Χρησιμοποιείται στην listFind
 typedef int (*CompareFunc)(Pointer a, Pointer b);
 
-// Δείκτης σε συνάρτηση που καταστρέφει ένα στοιχείο value
+//Πάρόμοια η Destroy διαφέρει ανάλογα που δείχνει ο δείκτης. Πχ στην εργασία χρησιμοποιούμε δυο είδη λίστας που δεσμεύουν διαφορετική μν΄ήμη.
+//Η destroy είναι  στοθχείο του struct list
 typedef void (*DestroyFunc)(Pointer value);
 
-List listCreate(DestroyFunc destroyValue);
+List listCreate(DestroyFunc destroyValue, CompareFunc compare);
 
 void listInsert(List list, Pointer value);
 
-void listDeleteNode(List list, Pointer value ,CompareFunc compare);
+void listDeleteNode(List list, Pointer value);
 
 void listDestroy(List list);
 
 //ψαχνει την τιμη value στην λιστα list με την βοηθεια της συναρτησης compare
-ListNode listFind(List list, Pointer value, CompareFunc compare);
+ListNode listFind(List list, Pointer value);
 
 ListNode listGetLast(List list);
 ListNode listGetFirst(List list);
 ListNode listGetNext(ListNode node);
+
 Pointer listNodeValue(ListNode node);

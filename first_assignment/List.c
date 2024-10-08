@@ -1,5 +1,5 @@
 #include "List.h"
-#include <stdio.h>
+
 //διπλα συνδεδεμενη λιστα θα την χρειαστουμε για την διαγραφη
 //Η λιστα θα είναι ένας pointer σε αυτό το struct
 struct list {
@@ -7,6 +7,7 @@ struct list {
 	ListNode last;
 	int size;
 	DestroyFunc destroyValue;
+	CompareFunc compare;
 };
 
 struct list_node {
@@ -16,13 +17,14 @@ struct list_node {
 };
 
 
-List listCreate(DestroyFunc destroyValue) {
+List listCreate(DestroyFunc destroyValue, CompareFunc compare) {
 	// Πρώτα δημιουργούμε το stuct
 	List list = malloc(sizeof(*list));
 	list->size = 0;
 	list->last = NULL;
 	list->head = NULL;
 	list->destroyValue = destroyValue;
+	list->compare = compare;
 	return list;
 }
 
@@ -43,10 +45,10 @@ void listInsert(List list, Pointer value) {
 }
 
 
-void listDeleteNode(List list, Pointer value ,CompareFunc compare){
+void listDeleteNode(List list, Pointer value){
     // Έλεγχος αν η λίστα είναι άδεια
 
-	ListNode node = listFind(list, value, compare);
+	ListNode node = listFind(list, value);
 	
     if (node == NULL) {
 	    return;
@@ -79,7 +81,6 @@ void listDeleteNode(List list, Pointer value ,CompareFunc compare){
 }
 
 
-
 void listDestroy(List list) {
 	ListNode node = list->head;
 	while (node != NULL) {
@@ -96,17 +97,17 @@ void listDestroy(List list) {
 }
 
 
-
 //αν εχει ππολλαπλες τιμες με την ιδια τιμη!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-ListNode listFind(List list, Pointer value, CompareFunc compare) {
+ListNode listFind(List list, Pointer value) {
 	// διάσχιση όλης της λίστας, καλούμε την compare μέχρι να επιστρέψει 0
 	for (ListNode node = list->head; node != NULL; node = node->next)
 		//συγκρινουμε Graphnodes με βάση το id τους
-		if (compare(value, listNodeValue(node)) == 0)
+		if (list->compare(value, listNodeValue(node)) == 0)
 		//γυρναμε ListNode
 			return node;
 	return NULL;	// δεν υπάρχει
 }
+
 
 //για να μην υπάρχει πρόσβαση εκτος του αρχείου σε στοιχεία του struct list δημιουργούμε getters που θα χρειαστούν
 ListNode listGetFirst(List list){

@@ -23,6 +23,8 @@ struct vertex{
 
 
 
+
+
 //------------------------------------------------------Συναρτήσεις που θα δώσπουμε στις λίστες---------------------------------------------------
 //τυπου compare function για την σύγριση των id των κόμβων
 int compareGraphNodes(Pointer a, Pointer b){
@@ -31,9 +33,16 @@ int compareGraphNodes(Pointer a, Pointer b){
     return strcmp(id1, id2);
 }
 
+
+//Μία συναλλαγή μπορεί να έχει ίδιο προορισμό και αφετηρία και ίδια ημερομηνία και ίδιο ποσό σναλλαγής.Άρα δεν υπάρχει κάποια ειδοποιός διαφορά μεταξύ των vertex
+//επομένως σγκρίνουμε τους ίδιους τους Pointers!!
+int compareVertices(Pointer a, Pointer b){
+    return a == b;
+}
+
 //Συνάρτηση που μας λέει στην λίστα απο Graphnodes πως να καταστρέψει κάθε κομβο της
-void destroyGraphListNode(Pointer value){
-    GraphNode node = value;
+void destroyGraphListNode(Pointer nodeToDelete){
+    GraphNode node = nodeToDelete;
     free(node->id);
     //Καταστρέφουμε και την λείστα γειτνίασης του κάθε κόμβου
     listDestroy(node->adjencyLists);
@@ -42,8 +51,8 @@ void destroyGraphListNode(Pointer value){
 
 
 //Συνάρτηση που μας λέει στην λίστα απο vertex πως να καταστρέψει κάθε κομβο της
-void destroyAdjencyListNode(Pointer value){
-    Vertex vertex = value;
+void destroyAdjencyListNode(Pointer vertexToDelete){
+    Vertex vertex = vertexToDelete;
     free(vertex->dateOfTransaction);
     vertex->nodeDestination = NULL;
     free(vertex);
@@ -51,10 +60,12 @@ void destroyAdjencyListNode(Pointer value){
 
 //------------------------------------------------------------------------------------------------------------------------------
 
+
+
 Graph graphCreate(){
     Graph graph = malloc(sizeof(*graph));
     //δημιουργούμαι μία λίστα από κόμβους
-    graph->nodes = listCreate(destroyGraphListNode);
+    graph->nodes = listCreate(destroyGraphListNode, compareGraphNodes);
     return graph;
 }
 
@@ -67,7 +78,7 @@ void graphAddNode(Graph graph, char* id, Map map){
     strcpy(node->id, id);
 
     //Δημιουργούμe μία λίστα από κόμβους
-    node->adjencyLists = listCreate(destroyAdjencyListNode);
+    node->adjencyLists = listCreate(destroyAdjencyListNode, compareVertices);
     //Προσθέτω τον κόμβο στην λίστα από κόμβους
     listInsert(graph->nodes, node);
     //ενημέρωση και του hash table
@@ -75,6 +86,19 @@ void graphAddNode(Graph graph, char* id, Map map){
     graph->size++;
 
 }
+
+
+void removeGraphNode(char* id, Map map, Graph graph){
+    //δίνουμε εντολή στο hash να μην δείχνει πιά σε αυτον τον κόμβο γιατι δεν υπάρχει πιά
+    GraphNode node = mapFind(map, id);
+    if(node == NULL){
+        printf("Node with id %s does not exist\n", id);
+        return;
+    }
+    listDeleteNode(graph->nodes, node);
+    graph->size--;
+}
+
 
 
 void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char* id2, Map map){
@@ -105,25 +129,6 @@ void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char
 }
 
 
-void removeGraphNode(char* id, Map map, Graph graph){
-    //δίνουμε εντολή στο hash να μην δείχνει πιά σε αυτον τον κόμβο γιατι δεν υπάρχει πιά
-    GraphNode node = mapFind(map, id);
-    if(node == NULL){
-        printf("Node with id %s does not exist\n", id);
-        return;
-    }
-    listDeleteNode(graph->nodes, node , compareGraphNodes);
-    graph->size--;
-}
-
-void destroyGraph(Graph graph, Map map){
-    //όλη η δουλειά γίνεται στην destroyGraphListNode που περνάμε στην λίστα
-    listDestroy(graph->nodes);
-    map_destroy(map);
-    free(graph);
-}
-
-
 
 void displayGraph(Graph graph, Map map){
     printf("\nGraph with %d nodes\n\n", graph->size);
@@ -143,4 +148,11 @@ void displayGraph(Graph graph, Map map){
     nodes = listGetNext(nodes);
     }
 
+}
+
+void destroyGraph(Graph graph, Map map){
+    //όλη η δουλειά γίνεται στην destroyGraphListNode που περνάμε στην λίστα
+    listDestroy(graph->nodes);
+    map_destroy(map);
+    free(graph);
 }
