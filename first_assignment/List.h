@@ -1,8 +1,8 @@
 //--------------------------------------Υλοποίση διπλά συνδεδεμένης λίστας-----------------------------------------
 #include <stdlib.h>
 
-//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχε pointer σε στοιχεία τύπου void(είτε Graphnode είτε vertex)
-//τα Struct ορίζονται incomplete η υλοποιίηση τους είναι στο List.c.Για να μην μπορούν οιχρήστες
+//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχει pointer σε στοιχεία τύπου void(είτε Graphnode είτε vertex)
+//τα Struct ορίζονται incomplete η υλοποιίηση τους είναι στο List.c.Για να μην μπορούν οι χρήστες
 // (στην προκειμένη περίπτωση ο Γράφος) να έχουν πρόσβαση στα πεδία τους και να μπορούν να τα μεταβάλουν απευθείας
 typedef void* Pointer;
 typedef struct list* List;
@@ -32,4 +32,5 @@ ListNode listGetLast(List list);
 ListNode listGetFirst(List list);
 ListNode listGetNext(ListNode node);
 
+int listSize(List list);
 Pointer listNodeValue(ListNode node);

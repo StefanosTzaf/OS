@@ -11,7 +11,10 @@ struct graph{
 struct graph_node{
     char* id;
     //Λιστα απο vertex η οποία έχει ακμές που ξεκιναν απο αυτόν τον κόμβο και καταλήγουν σε αλλον κόμβο
-    List adjencyLists;
+    List outgoingVertices;
+    //Λίστα από vertex που έχουν ακμές που καταλήγουν σε αυτόν τον κόμβο
+    List incomingVertices;
+
 };
 
 struct vertex{
@@ -40,12 +43,37 @@ int compareVertices(Pointer a, Pointer b){
     return a == b;
 }
 
+//list map node exei mesa graaph
+int compareMapNodes(Pointer a, Pointer b){
+    GraphNode node =  mapNodeValue((MapNode)b);
+    return strcmp((char*)a,node->id);
+}
+
+void destroyMapNodes(Pointer value){
+    free(value);
+}
+
+
+
+
 //Συνάρτηση που μας λέει στην λίστα απο Graphnodes πως να καταστρέψει κάθε κομβο της
 void destroyGraphListNode(Pointer nodeToDelete){
     GraphNode node = nodeToDelete;
     free(node->id);
-    //Καταστρέφουμε και την λείστα γειτνίασης του κάθε κόμβου
-    listDestroy(node->adjencyLists);
+    //Καταστρέφουμε και την λίστα γειτνίασης(με τις εξερχόμενες ακμές) του κάθε κόμβου
+    listDestroy(node->outgoingVertices);
+    
+    //για την λίστα με τις εισερχόμενες ακμές πριν την διαγράψουμε πάμε στον κόμβο από όπου έρχεται η ακμή και την διαγράφουμε από την λίστα του
+    ListNode incomingVertices = listGetFirst(node->incomingVertices);
+    while(incomingVertices != NULL){
+        Vertex vertex = listNodeValue(incomingVertices);
+        GraphNode nodeDestination = vertex->nodeDestination;
+        //από κάθε κόμβο που ξεκινάει η ακμή προς τον κόμβο που διαγράφουμε
+        listDeleteNode(nodeDestination->outgoingVertices, vertex);//!!!!!!!!!!!!!!!!!!!!compare vertex να την διαγραφει +display αλλαγη
+        incomingVertices = listGetNext(incomingVertices);
+    }
+
+    listDestroy(node->incomingVertices);
     free(node);
 }
 
@@ -77,8 +105,10 @@ void graphAddNode(Graph graph, char* id, Map map){
     node->id = malloc(strlen(id) + 1);
     strcpy(node->id, id);
 
-    //Δημιουργούμe μία λίστα από κόμβους
-    node->adjencyLists = listCreate(destroyAdjencyListNode, compareVertices);
+    //Δημιουργούμe tις λίστες από ακμές
+    node->outgoingVertices = listCreate(destroyAdjencyListNode, compareVertices);
+    node->incomingVertices = listCreate(destroyAdjencyListNode, compareVertices);
+
     //Προσθέτω τον κόμβο στην λίστα από κόμβους
     listInsert(graph->nodes, node);
     //ενημέρωση και του hash table
@@ -124,7 +154,7 @@ void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char
     vertex->amount = amount;
     vertex->nodeDestination = node2;
     //Προσθέτω τον κόμβο στην λίστα από κόμβους του κόμβου node1
-    listInsert(node1->adjencyLists, vertex);
+    listInsert(node1->outgoingVertices, vertex);
     
 }
 
@@ -138,12 +168,12 @@ void displayGraph(Graph graph, Map map){
 
         GraphNode node = listNodeValue(nodes);
         printf("   Node with id: %s\n", node->id);
-        ListNode adjencyLists = listGetFirst(node->adjencyLists);
-        while(adjencyLists != NULL){
-            Vertex vertex = listNodeValue(adjencyLists);
+        ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
+        while(outgoingVertices != NULL){
+            Vertex vertex = listNodeValue(outgoingVertices);
             printf("     Date of transaction: %s - Ammount of Transaction : %d$\n", vertex->dateOfTransaction, vertex->amount);
             printf("     Destination node: %s\n", ((vertex->nodeDestination)) -> id);
-            adjencyLists = listGetNext(adjencyLists);
+            outgoingVertices = listGetNext(outgoingVertices);
         }
     nodes = listGetNext(nodes);
     }

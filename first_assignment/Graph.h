@@ -19,6 +19,8 @@ void destroyGraphListNode(Pointer nodeToDelete);
 //καταστρέφει τους κόμβους της λίστας από vertex
 void destroyAdjencyListNode(Pointer vertexToDelete);
 
+int compareMapNodes(Pointer a, Pointer b);
+void destroyMapNodes(Pointer value);
 
 Graph graphCreate();
 

@@ -1,5 +1,5 @@
 #include "List.h"
-
+#include <stdio.h>
 //διπλα συνδεδεμενη λιστα θα την χρειαστουμε για την διαγραφη
 //Η λιστα θα είναι ένας pointer σε αυτό το struct
 struct list {
@@ -100,11 +100,12 @@ void listDestroy(List list) {
 //αν εχει ππολλαπλες τιμες με την ιδια τιμη!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ListNode listFind(List list, Pointer value) {
 	// διάσχιση όλης της λίστας, καλούμε την compare μέχρι να επιστρέψει 0
-	for (ListNode node = list->head; node != NULL; node = node->next)
+	for (ListNode node = list->head; node != NULL; node = node->next){
 		//συγκρινουμε Graphnodes με βάση το id τους
 		if (list->compare(value, listNodeValue(node)) == 0)
 		//γυρναμε ListNode
 			return node;
+	}
 	return NULL;	// δεν υπάρχει
 }
 
@@ -124,4 +125,8 @@ ListNode listGetNext(ListNode node){
 
 Pointer listNodeValue(ListNode node){
 	return node->value;	
+}
+
+int listSize(List list){
+	return list->size;
 }
