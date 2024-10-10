@@ -18,6 +18,7 @@ int main(){
     addVertex(graph, "3/1/2020", 300, "3", "19", map);
     addVertex(graph, "4/1/2020", 400, "4", "1", map);
 
+
     displayGraph(graph, map);
 
     printf("---------------------------------------------------------\n\n");

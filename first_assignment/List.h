@@ -34,3 +34,5 @@ ListNode listGetNext(ListNode node);
 
 int listSize(List list);
 Pointer listNodeValue(ListNode node);
+
+void listSetDestroyValue(List list, DestroyFunc destroyValue);

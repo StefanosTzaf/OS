@@ -47,7 +47,6 @@ void listInsert(List list, Pointer value) {
 
 void listDeleteNode(List list, Pointer value){
     // Έλεγχος αν η λίστα είναι άδεια
-
 	ListNode node = listFind(list, value);
 	
     if (node == NULL) {
@@ -74,7 +73,11 @@ void listDeleteNode(List list, Pointer value){
 		nextNode->prev = previousNode;
 	}
 	// Απελευθέρωση μνήμης του κόμβου που διαγράφηκε
-	list->destroyValue(node->value);
+
+	if(list->destroyValue != NULL){
+		list->destroyValue(node->value);
+	}
+
 	free(node);
 	list->size--;
 
@@ -88,7 +91,6 @@ void listDestroy(List list) {
 		//κανουμε destroy τον κάθε κόμβπ βάση της συνάρτησης destroyValue
 		//(o Pointer μπορει να δειχνει σε διαφορετικο τύπο δεδομένων αρα κάθε φορά πρέπει να χειριζίμαστε αλλιώς τπ free για να μην έχουμε leaks)
 		list->destroyValue(node->value);
-		free(node);
 		node = next;
 	}
 	//free τον χώρο που έχει δεσμευτεί για το struct
@@ -129,4 +131,8 @@ Pointer listNodeValue(ListNode node){
 
 int listSize(List list){
 	return list->size;
+}
+
+void listSetDestroyValue(List list, DestroyFunc destroyValue){
+	list->destroyValue = destroyValue;
 }

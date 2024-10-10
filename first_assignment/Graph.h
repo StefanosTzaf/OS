@@ -16,8 +16,9 @@ int compareVertices(Pointer a, Pointer b);
 
 //καταστρέφει κόμβους της λίστα του γράφου
 void destroyGraphListNode(Pointer nodeToDelete);
+
 //καταστρέφει τους κόμβους της λίστας από vertex
-void destroyAdjencyListNode(Pointer vertexToDelete);
+void destroyVertex(Pointer vertexToDelete);
 
 int compareMapNodes(Pointer a, Pointer b);
 void destroyMapNodes(Pointer value);
@@ -34,3 +35,5 @@ void addVertex(Graph graph, char* dateOfTransmission, int amount, char* id1, cha
 void displayGraph(Graph graph, Map map);
 
 void destroyGraph(Graph graph, Map map);
+
+Vertex findVertex(char* id1,char* id2, Map map);
