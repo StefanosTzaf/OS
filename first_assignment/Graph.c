@@ -65,14 +65,12 @@ void destroyMapNodes(Pointer value){
 //Συνάρτηση που μας λέει στην λίστα απο Graphnodes πως να καταστρέψει κάθε κομβο της
 void destroyGraphListNode(Pointer nodeToDelete){
     GraphNode node = nodeToDelete;
-
     //Πρέπει να διαγράψουμε όλες τις incoming vertices αλλα και απο τις λιστες outgoing vertices της προελευσης
     //πχ αν διαγράφουμε τον κομβο 3 και έχει μια ακμη 5->3 τότε πρέπει να διαγράψουμε την ακμή απο την incoming list του 5 και την outgoing list του 3
     //αντίστοιχα ολες τις ouygoing vertices αλλα λαι απο τις incoming vertices του προορισμού
 
     //!!Εδώ φαίνεται η αξία της generic υλοποίησης εμείς απλά καλούμε την list destroy καια αυτη με τη σειρά της όταν πάει να διαγράψει κάθε κόμβο
     ///άρα κάθε vertex θα καλέσει την destroyIncomingVertex που κάνει ότι ακριβώς περιγράφεται παραπάνω!!
-
 
     listDestroy(node->outgoingVertices);
 
@@ -93,17 +91,18 @@ void destroyVertex(Pointer vertexToDelete){
     //και θα είχαμε προλήματα Double free και κυκλου
     listSetDestroyValue(nodeOrigin->outgoingVertices, NULL);
     listSetDestroyValue(nodeDestination->incomingVertices, NULL);
+   listDeleteNode(nodeOrigin->outgoingVertices, vertexToDelete);
 
     //1.Πρέπει να την αφαιρέσουμε από την λίστα των εξερχόμενων ακμών του κόμβου που ξεκινάει
-    listDeleteNode(nodeOrigin->outgoingVertices, vertexToDelete);
     listDeleteNode(nodeDestination->incomingVertices, vertexToDelete);
 
     listSetDestroyValue(nodeOrigin->outgoingVertices, destroyVertex);
     listSetDestroyValue(nodeDestination->incomingVertices, destroyVertex);
     //3.Να απελευθερώσουμε την μνήμη(οι λίστες απλά περιέχουν pointers)
+    
     free(vertex->dateOfTransaction);
     free(vertex);
-    vertex = NULL;
+
 }
 
 //------------------------------------------------------------------------------------------------------------------------------
@@ -114,6 +113,7 @@ Graph graphCreate(){
     Graph graph = malloc(sizeof(*graph));
     //δημιουργούμαι μία λίστα από κόμβους
     graph->nodes = listCreate(destroyGraphListNode, compareGraphNodes);
+    graph->size = 0;
     return graph;
 }
 
@@ -147,7 +147,10 @@ void removeGraphNode(char* id, Map map, Graph graph){
         printf("Node with id %s does not exist\n", id);
         return;
     }
+    mapRemove(map, node->id);
+
     listDeleteNode(graph->nodes, node);
+    
     graph->size--;
 }
 
@@ -254,9 +257,8 @@ void displayGraph(Graph graph, Map map){
 
 }
 
-void destroyGraph(Graph graph, Map map){
+void destroyGraph(Graph graph){
     //όλη η δουλειά γίνεται στην destroyGraphListNode που περνάμε στην λίστα
     listDestroy(graph->nodes);
-    map_destroy(map);
     free(graph);
 }

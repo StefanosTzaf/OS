@@ -34,6 +34,6 @@ void addVertex(Graph graph, char* dateOfTransmission, int amount, char* id1, cha
 
 void displayGraph(Graph graph, Map map);
 
-void destroyGraph(Graph graph, Map map);
+void destroyGraph(Graph graph);
 
 Vertex findVertex(char* id1,char* id2, Map map);

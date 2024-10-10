@@ -17,7 +17,7 @@ int main(){
     //εαν δεν υπάρχει ο κόμβος τότε θα δημιουργηθεί
     addVertex(graph, "3/1/2020", 300, "3", "19", map);
     addVertex(graph, "4/1/2020", 400, "4", "1", map);
-
+   
 
     displayGraph(graph, map);
 
@@ -29,6 +29,7 @@ int main(){
 
     displayGraph(graph, map);
 
-    destroyGraph(graph, map);
+    destroyGraph(graph);
+    map_destroy(map);
     return 0;
 }

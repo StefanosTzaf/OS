@@ -60,7 +60,6 @@ bool mapRemove(Map map, char* key) {
 	return true;
 }
 
-
 // Αναζήτηση στο map, με σκοπό να επιστραφεί το value του κλειδιού που περνάμε σαν όρισμα.
 
 Pointer mapFind(Map map, char* key) {
