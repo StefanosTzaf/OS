@@ -18,7 +18,8 @@ int compareVertices(Pointer a, Pointer b);
 void destroyGraphListNode(Pointer nodeToDelete);
 
 //καταστρέφει τους κόμβους της λίστας από vertex
-void destroyVertex(Pointer vertexToDelete);
+void destroyIncomingVertex(Pointer vertexToDelete);
+void destroyOutgoingVertex(Pointer vertexToDelete);
 
 int compareMapNodes(Pointer a, Pointer b);
 void destroyMapNodes(Pointer value);

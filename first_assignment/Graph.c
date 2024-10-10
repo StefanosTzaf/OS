@@ -82,7 +82,7 @@ void destroyGraphListNode(Pointer nodeToDelete){
 
 
 //όταν θ΄έλουμε να αφαιρέσουμε μία ακμή :
-void destroyVertex(Pointer vertexToDelete){
+void destroyIncomingVertex(Pointer vertexToDelete){
     Vertex vertex = vertexToDelete;
     GraphNode nodeOrigin = vertex->nodeOrigin;
     GraphNode nodeDestination = vertex->nodeDestination;
@@ -90,14 +90,11 @@ void destroyVertex(Pointer vertexToDelete){
     //θέτουμε προσωρινα τις τιμες ως null έτσι ώστε η listdeletenode να αφαιρέσει απλα τον Pointer απο τις δύο λ΄ίστες γιατι αλλιως θα ξανακαλουσε την destroy value η οποία είναι αυτη η συνάρτηση
     //και θα είχαμε προλήματα Double free και κυκλου
     listSetDestroyValue(nodeOrigin->outgoingVertices, NULL);
-    listSetDestroyValue(nodeDestination->incomingVertices, NULL);
-   listDeleteNode(nodeOrigin->outgoingVertices, vertexToDelete);
+    listDeleteNode(nodeOrigin->outgoingVertices, vertexToDelete);
 
     //1.Πρέπει να την αφαιρέσουμε από την λίστα των εξερχόμενων ακμών του κόμβου που ξεκινάει
-    listDeleteNode(nodeDestination->incomingVertices, vertexToDelete);
 
-    listSetDestroyValue(nodeOrigin->outgoingVertices, destroyVertex);
-    listSetDestroyValue(nodeDestination->incomingVertices, destroyVertex);
+    listSetDestroyValue(nodeDestination->incomingVertices, destroyIncomingVertex);
     //3.Να απελευθερώσουμε την μνήμη(οι λίστες απλά περιέχουν pointers)
     
     free(vertex->dateOfTransaction);
@@ -105,6 +102,17 @@ void destroyVertex(Pointer vertexToDelete){
 
 }
 
+void destroyOutgoingVertex(Pointer vertexToDelete){
+    Vertex vertex = vertexToDelete;
+    GraphNode nodeOrigin = vertex->nodeOrigin;
+    GraphNode nodeDestination = vertex->nodeDestination;
+    listSetDestroyValue(nodeDestination->incomingVertices, NULL);
+    listDeleteNode(nodeDestination->incomingVertices, vertexToDelete);
+    listSetDestroyValue(nodeOrigin->outgoingVertices, destroyOutgoingVertex);
+
+    free(vertex->dateOfTransaction);
+    free(vertex);
+}
 //------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -128,8 +136,8 @@ void graphAddNode(Graph graph, char* id, Map map){
     //Δημιουργούμe tις λίστες από ακμές στις outgoing περνάμε null γιατι όταν διαγράφουμε μία ακμη
     //η ακμή χρείάζεται μόνο μία φορά την συνάρτηση διαγραφής για να μην γίνει double free.Οπότε κάθε φορά που διαγράφουμε μία ακμή
     //μέσω του Origin θα βρίσκουμε την List απο outgoing vetrtex του και θα την καλούμε να διαγράψει την ακμή
-    node->outgoingVertices = listCreate(destroyVertex, compareVertices);
-    node->incomingVertices = listCreate(destroyVertex, compareVertices);
+    node->outgoingVertices = listCreate(destroyOutgoingVertex, compareVertices);
+    node->incomingVertices = listCreate(destroyIncomingVertex, compareVertices);
 
     //Προσθέτω τον κόμβο στην λίστα από κόμβους
     listInsert(graph->nodes, node);
