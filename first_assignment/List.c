@@ -77,7 +77,11 @@ void listDeleteNode(List list, Pointer value){
 	if(list->destroyValue != NULL){
 		list->destroyValue(node->value);
 	}
-	free(node);
+
+	if(node != NULL){
+		free(node);
+		node = NULL;
+	}
 
 	list->size--;
 
@@ -91,7 +95,11 @@ void listDestroy(List list) {
 		//κανουμε destroy τον κάθε κόμβπ βάση της συνάρτησης destroyValue
 		//(o Pointer μπορει να δειχνει σε διαφορετικο τύπο δεδομένων αρα κάθε φορά πρέπει να χειριζίμαστε αλλιώς τπ free για να μην έχουμε leaks)
 		list->destroyValue(node->value);
-		free(node);
+		if(node != NULL){
+			free(node);
+			node = NULL;
+		}
+		
 		node = next;
 	}
 	//free τον χώρο που έχει δεσμευτεί για το struct

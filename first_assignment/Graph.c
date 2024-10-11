@@ -52,7 +52,7 @@ int compareVertices(Pointer a, Pointer b){
 //list map node exei mesa graaph
 int compareMapNodes(Pointer a, Pointer b){
     GraphNode node =  mapNodeValue((MapNode)b);
-    return strcmp((char*)a,node->id);
+    return strcmp((char*)a, node->id);
 }
 
 void destroyMapNodes(Pointer value){
@@ -72,9 +72,8 @@ void destroyGraphListNode(Pointer nodeToDelete){
     //!!Εδώ φαίνεται η αξία της generic υλοποίησης εμείς απλά καλούμε την list destroy καια αυτη με τη σειρά της όταν πάει να διαγράψει κάθε κόμβο
     ///άρα κάθε vertex θα καλέσει την destroyIncomingVertex που κάνει ότι ακριβώς περιγράφεται παραπάνω!!
 
-    listDestroy(node->outgoingVertices);
-
     listDestroy(node->incomingVertices);
+    listDestroy(node->outgoingVertices);
 
     free(node->id);
     free(node);
@@ -82,37 +81,29 @@ void destroyGraphListNode(Pointer nodeToDelete){
 
 
 //όταν θ΄έλουμε να αφαιρέσουμε μία ακμή :
-void destroyIncomingVertex(Pointer vertexToDelete){
+void destroyVertex(Pointer vertexToDelete){
     Vertex vertex = vertexToDelete;
-    GraphNode nodeOrigin = vertex->nodeOrigin;
     GraphNode nodeDestination = vertex->nodeDestination;
+    GraphNode nodeOrigin = vertex->nodeOrigin;
 
-    //θέτουμε προσωρινα τις τιμες ως null έτσι ώστε η listdeletenode να αφαιρέσει απλα τον Pointer απο τις δύο λ΄ίστες γιατι αλλιως θα ξανακαλουσε την destroy value η οποία είναι αυτη η συνάρτηση
-    //και θα είχαμε προλήματα Double free και κυκλου
-    listSetDestroyValue(nodeOrigin->outgoingVertices, NULL);
-    listDeleteNode(nodeOrigin->outgoingVertices, vertexToDelete);
+    if(nodeDestination->incomingVertices != NULL){
+        listSetDestroyValue(nodeDestination->incomingVertices, NULL);
+        listDeleteNode(nodeDestination->incomingVertices, vertexToDelete);
+        listSetDestroyValue(nodeDestination->incomingVertices, destroyVertex);
+    }
 
-    //1.Πρέπει να την αφαιρέσουμε από την λίστα των εξερχόμενων ακμών του κόμβου που ξεκινάει
-
-    listSetDestroyValue(nodeDestination->incomingVertices, destroyIncomingVertex);
-    //3.Να απελευθερώσουμε την μνήμη(οι λίστες απλά περιέχουν pointers)
-    
+    if(nodeOrigin->outgoingVertices != NULL){
+        listSetDestroyValue(nodeOrigin->outgoingVertices, NULL);
+        listDeleteNode(nodeOrigin->outgoingVertices, vertexToDelete);
+        listSetDestroyValue(nodeOrigin->outgoingVertices, destroyVertex);
+    }
     free(vertex->dateOfTransaction);
     free(vertex);
+    vertexToDelete = NULL;
 
 }
 
-void destroyOutgoingVertex(Pointer vertexToDelete){
-    Vertex vertex = vertexToDelete;
-    GraphNode nodeOrigin = vertex->nodeOrigin;
-    GraphNode nodeDestination = vertex->nodeDestination;
-    listSetDestroyValue(nodeDestination->incomingVertices, NULL);
-    listDeleteNode(nodeDestination->incomingVertices, vertexToDelete);
-    listSetDestroyValue(nodeOrigin->outgoingVertices, destroyOutgoingVertex);
 
-    free(vertex->dateOfTransaction);
-    free(vertex);
-}
 //------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -136,8 +127,8 @@ void graphAddNode(Graph graph, char* id, Map map){
     //Δημιουργούμe tις λίστες από ακμές στις outgoing περνάμε null γιατι όταν διαγράφουμε μία ακμη
     //η ακμή χρείάζεται μόνο μία φορά την συνάρτηση διαγραφής για να μην γίνει double free.Οπότε κάθε φορά που διαγράφουμε μία ακμή
     //μέσω του Origin θα βρίσκουμε την List απο outgoing vetrtex του και θα την καλούμε να διαγράψει την ακμή
-    node->outgoingVertices = listCreate(destroyOutgoingVertex, compareVertices);
-    node->incomingVertices = listCreate(destroyIncomingVertex, compareVertices);
+    node->incomingVertices = listCreate(destroyVertex, compareVertices);
+    node->outgoingVertices = listCreate(destroyVertex, compareVertices);
 
     //Προσθέτω τον κόμβο στην λίστα από κόμβους
     listInsert(graph->nodes, node);
@@ -173,13 +164,14 @@ void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char
     if (node1 == NULL) {
         graphAddNode(graph, id1, map);
         node1 = mapFind(map, id1);
+        printf("Node with id %s does not exist\n", id1);
 
     }
     if (node2 == NULL) {
         graphAddNode(graph, id2, map);
+         printf("Node with id %s does not exist\n", id2);
         node2 = mapFind(map, id2);
     }
-
     //Δημιουργώ έναν κόμβο με την ημερομηνία dateOfTransaction
     Vertex vertex = malloc(sizeof(*vertex));
     vertex->dateOfTransaction = malloc(strlen(dateOfTransaction) + 1);
@@ -188,11 +180,11 @@ void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char
     vertex->nodeDestination = node2;
     vertex->nodeOrigin = node1;
     
+    
     //Προσθέτω τον κόμβο στην λίστα από outgoing Vertices του κόμβου node1
     listInsert(node1->outgoingVertices, vertex);
     //Προσθέτω τον κόμβο στην λίστα από incoming Vertices του κόμβου node2
     listInsert(node2->incomingVertices, vertex);
-    
 }
 
 // void removeVertex(char* id1, char* id2, Map map){
@@ -254,7 +246,7 @@ void displayGraph(Graph graph, Map map){
         printf("\n                         Incoming Vertices:\n");
         while(incomingVertices != NULL){
             Vertex vertex = listNodeValue(incomingVertices);
-            printf("     Date of transaction: %s - Ammount of Transaction : %d$\n", vertex->dateOfTransaction, vertex->amount);
+            printf("     Date of transaction: %s - Amount of Transaction : %d$\n", vertex->dateOfTransaction, vertex->amount);
             printf("     Origin node: %s\n", ((vertex->nodeOrigin)) -> id);
             incomingVertices = listGetNext(incomingVertices);
         }
