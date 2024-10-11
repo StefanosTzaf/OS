@@ -14,6 +14,8 @@ struct map {
 	List* arrayOfBuckets;	// Ο πίνακας των buckets του hash table(seperate chainening)
 	int capacity;				// Πόσο χώρο έχουμε δεσμεύσει εώς τώρα.
 	int size;					// Πόσα στοιχεία έχει το hash table
+	DestroyFunc destroyMapNodes;
+	CompareFunc compareMapNodes;
 };
 
 
@@ -25,8 +27,11 @@ Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile) {
 	map->size = 0;
 	map->arrayOfBuckets = malloc(sizeof(List) * map->capacity);
 
+	map->destroyMapNodes = destroy;
+	map->compareMapNodes = compare;
+
 	for (int i = 0; i < map->capacity; i++){
-		map->arrayOfBuckets[i] = listCreate(destroy, compare);
+		map->arrayOfBuckets[i] = NULL;
 	}
 
 	return map;
@@ -37,6 +42,11 @@ Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile) {
 
 void mapInsert(Map map, char* key, Pointer value) {
 	int pos = hashFunction(key) % map->capacity;
+	
+	if(map->arrayOfBuckets[pos] == NULL){
+		map->arrayOfBuckets[pos] = listCreate(map->destroyMapNodes, map->compareMapNodes);
+	}
+
 	//Δημιουργία Mapnode
 	MapNode node = malloc(sizeof(*node));
 	node->value = value;
@@ -76,7 +86,7 @@ Pointer mapFind(Map map, char* key) {
 MapNode mapFindNode(Map map, char* key) {
 	int pos = hashFunction(key) % map->capacity;
 	
-	if(listSize( map->arrayOfBuckets[pos] )== 0){
+	if( map->arrayOfBuckets[pos] == NULL){
 		return NULL;
 	}
 	//Η δουλεία της find θα γίνει ουσιαστικά από την compare που παραθέτουμε κάθε φορά στην λίστα
@@ -93,7 +103,9 @@ MapNode mapFindNode(Map map, char* key) {
 
 void map_destroy(Map map) {
 	for (int i = 0; i < map->capacity; i++) {
-		listDestroy(map->arrayOfBuckets[i]);
+		if(map->arrayOfBuckets[i] != NULL){
+			listDestroy(map->arrayOfBuckets[i]);
+		}
 	}
 	free(map->arrayOfBuckets);
 	free(map);
