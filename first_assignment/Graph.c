@@ -51,7 +51,9 @@ int compareVertices(Pointer a, Pointer b){
 
 //list map node exei mesa graaph
 int compareMapNodes(Pointer a, Pointer b){
+
     GraphNode node =  mapNodeValue((MapNode)b);
+
     return strcmp((char*)a, node->id);
 }
 
@@ -75,6 +77,7 @@ void destroyGraphListNode(Pointer nodeToDelete){
     listDestroy(node->incomingVertices);
     listDestroy(node->outgoingVertices);
 
+    
     free(node->id);
     free(node);
 }
@@ -99,7 +102,6 @@ void destroyVertex(Pointer vertexToDelete){
     }
     free(vertex->dateOfTransaction);
     free(vertex);
-    vertexToDelete = NULL;
 
 }
 
@@ -164,12 +166,10 @@ void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char
     if (node1 == NULL) {
         graphAddNode(graph, id1, map);
         node1 = mapFind(map, id1);
-        printf("Node with id %s does not exist\n", id1);
 
     }
     if (node2 == NULL) {
         graphAddNode(graph, id2, map);
-         printf("Node with id %s does not exist\n", id2);
         node2 = mapFind(map, id2);
     }
     //Δημιουργώ έναν κόμβο με την ημερομηνία dateOfTransaction
@@ -187,41 +187,38 @@ void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char
     listInsert(node2->incomingVertices, vertex);
 }
 
-// void removeVertex(char* id1, char* id2, Map map){
-//     GraphNode node1 = mapFind(map, id1);
-//     GraphNode node2 = mapFind(map, id2);
-//     if(node1 == NULL || node2 == NULL){
-//         printf("One of the nodes does not exist\n");
-//         return;
-//     }
-//     Vertex vertex = malloc(sizeof(*vertex));
-//     vertex->dateOfTransaction = malloc(strlen(dateOfTransaction) + 1);
-//     strcpy(vertex->dateOfTransaction, dateOfTransaction);
-//     vertex->amount = amount;
-//     vertex->nodeDestination = node2;
-//     vertex->nodeOrigin = node1;
+void removeVertex(char* id1, char* id2, Map map){
 
-//     listDeleteNode(node1->outgoingVertices, vertex);
-//     listDeleteNode(node2->incomingVertices, vertex);
-//     free(vertex->dateOfTransaction);
-//     free(vertex);
-// }
+    Vertex vertexToRemove = findVertex(id1, id2, map);
 
-// Vertex findVertex(char* id1,char* id2, Map map){
-//     GraphNode node1 = mapFind(map, id1);
-//     GraphNode node2 = mapFind(map, id2);
-//     if(node1 == NULL || node2 == NULL){
-//         printf("One of the nodes does not exist\n");
-//         return NULL;
-//     }
+    if(vertexToRemove != NULL){
+        destroyVertex(vertexToRemove);
+    }
+    else{
+        printf("Vertex does not exist\n");
+    }
+}
 
-//     ListNode node = listFind(node1->outgoingVertices, vertex);
-//     if(node == NULL){
-//         printf("Vertex does not exist\n");
-//         return NULL;
-//     }
-//     return listNodeValue(node);
-// }
+Vertex findVertex(char* id1,char* id2, Map map){
+    GraphNode node1 = mapFind(map, id1);
+    GraphNode node2 = mapFind(map, id2);
+    if(node1 == NULL || node2 == NULL){
+        return NULL;
+    }
+    Vertex temp = malloc(sizeof(*temp));
+    temp->nodeDestination = node2;
+    temp->nodeOrigin = node1;
+
+    Vertex vertex = listNodeValue(listFind(node1->outgoingVertices, temp));
+
+    free (temp);
+
+    if(vertex != NULL){
+        return vertex;
+    }
+
+    return NULL;
+}
 
 
 void displayGraph(Graph graph, Map map){

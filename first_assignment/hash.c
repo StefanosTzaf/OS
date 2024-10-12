@@ -50,6 +50,8 @@ void mapInsert(Map map, char* key, Pointer value) {
 	//Δημιουργία Mapnode
 	MapNode node = malloc(sizeof(*node));
 	node->value = value;
+	node->keyId = key;
+
 	//Η Λιστα έχει MapNode
 	listInsert((map->arrayOfBuckets[pos]), node);
 	// Νέο στοιχείο, αυξάνουμε τα συνολικά στοιχεία του map

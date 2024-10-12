@@ -38,3 +38,4 @@ void displayGraph(Graph graph, Map map);
 void destroyGraph(Graph graph);
 
 Vertex findVertex(char* id1,char* id2, Map map);
+void removeVertex(char* id1, char* id2, Map map);
