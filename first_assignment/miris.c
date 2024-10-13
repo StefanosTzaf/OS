@@ -16,28 +16,28 @@ int main(){
   addVertex(graph, "2/1/2020", 200, "1", "3", map);
   //εαν δεν υπάρχει ο κόμβος τότε θα δημιουργηθεί
   addVertex(graph, "3/1/2020", 300, "3", "19", map);
+  addVertex(graph, "5/1/2020", 5001, "4", "1", map);
   addVertex(graph, "4/1/2020", 400, "4", "1", map);
   addVertex(graph, "5/1/2020", 5001, "4", "1", map);
-  addVertex(graph, "5/1/2020", 5001, "4", "1", map);
+  addVertex(graph, "66/1/2020", 100, "19", "2", map);
+  addVertex(graph, "66/1/2020", 100, "19", "2", map);
 
   displayGraph(graph, map);
 
   printf("---------------------------------------------------------\n\n");
   //does not exists
-  addVertex(graph, "66/1/2020", 100, "19", "2", map);
 
-  removeGraphNode("1", map, graph);
-
-
-
+  //removeGraphNode("1", map, graph);
 
   removeVertex("3", "19", map);
+  removeVertex("19", "2", map);
   removeVertex("1", "2", map);
- // removeVertex("4", "1", map);  TODO
-
+  removeVertex("4", "1", map); 
   displayGraph(graph, map);
+
 
   destroyGraph(graph);
   map_destroy(map);
+
   return 0;
 }

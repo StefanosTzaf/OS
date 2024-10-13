@@ -41,6 +41,7 @@ int compareGraphNodes(Pointer a, Pointer b){
 //Μία συναλλαγή μπορεί να έχει ίδιο προορισμό και αφετηρία και ίδια ημερομηνία και ίδιο ποσό σναλλαγής.Άρα δεν υπάρχει κάποια ειδοποιός διαφορά μεταξύ των vertex
 //επομένως σγκρίνουμε τους ίδιους τους Pointers!!
 int compareVertices(Pointer a, Pointer b){
+
     Vertex vertex1 = a;
     Vertex vertex2 = b;
     if(vertex1->nodeDestination->id == vertex2->nodeDestination->id && vertex1->nodeOrigin->id == vertex2->nodeOrigin->id){
@@ -76,7 +77,7 @@ void destroyGraphListNode(Pointer nodeToDelete){
 
     listDestroy(node->incomingVertices);
     listDestroy(node->outgoingVertices);
-
+    
     
     free(node->id);
     free(node);
@@ -145,7 +146,6 @@ void removeGraphNode(char* id, Map map, Graph graph){
     //δίνουμε εντολή στο hash να μην δείχνει πιά σε αυτον τον κόμβο γιατι δεν υπάρχει πιά
     GraphNode node = mapFind(map, id);
     if(node == NULL){
-        printf("Node with id %s does not exist\n", id);
         return;
     }
     mapRemove(map, node->id);
@@ -192,11 +192,10 @@ void removeVertex(char* id1, char* id2, Map map){
     Vertex vertexToRemove = findVertex(id1, id2, map);
 
     if(vertexToRemove != NULL){
+
         destroyVertex(vertexToRemove);
     }
-    else{
-        printf("Vertex does not exist\n");
-    }
+
 }
 
 Vertex findVertex(char* id1,char* id2, Map map){
@@ -209,15 +208,14 @@ Vertex findVertex(char* id1,char* id2, Map map){
     temp->nodeDestination = node2;
     temp->nodeOrigin = node1;
 
-    Vertex vertex = listNodeValue(listFind(node1->outgoingVertices, temp));
-
-    free (temp);
-
-    if(vertex != NULL){
-        return vertex;
+    if(listFind(node1->outgoingVertices, temp) == NULL){
+        free (temp);
+        return NULL;
     }
-
-    return NULL;
+    else{
+        free (temp);
+        return listNodeValue(listFind(node1->outgoingVertices, temp));
+    }
 }
 
 
