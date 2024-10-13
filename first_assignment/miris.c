@@ -1,40 +1,59 @@
-#include <stdio.h>
-#include "hash.h"
 #include "Graph.h"
+#include <getopt.h>
 
 
-int main(){
+int main(int argc, char *argv[]){
+
+
   Graph graph = graphCreate();
   Map map = mapCreate(compareMapNodes, destroyMapNodes, 100);
-  graphAddNode(graph, "1", map);
-  graphAddNode(graph, "2", map);
-  graphAddNode(graph, "3", map);
-  // //    graphAddNode(graph, "4", map);
-  // //    graphAddNode(graph, "5", map);
+  int option;
 
-  addVertex(graph, "1/1/2020", 100, "1", "2", map);
-  addVertex(graph, "2/1/2020", 200, "1", "3", map);
-  //εαν δεν υπάρχει ο κόμβος τότε θα δημιουργηθεί
-  addVertex(graph, "3/1/2020", 300, "3", "19", map);
-  addVertex(graph, "5/1/2020", 5001, "4", "1", map);
-  addVertex(graph, "4/1/2020", 400, "4", "1", map);
-  addVertex(graph, "5/1/2020", 5001, "4", "1", map);
-  addVertex(graph, "66/1/2020", 100, "19", "2", map);
-  addVertex(graph, "66/1/2020", 100, "19", "2", map);
+  //Για να αποθηκεύσουμε το όνομα του αρχείου εισόδου και εξόδου από την γραμμή εντολών
+  char* inputFile = NULL;
+  char* outputFile = NULL;
 
-  displayGraph(graph, map);
+  while((option = getopt(argc, argv, "i:o:")) != -1){
+    if(option == 'i'){
+      inputFile = optarg;
+    }
+    else if(option == 'o'){
+      outputFile = optarg;
+    } 
+    else{
+      return 1;
+    }
+  }
 
-  printf("---------------------------------------------------------\n\n");
-  //does not exists
+  FILE* file;
+  file = fopen(inputFile, "r");
+  if(file == NULL){
+    fprintf(stderr, "Error opening file\n");
+    return 1;
+  }
 
-  //removeGraphNode("1", map, graph);
+  char line[256];//για το διαβασμα μίας γραμμής του αρχείου
+  while (fgets(line, sizeof(line), file) != NULL) {
+    char* id1;
+    char* id2;
+    int amount;
+    char* date;
+    id1 = strtok(line, " ");
+    id2 = strtok(NULL, " ");
+    amount = atoi(strtok(NULL, " "));
+    date = strtok(NULL, " ");
+    addVertex(graph, date, amount, id1, id2, map);
+  }
+  fclose(file);
 
-  removeVertex("3", "19", map);
-  removeVertex("19", "2", map);
-  removeVertex("1", "2", map);
-  removeVertex("4", "1", map); 
-  displayGraph(graph, map);
-
+  file = fopen(outputFile, "w");
+  //TODO MAKE THE OUTPUT FILE IF NOT EXISTS AND IF NOT GIVEN
+  // if(file == NULL){
+  //   fprintf(stderr, "Error opening file\n");
+  //   return 1;
+  // }
+  printToFile(graph, file);
+  fclose(file); 
 
   destroyGraph(graph);
   map_destroy(map);

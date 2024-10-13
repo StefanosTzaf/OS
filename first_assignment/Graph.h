@@ -1,6 +1,5 @@
 #pragma once
 #include <string.h>
-#include <stdlib.h>
 #include "List.h"
 #include "hash.h"
 
@@ -39,3 +38,4 @@ void destroyGraph(Graph graph);
 
 Vertex findVertex(char* id1,char* id2, Map map);
 void removeVertex(char* id1, char* id2, Map map);
+void printToFile(Graph graph, FILE* file);

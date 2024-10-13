@@ -1,5 +1,4 @@
 #include "Graph.h"
-#include <stdio.h>
 
 //------------------------------------------------------Ορισμός των δομών-------------------------------------------------------
 //Ο γράφος αποτελείται από μία λίστα από GraphNodes
@@ -250,6 +249,28 @@ void displayGraph(Graph graph, Map map){
 
     }
 
+}
+
+void printToFile(Graph graph, FILE* file){
+    ListNode listNode = listGetFirst(graph->nodes);
+    //Κάθε κόμβο του γράφου
+    while(listNode != NULL){
+
+        GraphNode node = listNodeValue(listNode);
+        //Εκτυπώνουμε μόνο τις Outgoing ακμλες για να μην εκτυπ΄σουμε κάθε ακμή 2 φορές
+        ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
+
+        while(outgoingVertices != NULL){
+            Vertex vertex = listNodeValue(outgoingVertices);
+            fprintf(file,"%s ", vertex->nodeOrigin->id);
+            fprintf(file,"%s ", vertex->nodeDestination->id);
+            fprintf(file, "%d ", vertex->amount);
+            fprintf(file, "%s", vertex->dateOfTransaction);
+
+            outgoingVertices = listGetNext(outgoingVertices);
+        }
+        listNode = listGetNext(listNode);
+    }
 }
 
 void destroyGraph(Graph graph){
