@@ -1,41 +1,45 @@
-#pragma once
-#include <string.h>
-#include "List.h"
 #include "hash.h"
 
 typedef struct graph* Graph;
 typedef struct graph_node* GraphNode;
 typedef struct vertex* Vertex;
 
-
-//συναρτηση compare για την συγκριση των id των κομβων στην λιστα από κόμβους(διαφέρει απο την compareId του map εκείνη δέχεται τα Id)
+//συναρτηση compare για την συγκριση των id των κομβων στην λιστα από κόμβους
 int compareGraphNodes(Pointer a, Pointer b);
+
 //συνάρτηση compare για vertex
 int compareVertices(Pointer a, Pointer b);
 
-//καταστρέφει κόμβους της λίστα του γράφου
+//συνάρτηση compare για την σύγκριση των id των κόμβων στο hash table
+int compareMapNodes(Pointer a, Pointer b);
+
+//καταστρέφει το value από κόμβους της λίστα του γράφου
 void destroyGraphListNode(Pointer nodeToDelete);
 
-//καταστρέφει τους κόμβους της λίστας από vertex
+//καταστρέφει το value απο τους κόμβους των λιστών από vertex
 void destroyVertex(Pointer vertexToDelete);
 
-
-int compareMapNodes(Pointer a, Pointer b);
+//καταστρέφει το value από τους κόμβους των λιστών hash table
 void destroyMapNodes(Pointer value);
+
 
 Graph graphCreate();
 
 void graphAddNode(Graph graph, char* id, Map map);
-
-//αφαιρεί έναν κόμβο βάση του Id του
-void removeGraphNode(char* id, Map map, Graph graph);
-
 void addVertex(Graph graph, char* dateOfTransmission, int amount, char* id1, char* id2, Map map);
 
-void displayGraph(Graph graph, Map map);
+void removeGraphNode(char* id, Map map, Graph graph);
+void removeVertex(char* id1, char* id2, Map map);
+
+void modifyVertex(char* id1, char* id2, char* date, int amount,char* date2, int amount2, Map map);
+
+
+//βρίσκει ακμή βάση μόνο των id των κόμβων (χρειάζεται για την removeVertex)
+Vertex findVertex(char* id1,char* id2, Map map);
+
 
 void destroyGraph(Graph graph);
 
-Vertex findVertex(char* id1,char* id2, Map map);
-void removeVertex(char* id1, char* id2, Map map);
+void displayGraph(Graph graph, Map map);
+
 void printToFile(Graph graph, FILE* file);

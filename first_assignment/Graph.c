@@ -13,9 +13,9 @@ struct graph_node{
     List outgoingVertices;
     //Λίστα από vertex που έχουν ακμές που καταλήγουν σε αυτόν τον κόμβο
     List incomingVertices;
-
 };
 
+//μία ακμή αποτελείται από την ημερομηνία της συναλλαγής, το ποσό της συναλλαγής, δείκτες στον κόμβο προορισμού και αφετηρίας
 struct vertex{
     char* dateOfTransaction;
     int amount;
@@ -28,7 +28,8 @@ struct vertex{
 
 
 
-//------------------------------------------------------Συναρτήσεις που θα δώσπουμε στις λίστες---------------------------------------------------
+
+//------------------------------------------------------Συναρτήσεις που θα δώσουμε στις λίστες---------------------------------------------------
 //τυπου compare function για την σύγριση των id των κόμβων
 int compareGraphNodes(Pointer a, Pointer b){
     char* id1 = ((GraphNode)a)->id;
@@ -37,10 +38,7 @@ int compareGraphNodes(Pointer a, Pointer b){
 }
 
 
-//Μία συναλλαγή μπορεί να έχει ίδιο προορισμό και αφετηρία και ίδια ημερομηνία και ίδιο ποσό σναλλαγής.Άρα δεν υπάρχει κάποια ειδοποιός διαφορά μεταξύ των vertex
-//επομένως σγκρίνουμε τους ίδιους τους Pointers!!
 int compareVertices(Pointer a, Pointer b){
-
     Vertex vertex1 = a;
     Vertex vertex2 = b;
     if(vertex1->nodeDestination->id == vertex2->nodeDestination->id && vertex1->nodeOrigin->id == vertex2->nodeOrigin->id){
@@ -51,17 +49,14 @@ int compareVertices(Pointer a, Pointer b){
 
 //list map node exei mesa graaph
 int compareMapNodes(Pointer a, Pointer b){
-
     GraphNode node =  mapNodeValue((MapNode)b);
-
     return strcmp((char*)a, node->id);
 }
 
+//απλά free τον Pointer ,το εσωτερικό του Graphnode το διαγράφει η destroyGraphListNode
 void destroyMapNodes(Pointer value){
     free(value);
 }
-
-
 
 
 //Συνάρτηση που μας λέει στην λίστα απο Graphnodes πως να καταστρέψει κάθε κομβο της
@@ -110,6 +105,8 @@ void destroyVertex(Pointer vertexToDelete){
 
 
 
+//------------------------------------------------------Συναρτήσεις για τον γράφο---------------------------------------------------
+
 Graph graphCreate(){
     Graph graph = malloc(sizeof(*graph));
     //δημιουργούμαι μία λίστα από κόμβους
@@ -117,7 +114,6 @@ Graph graphCreate(){
     graph->size = 0;
     return graph;
 }
-
 
 
 void graphAddNode(Graph graph, char* id, Map map){
@@ -139,22 +135,6 @@ void graphAddNode(Graph graph, char* id, Map map){
     graph->size++;
 
 }
-
-
-void removeGraphNode(char* id, Map map, Graph graph){
-    //δίνουμε εντολή στο hash να μην δείχνει πιά σε αυτον τον κόμβο γιατι δεν υπάρχει πιά
-    GraphNode node = mapFind(map, id);
-    if(node == NULL){
-        return;
-    }
-    mapRemove(map, node->id);
-
-    listDeleteNode(graph->nodes, node);
-    
-    graph->size--;
-}
-
-
 
 void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char* id2, Map map){
     //Ψάχνω τον κόμβο με id1, μου επιστρέφει Graphnode*
@@ -186,6 +166,21 @@ void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char
     listInsert(node2->incomingVertices, vertex);
 }
 
+
+void removeGraphNode(char* id, Map map, Graph graph){
+    //δίνουμε εντολή στο hash να μην δείχνει πιά σε αυτον τον κόμβο γιατι δεν υπάρχει πιά
+    GraphNode node = mapFind(map, id);
+    if(node == NULL){
+        return;
+    }
+    mapRemove(map, node->id);
+
+    listDeleteNode(graph->nodes, node);
+    
+    graph->size--;
+}
+
+
 void removeVertex(char* id1, char* id2, Map map){
 
     Vertex vertexToRemove = findVertex(id1, id2, map);
@@ -196,6 +191,33 @@ void removeVertex(char* id1, char* id2, Map map){
     }
 
 }
+
+
+void modifyVertex(char* id1, char* id2, char* date, int amount,char* date2, int amount2, Map map){
+    //η find vertex δεν μπορεί να μας βοηθήσει αυτή την στιγμή γιατί συγκρίνει βάση μόνο των Ids
+    GraphNode origin = mapFind(map, id1);
+    GraphNode destination = mapFind(map, id2);
+    if(origin == NULL || destination == NULL){
+        return;
+    }
+    //προσπέλαση μόνο του outgoing list του origin(ψάχνουμε μόνο ακμή από το id1->id2)
+    for(ListNode node = listGetFirst(origin->outgoingVertices); node != NULL; node = listGetNext(node)){
+        
+        Vertex vertex = listNodeValue(node);
+        if(strcmp(vertex->nodeDestination->id, destination->id) == 0
+            && strcmp(vertex->dateOfTransaction, date) == 0 
+            && vertex->amount == amount){
+            
+            free(vertex->dateOfTransaction);
+            vertex->dateOfTransaction = malloc(strlen(date2) + 1);
+            strcpy(vertex->dateOfTransaction, date2);
+            vertex->amount = amount2;
+            return;
+        }
+    }
+}
+
+
 
 Vertex findVertex(char* id1,char* id2, Map map){
     GraphNode node1 = mapFind(map, id1);
