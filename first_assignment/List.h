@@ -1,10 +1,9 @@
-//--------------------------------------Υλοποίση διπλά συνδεδεμένης λίστας-----------------------------------------
+//--------------------------------------Υλοποίηση διπλά συνδεδεμένης λίστας-----------------------------------------
 #include <stdlib.h>
 #include <stdio.h>
-//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχει pointer σε στοιχεία τύπου void(είτε Graphnode είτε vertex)
-//τα Struct ορίζονται incomplete η υλοποιίηση τους είναι στο List.c.Για να μην μπορούν οι χρήστες
-// (στην προκειμένη περίπτωση ο Γράφος) να έχουν πρόσβαση στα πεδία τους και να μπορούν να τα μεταβάλουν απευθείας
+
 typedef void* Pointer;
+//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχει pointer σε στοιχεία τύπου void(είτε Graphnode είτε vertex)
 typedef struct list* List;
 typedef struct list_node* ListNode;
 
@@ -13,26 +12,29 @@ typedef struct list_node* ListNode;
 //Χρησιμοποιείται στην listFind
 typedef int (*CompareFunc)(Pointer a, Pointer b);
 
-//Πάρόμοια η Destroy διαφέρει ανάλογα που δείχνει ο δείκτης. Πχ στην εργασία χρησιμοποιούμε δυο είδη λίστας που δεσμεύουν διαφορετική μν΄ήμη.
+//Πάρόμοια η Destroy διαφέρει ανάλογα που δείχνει ο δείκτης. Πχ στην εργασία χρησιμοποιούμε τρία είδη λίστας που δεσμεύουν διαφορετική μν΄ήμη.
 //Η destroy είναι  στοθχείο του struct list
 typedef void (*DestroyFunc)(Pointer value);
 
+//(Ο(1))
 List listCreate(DestroyFunc destroyValue, CompareFunc compare);
 
+//(Ο(1))
 void listInsert(List list, Pointer value);
 
+//(Ο(n)) λόγω της ListFind
 void listDeleteNode(List list, Pointer value);
 
+//(Ο(n))
 void listDestroy(List list);
 
-//ψαχνει την τιμη value στην λιστα list με την βοηθεια της συναρτησης compare
+//(Ο(n))
 ListNode listFind(List list, Pointer value);
 
+//(Ο(1))
 ListNode listGetLast(List list);
 ListNode listGetFirst(List list);
 ListNode listGetNext(ListNode node);
-
-int listSize(List list);
 Pointer listNodeValue(ListNode node);
-
+int listSize(List list);
 void listSetDestroyValue(List list, DestroyFunc destroyValue);

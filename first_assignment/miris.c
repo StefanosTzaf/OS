@@ -5,8 +5,6 @@
 int main(int argc, char *argv[]){
 
 
-  Graph graph = graphCreate();
-  Map map = mapCreate(compareMapNodes, destroyMapNodes, 100);
   int option;
 
   //Για να αποθηκεύσουμε το όνομα του αρχείου εισόδου και εξόδου από την γραμμή εντολών
@@ -33,6 +31,15 @@ int main(int argc, char *argv[]){
   }
 
   char line[256];//για το διαβασμα μίας γραμμής του αρχείου
+  int counter = 0;//Ποσες γραμμες έχει το αρχείο για το μέγεθος του Hash table
+  while (fgets(line, sizeof(line), file) != NULL) {
+      counter++;  // Increment the line count for each line read
+  }
+  printf("The file has %d lines.\n", counter);
+  Graph graph = graphCreate();
+  Map map = mapCreate(compareMapNodes, destroyMapNodes, counter);
+
+  rewind(file);//από την αρχή του αρχείου
   while (fgets(line, sizeof(line), file) != NULL) {
     char* id1;
     char* id2;
@@ -46,6 +53,30 @@ int main(int argc, char *argv[]){
   }
   fclose(file);
 
+
+//-----------------------------------------------------prompt---------------------------------------------------------
+
+  // char command[256];
+
+  // while(1){
+
+
+
+
+
+
+
+    
+  // }
+
+
+
+
+
+
+
+
+
   file = fopen(outputFile, "w");
   //TODO MAKE THE OUTPUT FILE IF NOT EXISTS AND IF NOT GIVEN
   // if(file == NULL){
@@ -56,7 +87,7 @@ int main(int argc, char *argv[]){
   fclose(file); 
 
   destroyGraph(graph);
-  map_destroy(map);
+  mapDestroy(map);
 
   return 0;
 }
