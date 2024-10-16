@@ -11,6 +11,7 @@ int main(int argc, char *argv[]){
   char* inputFile = NULL;
   char* outputFile = NULL;
 
+
   while((option = getopt(argc, argv, "i:o:")) != -1){
     if(option == 'i'){
       inputFile = optarg;
@@ -35,7 +36,7 @@ int main(int argc, char *argv[]){
   while (fgets(line, sizeof(line), file) != NULL) {
       counter++;  // Increment the line count for each line read
   }
-  printf("The file has %d lines.\n", counter);
+
   Graph graph = graphCreate();
   Map map = mapCreate(compareMapNodes, destroyMapNodes, counter);
 
@@ -56,19 +57,27 @@ int main(int argc, char *argv[]){
 
 //-----------------------------------------------------prompt---------------------------------------------------------
 
-  // char command[256];
+  printf("Miris waiting for a command :\n");
 
-  // while(1){
+  char ch;
+  char* command = NULL;
+  int size = 0;
+  int capacity = 1;
+  //cast se char*
 
+  command = malloc(sizeof(char)* capacity);
+  
+  while((ch = getchar() != '\n') && (ch!= EOF)){
+    if(size >= capacity -1){
+      capacity *= 2;
+      command = realloc(command, capacity * sizeof(char));
+    }
+    command[size++] = ch;
+    printf("%s\n",ch);
+  }
+  command[size] = '\0';
 
-
-
-
-
-
-    
-  // }
-
+  printf("\n=========%s\n\n",command);
 
 
 
@@ -79,13 +88,12 @@ int main(int argc, char *argv[]){
 
   file = fopen(outputFile, "w");
   //TODO MAKE THE OUTPUT FILE IF NOT EXISTS AND IF NOT GIVEN
-  // if(file == NULL){
-  //   fprintf(stderr, "Error opening file\n");
-  //   return 1;
-  // }
+  if(file == NULL){
+    fprintf(stderr, "Error opening file\n");
+    return 1;
+  }
   printToFile(graph, file);
   fclose(file); 
-
   destroyGraph(graph);
   mapDestroy(map);
 
