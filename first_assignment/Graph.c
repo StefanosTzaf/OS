@@ -193,12 +193,12 @@ void removeVertex(char* id1, char* id2, Map map){
 }
 
 
-void modifyVertex(char* id1, char* id2, char* date, int amount,char* date2, int amount2, Map map){
+bool modifyVertex(char* id1, char* id2, char* date, int amount,char* date2, int amount2, Map map){
     //η find vertex δεν μπορεί να μας βοηθήσει αυτή την στιγμή γιατί συγκρίνει βάση μόνο των Ids
     GraphNode origin = mapFind(map, id1);
     GraphNode destination = mapFind(map, id2);
     if(origin == NULL || destination == NULL){
-        return;
+        return 1;
     }
     //προσπέλαση μόνο του outgoing list του origin(ψάχνουμε μόνο ακμή από το id1->id2)
     for(ListNode node = listGetFirst(origin->outgoingVertices); node != NULL; node = listGetNext(node)){
@@ -212,9 +212,10 @@ void modifyVertex(char* id1, char* id2, char* date, int amount,char* date2, int 
             vertex->dateOfTransaction = malloc(strlen(date2) + 1);
             strcpy(vertex->dateOfTransaction, date2);
             vertex->amount = amount2;
-            return;
+            return 0;
         }
     }
+    return 1;
 }
 
 
@@ -231,6 +232,7 @@ Vertex findVertex(char* id1,char* id2, Map map){
 
     if(listFind(node1->outgoingVertices, temp) == NULL){
         free (temp);
+        printf("------------");
         return NULL;
     }
     else{
@@ -280,6 +282,10 @@ void printToFile(Graph graph, FILE* file){
 
         GraphNode node = listNodeValue(listNode);
         //Εκτυπώνουμε μόνο τις Outgoing ακμλες για να μην εκτυπ΄σουμε κάθε ακμή 2 φορές
+        if(listSize( node->outgoingVertices) == 0 && listSize(node->incomingVertices) == 0){
+            fprintf(file, "%s (No transactions)\n", node->id);
+        
+        }
         ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
 
         while(outgoingVertices != NULL){
@@ -287,7 +293,7 @@ void printToFile(Graph graph, FILE* file){
             fprintf(file,"%s ", vertex->nodeOrigin->id);
             fprintf(file,"%s ", vertex->nodeDestination->id);
             fprintf(file, "%d ", vertex->amount);
-            fprintf(file, "%s", vertex->dateOfTransaction);
+            fprintf(file, "%s\n", vertex->dateOfTransaction);
 
             outgoingVertices = listGetNext(outgoingVertices);
         }
@@ -299,4 +305,30 @@ void destroyGraph(Graph graph){
     //όλη η δουλειά γίνεται στην destroyGraphListNode που περνάμε στην λίστα
     listDestroy(graph->nodes);
     free(graph);
+}
+
+
+void displayOutgoingEdges(char* id, Map map){
+    GraphNode node = mapFind(map, id);
+    if(node == NULL){
+        return;
+    }
+    ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
+    while(outgoingVertices != NULL){
+        Vertex vertex = listNodeValue(outgoingVertices);
+        printf("   %s %s %d %s\n",vertex->nodeOrigin->id, vertex->nodeDestination->id, vertex->amount, vertex->dateOfTransaction);
+        outgoingVertices = listGetNext(outgoingVertices);
+    }
+}
+void displayIncomingEdges(char* id, Map map){
+    GraphNode node = mapFind(map, id);
+    if(node == NULL){
+        return;
+    }
+    ListNode incomingVertices = listGetFirst(node->incomingVertices);
+    while(incomingVertices != NULL){
+        Vertex vertex = listNodeValue(incomingVertices);
+        printf("   %s %s %d %s\n",vertex->nodeOrigin->id, vertex->nodeDestination->id, vertex->amount, vertex->dateOfTransaction);
+        incomingVertices = listGetNext(incomingVertices);
+    }
 }

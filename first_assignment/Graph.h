@@ -31,7 +31,7 @@ void addVertex(Graph graph, char* dateOfTransmission, int amount, char* id1, cha
 void removeGraphNode(char* id, Map map, Graph graph);
 void removeVertex(char* id1, char* id2, Map map);
 
-void modifyVertex(char* id1, char* id2, char* date, int amount,char* date2, int amount2, Map map);
+bool modifyVertex(char* id1, char* id2, char* date, int amount,char* date2, int amount2, Map map);
 
 
 //βρίσκει ακμή βάση μόνο των id των κόμβων (χρειάζεται για την removeVertex)
@@ -43,3 +43,6 @@ void destroyGraph(Graph graph);
 void displayGraph(Graph graph, Map map);
 
 void printToFile(Graph graph, FILE* file);
+
+void displayOutgoingEdges(char* id, Map map);
+void displayIncomingEdges(char* id, Map map);

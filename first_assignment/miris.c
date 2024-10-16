@@ -1,6 +1,6 @@
 #include "Graph.h"
 #include <getopt.h>
-
+#include <stdbool.h>
 
 int main(int argc, char *argv[]){
 
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]){
     id1 = strtok(line, " ");
     id2 = strtok(NULL, " ");
     amount = atoi(strtok(NULL, " "));
-    date = strtok(NULL, " ");
+    date = strtok(NULL, "\n");
     addVertex(graph, date, amount, id1, id2, map);
   }
   fclose(file);
@@ -57,27 +57,274 @@ int main(int argc, char *argv[]){
 
 //-----------------------------------------------------prompt---------------------------------------------------------
 
-  printf("Miris waiting for a command :\n");
-
-  char ch;
-  char* command = NULL;
-  int size = 0;
-  int capacity = 1;
-  //cast se char*
-
-  command = malloc(sizeof(char)* capacity);
-  
-  while((ch = getchar() != '\n') && (ch!= EOF)){
-    if(size >= capacity -1){
-      capacity *= 2;
-      command = realloc(command, capacity * sizeof(char));
+  char* token;
+  bool exit = false; 
+  do{
+    printf("Miris waiting for a command :\n");
+    //Διαβάζουμε με getcar γιατί δεν ξέρουμε πόσο μεγάλη θα είναι η είσοδος του χρήστη
+    //μπορει να γράψει πολλούς κομβους για insert πχ
+    char ch;
+    char* command = NULL;
+    int size = 0;
+    int capacity = 1;
+    command = malloc(sizeof(char)* capacity);
+    
+    while(((ch = getchar()) != '\n') && (ch!= EOF)){
+      if(size >= capacity - 1){
+        //διπλασιάζουμε το μέγεθος του buffer για να μην κάνουμε πολλά realloc
+        capacity *= 2;
+        command = realloc(command, capacity * sizeof(char));
+      }
+      command[size++] = ch;
     }
-    command[size++] = ch;
-    printf("%s\n",ch);
-  }
-  command[size] = '\0';
+    command[size] = '\0';
 
-  printf("\n=========%s\n\n",command);
+    //αντιγραφή της συμβολοσειράς γιατί θα χρειαστεί για 2η strtok βλ. insert
+    char* commandCopy;
+    commandCopy = malloc(strlen(command) + 1);
+    strcpy(commandCopy, command);
+
+    token = strtok(command, " ");
+
+
+    //--------------------------------------------------------------- 1 -------------------------------------------------------
+    if(strcmp(token, "i") == 0 || strcmp(token, "insert") == 0){
+
+      token = strtok(NULL, " ");
+      //εάν το πρώτο όρισμα μετά το insert είναι NULL τότε έχουμε λάθος format
+      if(token == NULL){
+        printf("   Format error:\n");
+        printf("   Command Name : i Ni [Nj Nk ...] or insert Ni [Nj Nk ...]\n\n");
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      printf("   insert into the graph structure 1 or more nodes\n   with specific STRING ids.\n\n");
+
+      //έλεγχος αν υπάρχει κάποιος κόμβος με αυτό το id
+      bool exists = false;
+      while(token != NULL){
+        if(mapFind(map, token) != NULL){
+          printf("   IssueWith: %s (already exists)\n", token);
+          exists = true;
+          break;
+        }
+        token = strtok(NULL, " ");
+      }
+
+      if(exists){
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+
+      //να ξεπεράσουμε το i της εντολής(χρησιμοποιούμε την κοπια της εντολής 
+      //για να είμαστε σίγουροι οτι το περιεχόμενο της είναι ίδιο με την αρχική
+      //και να μπορέσουμε χωρίς λάθη να διασχίσουμε την συμβολοσειερά απο την αρχή)
+
+      token = strtok(commandCopy, " ");
+      token = strtok(NULL, " ");
+
+      printf("   succ: ");
+      while(token != NULL){
+        printf(" %s", token);
+        graphAddNode(graph, token, map);
+        token = strtok(NULL, " ");
+
+      }
+      printf("\n\n");
+      
+    }
+
+    //--------------------------------------------------------------- 2 -------------------------------------------------------
+    else if(strcmp(token, "n") == 0 || strcmp(token, "insert2") == 0){
+      token = strtok(NULL, " ");
+      char* token2 = strtok(NULL, " ");
+      char* sum = strtok(NULL, " ");
+      char* date = strtok(NULL, " ");
+      //μετά την ημερομηνία δδεν πρέπει να υπάρχει κάτι άλλο
+      char* next = strtok(NULL, " ");
+      if(token == NULL || token2 == NULL || sum == NULL || date == NULL || next != NULL){
+        printf("   Format error:\n");
+        printf("   Command Name : n Ni Nj amount date or insert2 n Ni Nj sum date\n\n");
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      else{
+        printf("   introduce an edge with direction from Ni to Nj with label\n   sum + date if either Ni or Nj does not exist in the graph,\n   do the appropriate node insertion first.\n\n");
+      }
+      addVertex(graph, date, atoi(sum), token, token2, map);
+    }
+
+
+    //--------------------------------------------------------------- 3 --------------------------------------------------------
+    else if(strcmp(token,"d") == 0 || strcmp(token, "delete") == 0){
+      token = strtok(NULL, " ");
+      //εάν το πρώτο όρισμα μετά το insert είναι NULL τότε έχουμε λάθος format
+      if(token == NULL){
+        printf("   Format error:\n");
+        printf("   Command Name : d Ni [Nj Nk ...] or delete Ni [Nj Nk ...]\n\n");
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      printf("   delete from graph listed nodes Ni, Nj, Nk, etc\n\n");
+
+      //έλεγχος αν υπάρχει κάποιος κόμβος με αυτό το id
+      bool exists = false;
+      while(token != NULL){
+        if(mapFind(map, token) == NULL){
+          printf("   IssueWith: %s (no exists)\n", token);
+          exists = true;
+          break;
+        }
+        token = strtok(NULL, " ");
+      }
+
+      if(exists){
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+
+      //να ξεπεράσουμε το i της εντολής(χρησιμοποιούμε την κοπια της εντολής 
+      //για να είμαστε σίγουροι οτι το περιεχόμενο της είναι ίδιο με την αρχική
+      //και να μπορέσουμε χωρίς λάθη να διασχίσουμε την συμβολοσειερά απο την αρχή)
+
+      token = strtok(commandCopy, " ");
+      token = strtok(NULL, " ");
+
+      while(token != NULL){
+        removeGraphNode(token, map, graph);
+        token = strtok(NULL, " ");
+
+      }
+      printf("\n\n");
+
+    }
+
+    //--------------------------------------------------------------- 4 --------------------------------------------------------
+    else if(strcmp(token, "l" ) == 0 || strcmp(token, "delete2") == 0){
+      token = strtok(NULL, " ");
+      char* token2 = strtok(NULL, " ");
+      //μετά το δεύτερο όρισμα δεν πρέπει να υπάρχει κάτι άλλο
+      char* next = strtok(NULL, " ");
+      if(next != NULL || token == NULL || token2 == NULL){
+      
+        printf("   Format error:\n");
+        printf("   Command Name : l Ni Nj or delete2 Ni Nj\n\n");
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      else if(findVertex(token, token2, map) == NULL){
+        printf("   Edge between %s - %s not found\n\n", token, token2);
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      else{
+        printf("   remove the edge between Ni and Nj; if there are\n   more than one edges, remove one of the edges.\n\n");
+      }
+      removeVertex(token, token2, map);
+    }
+
+
+    //--------------------------------------------------------------- 5 --------------------------------------------------------
+    else if(strcmp(token, "m") == 0 || strcmp(token, "modify") == 0){
+      char* id1  = strtok(NULL, " ");
+      char* id2 = strtok(NULL, " ");
+      char* sum = strtok(NULL, " ");
+      char* sum2 = strtok(NULL, " ");
+      char* date = strtok(NULL, " ");
+      char* date2 = strtok(NULL, " ");
+      char* next = strtok(NULL, " ");
+      if(id1 == NULL || id2 == NULL || sum == NULL || sum2 == NULL || date2 == NULL || date == NULL || next != NULL){
+        printf("   Format error:\n");
+        printf("   Command Name :m Ni Nj sum sum1 date date1 or modify Ni Nj sum sum1 date date1\n\n");
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      else if(modifyVertex(id1, id2, date, atoi(sum), date2, atoi(sum2), map) == 1){
+        printf("   Non-existing edge:\n\n" );
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      else{
+        printf("   update the values of a specific edge between Ni and Nj\n\n");
+      }
+    }
+
+    //--------------------------------------------------------------- 6 --------------------------------------------------------
+
+    else if(strcmp(token, "f") ==0 || strcmp(token, "find") == 0){
+      token = strtok(NULL, " ");
+      char* next = strtok(NULL, " ");
+      if(token == NULL || next != NULL){
+        printf("   Format error:\n");
+        printf("   Command Name : f Ni or find Ni\n\n");
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      else if(mapFind(map, token) == NULL){
+        printf("   Non-existing node %s \n\n", token);
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      else{
+        printf("   find all outgoing edges from %s\n\n", token);
+        displayOutgoingEdges(token, map);
+      }
+    }
+
+    //--------------------------------------------------------------- 7 --------------------------------------------------------
+
+    else if(strcmp(token, "r") == 0 || strcmp(token, "receiving")==0){
+      token = strtok(NULL, " ");
+      char* next = strtok(NULL, " ");
+      if(token == NULL || next != NULL){
+        printf("   Format error:\n");
+        printf("   Command Name : r Ni or receiving Ni\n\n");
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      else if(mapFind(map, token) == NULL){
+        printf("   Non-existing node %s \n\n", token);
+        free(command);
+        free(commandCopy);
+        continue;
+      }
+      else{
+        printf("   find all ingoing edges from %s\n\n", token);
+        displayIncomingEdges(token, map);
+      }      
+    }
+
+    //--------------------------------------------------------------- 8 --------------------------------------------------------
+    else if(strcmp(token, "e") == 0 || strcmp(token, "exit") == 0){
+      printf("terminate the program.\n");
+      exit = true;
+    }
+
+
+    else{
+      printf("Unrecognized command: %s\n",token);
+
+    }
+
+
+    free(command);
+    free(commandCopy);
+  }
+  while(!exit);
+
+
 
 
 

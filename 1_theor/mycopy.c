@@ -6,6 +6,7 @@
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
+        //εσωτερικά καλείται syscall
         fprintf(stderr, "3 arguements are needed: mycopy <source file> <destination file>\n");
         return -1;
     }
@@ -13,6 +14,7 @@ int main(int argc, char *argv[]) {
     //Aνοιγμα αρχείου (πρωτο syscall μεσα στην open)
     int src_fd = open(argv[1], O_RDONLY);
     if (src_fd < 0) {
+        //εσωτερικά καλείται syscall
         fprintf(stderr, "Error opening source file\n");
         return -1;
     }
