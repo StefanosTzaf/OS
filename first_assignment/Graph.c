@@ -13,6 +13,7 @@ struct graph_node{
     List outgoingVertices;
     //Λίστα από vertex που έχουν ακμές που καταλήγουν σε αυτόν τον κόμβο
     List incomingVertices;
+    bool visited;
 };
 
 //μία ακμή αποτελείται από την ημερομηνία της συναλλαγής, το ποσό της συναλλαγής, δείκτες στον κόμβο προορισμού και αφετηρίας
@@ -121,7 +122,7 @@ void graphAddNode(Graph graph, char* id, Map map){
     GraphNode node = malloc(sizeof(*node));
     node->id = malloc(strlen(id) + 1);
     strcpy(node->id, id);
-
+    node->visited = false;
     //Δημιουργούμe tις λίστες από ακμές στις outgoing περνάμε null γιατι όταν διαγράφουμε μία ακμη
     //η ακμή χρείάζεται μόνο μία φορά την συνάρτηση διαγραφής για να μην γίνει double free.Οπότε κάθε φορά που διαγράφουμε μία ακμή
     //μέσω του Origin θα βρίσκουμε την List απο outgoing vetrtex του και θα την καλούμε να διαγράψει την ακμή
@@ -331,4 +332,26 @@ void displayIncomingEdges(char* id, Map map){
         printf("   %s %s %d %s\n",vertex->nodeOrigin->id, vertex->nodeDestination->id, vertex->amount, vertex->dateOfTransaction);
         incomingVertices = listGetNext(incomingVertices);
     }
+}
+
+void findCircles(char* id,Graph graph, Map map){
+    GraphNode node = mapFind(map, id);
+    if(node == NULL){
+        printf("   Non-existing node: %s\n\n", id);
+        return;
+    }
+    else{
+        printf("   find circles %s is involved in if any\n\n", id);
+        GraphNode child = NULL;
+        for(ListNode outgoingVertices = listGetFirst(node->outgoingVertices); outgoingVertices != NULL; outgoingVertices = listGetNext(outgoingVertices)){
+            Vertex vertex = listNodeValue(outgoingVertices);
+            child = vertex->nodeDestination;
+            if(child->visited == true){
+            }
+            else{
+
+            }
+        }
+    }
+
 }

@@ -147,14 +147,11 @@ int main(int argc, char *argv[]){
       if(token == NULL || token2 == NULL || sum == NULL || date == NULL || next != NULL){
         printf("   Format error:\n");
         printf("   Command Name : n Ni Nj amount date or insert2 n Ni Nj sum date\n\n");
-        free(command);
-        free(commandCopy);
-        continue;
       }
       else{
         printf("   introduce an edge with direction from Ni to Nj with label\n   sum + date if either Ni or Nj does not exist in the graph,\n   do the appropriate node insertion first.\n\n");
+        addVertex(graph, date, atoi(sum), token, token2, map);
       }
-      addVertex(graph, date, atoi(sum), token, token2, map);
     }
 
 
@@ -214,20 +211,14 @@ int main(int argc, char *argv[]){
       
         printf("   Format error:\n");
         printf("   Command Name : l Ni Nj or delete2 Ni Nj\n\n");
-        free(command);
-        free(commandCopy);
-        continue;
       }
       else if(findVertex(token, token2, map) == NULL){
         printf("   Edge between %s - %s not found\n\n", token, token2);
-        free(command);
-        free(commandCopy);
-        continue;
       }
       else{
         printf("   remove the edge between Ni and Nj; if there are\n   more than one edges, remove one of the edges.\n\n");
+        removeVertex(token, token2, map);
       }
-      removeVertex(token, token2, map);
     }
 
 
@@ -243,15 +234,9 @@ int main(int argc, char *argv[]){
       if(id1 == NULL || id2 == NULL || sum == NULL || sum2 == NULL || date2 == NULL || date == NULL || next != NULL){
         printf("   Format error:\n");
         printf("   Command Name :m Ni Nj sum sum1 date date1 or modify Ni Nj sum sum1 date date1\n\n");
-        free(command);
-        free(commandCopy);
-        continue;
       }
       else if(modifyVertex(id1, id2, date, atoi(sum), date2, atoi(sum2), map) == 1){
         printf("   Non-existing edge:\n\n" );
-        free(command);
-        free(commandCopy);
-        continue;
       }
       else{
         printf("   update the values of a specific edge between Ni and Nj\n\n");
@@ -266,15 +251,9 @@ int main(int argc, char *argv[]){
       if(token == NULL || next != NULL){
         printf("   Format error:\n");
         printf("   Command Name : f Ni or find Ni\n\n");
-        free(command);
-        free(commandCopy);
-        continue;
       }
       else if(mapFind(map, token) == NULL){
         printf("   Non-existing node %s \n\n", token);
-        free(command);
-        free(commandCopy);
-        continue;
       }
       else{
         printf("   find all outgoing edges from %s\n\n", token);
@@ -290,15 +269,9 @@ int main(int argc, char *argv[]){
       if(token == NULL || next != NULL){
         printf("   Format error:\n");
         printf("   Command Name : r Ni or receiving Ni\n\n");
-        free(command);
-        free(commandCopy);
-        continue;
       }
       else if(mapFind(map, token) == NULL){
         printf("   Non-existing node %s \n\n", token);
-        free(command);
-        free(commandCopy);
-        continue;
       }
       else{
         printf("   find all ingoing edges from %s\n\n", token);
@@ -307,6 +280,23 @@ int main(int argc, char *argv[]){
     }
 
     //--------------------------------------------------------------- 8 --------------------------------------------------------
+    else if(strcmp(token, "c") == 0 || strcmp(token, "circlefind") == 0){
+      token = strtok(NULL, " ");
+      char* next = strtok(NULL, " ");
+      if(token == NULL || next != NULL){
+        printf("   Format error:\n");
+        printf("   Command Name : c Ni or circlefind Ni\n\n");
+      }
+      else if(mapFind(map, token) == NULL){
+        printf("   Non-existing node %s \n\n", token);
+      }
+      else{
+        printf("   find all circles that contain node %s\n\n", token);
+        
+      }
+    }
+
+    //--------------------------------------------------------------- 13 --------------------------------------------------------
     else if(strcmp(token, "e") == 0 || strcmp(token, "exit") == 0){
       printf("terminate the program.\n");
       exit = true;

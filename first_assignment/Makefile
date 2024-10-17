@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -Wall
+CFLAGS = -Wall -I ./include
 OBJS = List.o Graph.o miris.o hash.o
 EXEC = miris
 

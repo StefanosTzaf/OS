@@ -46,3 +46,5 @@ void printToFile(Graph graph, FILE* file);
 
 void displayOutgoingEdges(char* id, Map map);
 void displayIncomingEdges(char* id, Map map);
+
+void findCircles(char* id,Graph graph, Map map);
