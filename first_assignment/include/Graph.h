@@ -46,5 +46,9 @@ void printToFile(Graph graph, FILE* file);
 void displayOutgoingEdges(char* id, Map map);
 void displayIncomingEdges(char* id, Map map);
 
-void findCircles(char* id,Graph graph, Map map);
-void findCirclesUtil(GraphNode node, GraphNode startNode, List list);
+void findCircles(char* id,Graph graph, Map map, int minSum, bool flag);
+void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list);
+
+
+
+void dfsPrintingCircles2(GraphNode node, GraphNode startNode, List list, int minSum);

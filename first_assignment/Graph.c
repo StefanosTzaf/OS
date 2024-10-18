@@ -321,6 +321,8 @@ void displayOutgoingEdges(char* id, Map map){
         outgoingVertices = listGetNext(outgoingVertices);
     }
 }
+
+
 void displayIncomingEdges(char* id, Map map){
     GraphNode node = mapFind(map, id);
     if(node == NULL){
@@ -334,8 +336,8 @@ void displayIncomingEdges(char* id, Map map){
     }
 }
 
-
-void findCircles(char* id, Graph graph, Map map) {
+//αν το flag είναι 0 θέλουμε να βρούμε απλούς κύκλους αλλιώς σημαίνει οτι κλήθηκε για κύκλους με συνολικό ποσό
+void findCircles(char* id, Graph graph, Map map, int minSum, bool flag) {
     GraphNode startNode = mapFind(map, id);
     if (startNode == NULL) {
         printf("   Non-existing node: %s\n\n", id);
@@ -343,50 +345,77 @@ void findCircles(char* id, Graph graph, Map map) {
     }
 
     List list = listCreate(NULL, compareGraphNodes);
-
-    findCirclesUtil(startNode, startNode, list);
-
+    //8
+    if(!flag){
+        dfsPrintingCircles(startNode, startNode, list);
+        printf("\n");
+        for(ListNode ougoingVertices = listGetFirst(startNode->outgoingVertices); ougoingVertices != NULL; ougoingVertices = listGetNext(ougoingVertices)){
+            Vertex vertex = listNodeValue(ougoingVertices);
+            GraphNode child = vertex->nodeDestination;
+            dfsPrintingCircles(child, child, list);
+            printf("\n");
+        }
+    }
+    //9
+    else{
+        dfsPrintingCircles2(startNode, startNode, list, minSum);
+        printf("\n");
+        for(ListNode ougoingVertices = listGetFirst(startNode->outgoingVertices); ougoingVertices != NULL; ougoingVertices = listGetNext(ougoingVertices)){
+            Vertex vertex = listNodeValue(ougoingVertices);
+            GraphNode child = vertex->nodeDestination;
+            dfsPrintingCircles2(child, child, list, minSum);
+            printf("\n");
+        }
+    }
     listDestroy(list);
 }
 
 
-void findCirclesUtil(GraphNode node, GraphNode startNode, List list) {
+void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list) {
 
     node->visited = true;
+    //Αν δεν έχει καμία ακμή τότε δεν υπάρχει κύκλος
     if(node->outgoingVertices == NULL){
         return;
     }
     listInsert(list, node);
     bool foundCircle = false;   
-
+    //για κάθε εξερχόμενη ακμή
     for (ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
         outgoingVertices != NULL; outgoingVertices = listGetNext(outgoingVertices)){
 
         Vertex vertex = listNodeValue(outgoingVertices);
         GraphNode child = vertex->nodeDestination;
 
+        //Αν ο κόμβος είναι που ξεκινάμε είναι ίδιος με τον κόμβο που έχουμε φτάσει τότε έχει βρεθεί κύκλος
         if (child->id == startNode->id) {
+            printf("   ");
             foundCircle = true;
             listInsert(list, child);
-            printf("Circle found: \n");
             ListNode circleNode = listGetFirst(list);
-
+    	    //Εκτύπωση του κύκλου
             while (circleNode != NULL) {
                 GraphNode node = listNodeValue(circleNode);
-                printf("%s -> ", node->id);
+                printf("%s ", node->id);
                 circleNode = listGetNext(circleNode);
+                if(circleNode != NULL){
+                    printf("-> ");
+                }
             }
 
             printf("\n");
+            //αφαιρούμε τον κόμβο θέλουμε μόνο απλους κυκλους , ανσυνέχιζε θα εβρισκε και κύκλους της μορφής
+            //2->3->4->2->6->2
             listRemoveLast(list);
         } 
         
         else if (!child->visited) {
-            findCirclesUtil(child, startNode, list);
+            //Αν δεν έχει επισκεφτεί τον κόμβο τότε εμβαθύνουμε στο παιδί
+            dfsPrintingCircles(child, startNode, list);
         }
 
-        //Αν ο κόμβος είναι ο ίδιος με τον αρχικό KAI έχει βρεθεί κύκλος ()δηλαδή δεν είμαστε στον αρχικό κόμβο
-        // γιατι από εκεί ξεκινάμε αλλα γιατί έχουμε ξαναφτάσει τότε σταματάμε(θέλουμε απλούς κυκλους)
+        //Αν ο κόμβος είναι ο ίδιος με τον αρχικό KAI έχει βρεθεί κύκλος ,δηλαδή δεν είμαστε στον αρχικό κόμβο
+        // γιατι από εκεί ξεκινάμε αλλα γιατί έχουμε ξαναφτάσει, τότε σταματάμε(θέλουμε απλούς κυκλους)
         if(node->id == startNode->id && foundCircle){
             break;
         }
@@ -394,4 +423,8 @@ void findCirclesUtil(GraphNode node, GraphNode startNode, List list) {
 
     node->visited = false;
     listDeleteNode(list, node);
+}
+
+void dfsPrintingCircles2(GraphNode node, GraphNode startNode, List list, int minSum){
+    
 }

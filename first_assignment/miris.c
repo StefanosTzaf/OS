@@ -301,12 +301,32 @@ int main(int argc, char *argv[]){
       }
       else{
         printf("   find all circles that contain node %s\n\n", token);
-        findCircles(token, graph, map);
+        //Απλους κύκλους χωρίς ελάχιστο ποσό
+        findCircles(token, graph, map, 0, 0);
         
       }
     }
 
-    //--------------------------------------------------------------- 13 --------------------------------------------------------
+    //--------------------------------------------------------------- 9 --------------------------------------------------------
+    
+    else if(strcmp(token, "fi") == 0 || strcmp(token, "findcircles") == 0){
+      token = strtok(NULL, " ");
+      char* sum = strtok(NULL, " ");
+      char* next = strtok(NULL, " ");
+      if(token == NULL || sum == NULL || next != NULL){
+        printf("   Format error:\n");
+        printf("   Command Name : c Ni k or circlefind Ni k\n\n");
+      }
+      else if(mapFind(map, token) == NULL){
+        printf("   Non-existing node %s \n\n", token);
+      }
+      else{
+        printf("   find circular relationships in which %s is involved and moves at least k units of funds.", token);
+        findCircles(token, graph, map, atoi(sum), 1);
+      }
+    }
+
+    //--------------------------------------------------------------- 12 --------------------------------------------------------
     else if(strcmp(token, "e") == 0 || strcmp(token, "exit") == 0){
       printf("terminate the program.\n");
       exit = true;
@@ -323,8 +343,6 @@ int main(int argc, char *argv[]){
     free(commandCopy);
   }
   while(!exit);
-
-
 
 
 
