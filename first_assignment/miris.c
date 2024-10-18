@@ -11,7 +11,10 @@ int main(int argc, char *argv[]){
   char* inputFile = NULL;
   char* outputFile = NULL;
 
-
+  if(argc < 5){
+    fprintf(stderr, "Error : run with format -i inputfile -o outputfile\n");
+    return 1;
+  }
   while((option = getopt(argc, argv, "i:o:")) != -1){
     if(option == 'i'){
       inputFile = optarg;
@@ -78,6 +81,12 @@ int main(int argc, char *argv[]){
       command[size++] = ch;
     }
     command[size] = '\0';
+    
+    //αν πατηθεί enter χωρίς να γραφτεί τίποτα
+    if(strcmp(command, "") == 0){
+      free(command);
+      continue;
+    }
 
     //αντιγραφή της συμβολοσειράς γιατί θα χρειαστεί για 2η strtok βλ. insert
     char* commandCopy;
@@ -99,7 +108,6 @@ int main(int argc, char *argv[]){
         free(commandCopy);
         continue;
       }
-      printf("   insert into the graph structure 1 or more nodes\n   with specific STRING ids.\n\n");
 
       //έλεγχος αν υπάρχει κάποιος κόμβος με αυτό το id
       bool exists = false;
@@ -122,6 +130,7 @@ int main(int argc, char *argv[]){
       //για να είμαστε σίγουροι οτι το περιεχόμενο της είναι ίδιο με την αρχική
       //και να μπορέσουμε χωρίς λάθη να διασχίσουμε την συμβολοσειερά απο την αρχή)
 
+      printf("   insert into the graph structure 1 or more nodes\n   with specific STRING ids.\n\n");
       token = strtok(commandCopy, " ");
       token = strtok(NULL, " ");
 
@@ -292,6 +301,7 @@ int main(int argc, char *argv[]){
       }
       else{
         printf("   find all circles that contain node %s\n\n", token);
+        findCircles(token, graph, map);
         
       }
     }
@@ -313,10 +323,6 @@ int main(int argc, char *argv[]){
     free(commandCopy);
   }
   while(!exit);
-
-
-
-
 
 
 

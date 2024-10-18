@@ -334,24 +334,64 @@ void displayIncomingEdges(char* id, Map map){
     }
 }
 
-void findCircles(char* id,Graph graph, Map map){
-    GraphNode node = mapFind(map, id);
-    if(node == NULL){
+
+void findCircles(char* id, Graph graph, Map map) {
+    GraphNode startNode = mapFind(map, id);
+    if (startNode == NULL) {
         printf("   Non-existing node: %s\n\n", id);
         return;
     }
-    else{
-        printf("   find circles %s is involved in if any\n\n", id);
-        GraphNode child = NULL;
-        for(ListNode outgoingVertices = listGetFirst(node->outgoingVertices); outgoingVertices != NULL; outgoingVertices = listGetNext(outgoingVertices)){
-            Vertex vertex = listNodeValue(outgoingVertices);
-            child = vertex->nodeDestination;
-            if(child->visited == true){
-            }
-            else{
 
+    List list = listCreate(NULL, compareGraphNodes);
+
+    findCirclesUtil(startNode, startNode, list);
+
+    listDestroy(list);
+}
+
+
+void findCirclesUtil(GraphNode node, GraphNode startNode, List list) {
+
+    node->visited = true;
+    if(node->outgoingVertices == NULL){
+        return;
+    }
+    listInsert(list, node);
+    bool foundCircle = false;   
+
+    for (ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
+        outgoingVertices != NULL; outgoingVertices = listGetNext(outgoingVertices)){
+
+        Vertex vertex = listNodeValue(outgoingVertices);
+        GraphNode child = vertex->nodeDestination;
+
+        if (child->id == startNode->id) {
+            foundCircle = true;
+            listInsert(list, child);
+            printf("Circle found: \n");
+            ListNode circleNode = listGetFirst(list);
+
+            while (circleNode != NULL) {
+                GraphNode node = listNodeValue(circleNode);
+                printf("%s -> ", node->id);
+                circleNode = listGetNext(circleNode);
             }
+
+            printf("\n");
+            listRemoveLast(list);
+        } 
+        
+        else if (!child->visited) {
+            findCirclesUtil(child, startNode, list);
+        }
+
+        //Αν ο κόμβος είναι ο ίδιος με τον αρχικό KAI έχει βρεθεί κύκλος ()δηλαδή δεν είμαστε στον αρχικό κόμβο
+        // γιατι από εκεί ξεκινάμε αλλα γιατί έχουμε ξαναφτάσει τότε σταματάμε(θέλουμε απλούς κυκλους)
+        if(node->id == startNode->id && foundCircle){
+            break;
         }
     }
 
+    node->visited = false;
+    listDeleteNode(list, node);
 }

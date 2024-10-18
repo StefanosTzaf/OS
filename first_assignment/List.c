@@ -152,3 +152,24 @@ int listSize(List list){
 void listSetDestroyValue(List list, DestroyFunc destroyValue){
 	list->destroyValue = destroyValue;
 }
+
+void listRemoveLast(List list){
+	ListNode last = list->last;
+	if(last == NULL){
+		return;
+	}
+	ListNode previous = last->prev;
+	//Αν η λίστα έχει μόνο έναν κόμβο
+	if(previous == NULL){
+		list->head = NULL;
+	}
+	else{
+		previous->next = NULL;
+	}
+	list->last = previous;
+	list->size--;
+	if(list->destroyValue != NULL){
+		list->destroyValue(last->value);
+	}
+	free(last);
+}

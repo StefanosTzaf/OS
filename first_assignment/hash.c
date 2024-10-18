@@ -22,7 +22,7 @@ struct map {
 Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile) {
 
 	Map map = malloc(sizeof(*map));
-	map->capacity = sizeByFile * 2; //Διπλασιάζουμε το μέγεθος του πίνακα για να μην έχουμε πολλά collisions
+	map->capacity = sizeByFile * 3 + 7;
 	map->arrayOfBuckets = malloc(sizeof(List) * map->capacity);
 	map->destroyMapNodes = destroy;
 	map->compareMapNodes = compare;

@@ -1,5 +1,4 @@
 #include "hash.h"
-
 typedef struct graph* Graph;
 typedef struct graph_node* GraphNode;
 typedef struct vertex* Vertex;
@@ -48,3 +47,4 @@ void displayOutgoingEdges(char* id, Map map);
 void displayIncomingEdges(char* id, Map map);
 
 void findCircles(char* id,Graph graph, Map map);
+void findCirclesUtil(GraphNode node, GraphNode startNode, List list);
