@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 typedef void* Pointer;
-//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχει pointer σε στοιχεία τύπου void(είτε Graphnode είτε vertex)
+//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχει pointer σε στοιχεία τύπου void(είτε Graphnode είτε edge)
 typedef struct list* List;
 typedef struct list_node* ListNode;
 

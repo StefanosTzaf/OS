@@ -9,15 +9,15 @@ struct graph{
 
 struct graph_node{
     char* id;
-    //Λιστα απο vertex η οποία έχει ακμές που ξεκιναν απο αυτόν τον κόμβο και καταλήγουν σε αλλον κόμβο
+    //Λιστα απο edge η οποία έχει ακμές που ξεκιναν απο αυτόν τον κόμβο και καταλήγουν σε αλλον κόμβο
     List outgoingVertices;
-    //Λίστα από vertex που έχουν ακμές που καταλήγουν σε αυτόν τον κόμβο
+    //Λίστα από edge που έχουν ακμές που καταλήγουν σε αυτόν τον κόμβο
     List incomingVertices;
     bool visited;
 };
 
 //μία ακμή αποτελείται από την ημερομηνία της συναλλαγής, το ποσό της συναλλαγής, δείκτες στον κόμβο προορισμού και αφετηρίας
-struct vertex{
+struct edge{
     char* dateOfTransaction;
     int amount;
     GraphNode nodeDestination;
@@ -39,10 +39,10 @@ int compareGraphNodes(Pointer a, Pointer b){
 }
 
 
-int compareVertices(Pointer a, Pointer b){
-    Vertex vertex1 = a;
-    Vertex vertex2 = b;
-    if(vertex1->nodeDestination->id == vertex2->nodeDestination->id && vertex1->nodeOrigin->id == vertex2->nodeOrigin->id){
+int compareEdges(Pointer a, Pointer b){
+    Edge edge1 = a;
+    Edge edge2 = b;
+    if(edge1->nodeDestination->id == edge2->nodeDestination->id && edge1->nodeOrigin->id == edge2->nodeOrigin->id){
         return 0;
     }
     return 1;
@@ -68,7 +68,7 @@ void destroyGraphListNode(Pointer nodeToDelete){
     //αντίστοιχα ολες τις ouygoing vertices αλλα λαι απο τις incoming vertices του προορισμού
 
     //!!Εδώ φαίνεται η αξία της generic υλοποίησης εμείς απλά καλούμε την list destroy καια αυτη με τη σειρά της όταν πάει να διαγράψει κάθε κόμβο
-    ///άρα κάθε vertex θα καλέσει την destroyIncomingVertex που κάνει ότι ακριβώς περιγράφεται παραπάνω!!
+    ///άρα κάθε edge θα καλέσει την destroyIncomingEdge που κάνει ότι ακριβώς περιγράφεται παραπάνω!!
 
     listDestroy(node->incomingVertices);
     listDestroy(node->outgoingVertices);
@@ -80,24 +80,24 @@ void destroyGraphListNode(Pointer nodeToDelete){
 
 
 //όταν θ΄έλουμε να αφαιρέσουμε μία ακμή :
-void destroyVertex(Pointer vertexToDelete){
-    Vertex vertex = vertexToDelete;
-    GraphNode nodeDestination = vertex->nodeDestination;
-    GraphNode nodeOrigin = vertex->nodeOrigin;
+void destroyEdge(Pointer edgeToDelete){
+    Edge edge = edgeToDelete;
+    GraphNode nodeDestination = edge->nodeDestination;
+    GraphNode nodeOrigin = edge->nodeOrigin;
 
     if(nodeDestination->incomingVertices != NULL){
         listSetDestroyValue(nodeDestination->incomingVertices, NULL);
-        listDeleteNode(nodeDestination->incomingVertices, vertexToDelete);
-        listSetDestroyValue(nodeDestination->incomingVertices, destroyVertex);
+        listDeleteNode(nodeDestination->incomingVertices, edgeToDelete);
+        listSetDestroyValue(nodeDestination->incomingVertices, destroyEdge);
     }
 
     if(nodeOrigin->outgoingVertices != NULL){
         listSetDestroyValue(nodeOrigin->outgoingVertices, NULL);
-        listDeleteNode(nodeOrigin->outgoingVertices, vertexToDelete);
-        listSetDestroyValue(nodeOrigin->outgoingVertices, destroyVertex);
+        listDeleteNode(nodeOrigin->outgoingVertices, edgeToDelete);
+        listSetDestroyValue(nodeOrigin->outgoingVertices, destroyEdge);
     }
-    free(vertex->dateOfTransaction);
-    free(vertex);
+    free(edge->dateOfTransaction);
+    free(edge);
 
 }
 
@@ -126,8 +126,8 @@ void graphAddNode(Graph graph, char* id, Map map){
     //Δημιουργούμe tις λίστες από ακμές στις outgoing περνάμε null γιατι όταν διαγράφουμε μία ακμη
     //η ακμή χρείάζεται μόνο μία φορά την συνάρτηση διαγραφής για να μην γίνει double free.Οπότε κάθε φορά που διαγράφουμε μία ακμή
     //μέσω του Origin θα βρίσκουμε την List απο outgoing vetrtex του και θα την καλούμε να διαγράψει την ακμή
-    node->incomingVertices = listCreate(destroyVertex, compareVertices);
-    node->outgoingVertices = listCreate(destroyVertex, compareVertices);
+    node->incomingVertices = listCreate(destroyEdge, compareEdges);
+    node->outgoingVertices = listCreate(destroyEdge, compareEdges);
 
     //Προσθέτω τον κόμβο στην λίστα από κόμβους
     listInsert(graph->nodes, node);
@@ -137,7 +137,7 @@ void graphAddNode(Graph graph, char* id, Map map){
 
 }
 
-void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char* id2, Map map){
+void addEdge(Graph graph, char* dateOfTransaction, int amount, char* id1, char* id2, Map map){
     //Ψάχνω τον κόμβο με id1, μου επιστρέφει Graphnode*
     GraphNode node1 = mapFind(map, id1);
     GraphNode node2 = mapFind(map, id2);
@@ -153,18 +153,18 @@ void addVertex(Graph graph, char* dateOfTransaction, int amount, char* id1, char
         node2 = mapFind(map, id2);
     }
     //Δημιουργώ έναν κόμβο με την ημερομηνία dateOfTransaction
-    Vertex vertex = malloc(sizeof(*vertex));
-    vertex->dateOfTransaction = malloc(strlen(dateOfTransaction) + 1);
-    strcpy(vertex->dateOfTransaction, dateOfTransaction);
-    vertex->amount = amount;
-    vertex->nodeDestination = node2;
-    vertex->nodeOrigin = node1;
+    Edge edge = malloc(sizeof(*edge));
+    edge->dateOfTransaction = malloc(strlen(dateOfTransaction) + 1);
+    strcpy(edge->dateOfTransaction, dateOfTransaction);
+    edge->amount = amount;
+    edge->nodeDestination = node2;
+    edge->nodeOrigin = node1;
     
     
     //Προσθέτω τον κόμβο στην λίστα από outgoing Vertices του κόμβου node1
-    listInsert(node1->outgoingVertices, vertex);
+    listInsert(node1->outgoingVertices, edge);
     //Προσθέτω τον κόμβο στην λίστα από incoming Vertices του κόμβου node2
-    listInsert(node2->incomingVertices, vertex);
+    listInsert(node2->incomingVertices, edge);
 }
 
 
@@ -182,20 +182,20 @@ void removeGraphNode(char* id, Map map, Graph graph){
 }
 
 
-void removeVertex(char* id1, char* id2, Map map){
+void removeEdge(char* id1, char* id2, Map map){
 
-    Vertex vertexToRemove = findVertex(id1, id2, map);
+    Edge edgeToRemove = findEdge(id1, id2, map);
 
-    if(vertexToRemove != NULL){
+    if(edgeToRemove != NULL){
 
-        destroyVertex(vertexToRemove);
+        destroyEdge(edgeToRemove);
     }
 
 }
 
 
-bool modifyVertex(char* id1, char* id2, char* date, int amount,char* date2, int amount2, Map map){
-    //η find vertex δεν μπορεί να μας βοηθήσει αυτή την στιγμή γιατί συγκρίνει βάση μόνο των Ids
+bool modifyEdge(char* id1, char* id2, char* date, int amount,char* date2, int amount2, Map map){
+    //η find edge δεν μπορεί να μας βοηθήσει αυτή την στιγμή γιατί συγκρίνει βάση μόνο των Ids
     GraphNode origin = mapFind(map, id1);
     GraphNode destination = mapFind(map, id2);
     if(origin == NULL || destination == NULL){
@@ -204,15 +204,15 @@ bool modifyVertex(char* id1, char* id2, char* date, int amount,char* date2, int 
     //προσπέλαση μόνο του outgoing list του origin(ψάχνουμε μόνο ακμή από το id1->id2)
     for(ListNode node = listGetFirst(origin->outgoingVertices); node != NULL; node = listGetNext(node)){
         
-        Vertex vertex = listNodeValue(node);
-        if(strcmp(vertex->nodeDestination->id, destination->id) == 0
-            && strcmp(vertex->dateOfTransaction, date) == 0 
-            && vertex->amount == amount){
+        Edge edge = listNodeValue(node);
+        if(strcmp(edge->nodeDestination->id, destination->id) == 0
+            && strcmp(edge->dateOfTransaction, date) == 0 
+            && edge->amount == amount){
             
-            free(vertex->dateOfTransaction);
-            vertex->dateOfTransaction = malloc(strlen(date2) + 1);
-            strcpy(vertex->dateOfTransaction, date2);
-            vertex->amount = amount2;
+            free(edge->dateOfTransaction);
+            edge->dateOfTransaction = malloc(strlen(date2) + 1);
+            strcpy(edge->dateOfTransaction, date2);
+            edge->amount = amount2;
             return 0;
         }
     }
@@ -221,13 +221,13 @@ bool modifyVertex(char* id1, char* id2, char* date, int amount,char* date2, int 
 
 
 
-Vertex findVertex(char* id1,char* id2, Map map){
+Edge findEdge(char* id1,char* id2, Map map){
     GraphNode node1 = mapFind(map, id1);
     GraphNode node2 = mapFind(map, id2);
     if(node1 == NULL || node2 == NULL){
         return NULL;
     }
-    Vertex temp = malloc(sizeof(*temp));
+    Edge temp = malloc(sizeof(*temp));
     temp->nodeDestination = node2;
     temp->nodeOrigin = node1;
 
@@ -254,9 +254,9 @@ void displayGraph(Graph graph, Map map){
         ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
         printf("                         Outgoing Vertices:\n");
         while(outgoingVertices != NULL){
-            Vertex vertex = listNodeValue(outgoingVertices);
-            printf("     Date of transaction: %s - Ammount of Transaction : %d$\n", vertex->dateOfTransaction, vertex->amount);
-            printf("     Destination node: %s\n", ((vertex->nodeDestination)) -> id);
+            Edge edge = listNodeValue(outgoingVertices);
+            printf("     Date of transaction: %s - Ammount of Transaction : %d$\n", edge->dateOfTransaction, edge->amount);
+            printf("     Destination node: %s\n", ((edge->nodeDestination)) -> id);
             outgoingVertices = listGetNext(outgoingVertices);
         }
 
@@ -264,9 +264,9 @@ void displayGraph(Graph graph, Map map){
         ListNode incomingVertices = listGetFirst(node->incomingVertices);
         printf("\n                         Incoming Vertices:\n");
         while(incomingVertices != NULL){
-            Vertex vertex = listNodeValue(incomingVertices);
-            printf("     Date of transaction: %s - Amount of Transaction : %d$\n", vertex->dateOfTransaction, vertex->amount);
-            printf("     Origin node: %s\n", ((vertex->nodeOrigin)) -> id);
+            Edge edge = listNodeValue(incomingVertices);
+            printf("     Date of transaction: %s - Amount of Transaction : %d$\n", edge->dateOfTransaction, edge->amount);
+            printf("     Origin node: %s\n", ((edge->nodeOrigin)) -> id);
             incomingVertices = listGetNext(incomingVertices);
         }
     printf("\n\n");
@@ -290,11 +290,11 @@ void printToFile(Graph graph, FILE* file){
         ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
 
         while(outgoingVertices != NULL){
-            Vertex vertex = listNodeValue(outgoingVertices);
-            fprintf(file,"%s ", vertex->nodeOrigin->id);
-            fprintf(file,"%s ", vertex->nodeDestination->id);
-            fprintf(file, "%d ", vertex->amount);
-            fprintf(file, "%s\n", vertex->dateOfTransaction);
+            Edge edge = listNodeValue(outgoingVertices);
+            fprintf(file,"%s ", edge->nodeOrigin->id);
+            fprintf(file,"%s ", edge->nodeDestination->id);
+            fprintf(file, "%d ", edge->amount);
+            fprintf(file, "%s\n", edge->dateOfTransaction);
 
             outgoingVertices = listGetNext(outgoingVertices);
         }
@@ -316,8 +316,8 @@ void displayOutgoingEdges(char* id, Map map){
     }
     ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
     while(outgoingVertices != NULL){
-        Vertex vertex = listNodeValue(outgoingVertices);
-        printf("   %s %s %d %s\n",vertex->nodeOrigin->id, vertex->nodeDestination->id, vertex->amount, vertex->dateOfTransaction);
+        Edge edge = listNodeValue(outgoingVertices);
+        printf("   %s %s %d %s\n",edge->nodeOrigin->id, edge->nodeDestination->id, edge->amount, edge->dateOfTransaction);
         outgoingVertices = listGetNext(outgoingVertices);
     }
 }
@@ -330,8 +330,8 @@ void displayIncomingEdges(char* id, Map map){
     }
     ListNode incomingVertices = listGetFirst(node->incomingVertices);
     while(incomingVertices != NULL){
-        Vertex vertex = listNodeValue(incomingVertices);
-        printf("   %s %s %d %s\n",vertex->nodeOrigin->id, vertex->nodeDestination->id, vertex->amount, vertex->dateOfTransaction);
+        Edge edge = listNodeValue(incomingVertices);
+        printf("   %s %s %d %s\n",edge->nodeOrigin->id, edge->nodeDestination->id, edge->amount, edge->dateOfTransaction);
         incomingVertices = listGetNext(incomingVertices);
     }
 }
@@ -350,8 +350,8 @@ void findCircles(char* id, Graph graph, Map map, int minSum, bool flag) {
         dfsPrintingCircles(startNode, startNode, list);
         printf("\n");
         for(ListNode ougoingVertices = listGetFirst(startNode->outgoingVertices); ougoingVertices != NULL; ougoingVertices = listGetNext(ougoingVertices)){
-            Vertex vertex = listNodeValue(ougoingVertices);
-            GraphNode child = vertex->nodeDestination;
+            Edge edge = listNodeValue(ougoingVertices);
+            GraphNode child = edge->nodeDestination;
             dfsPrintingCircles(child, child, list);
             printf("\n");
         }
@@ -361,8 +361,8 @@ void findCircles(char* id, Graph graph, Map map, int minSum, bool flag) {
         dfsPrintingCircles2(startNode, startNode, list, minSum);
         printf("\n");
         for(ListNode ougoingVertices = listGetFirst(startNode->outgoingVertices); ougoingVertices != NULL; ougoingVertices = listGetNext(ougoingVertices)){
-            Vertex vertex = listNodeValue(ougoingVertices);
-            GraphNode child = vertex->nodeDestination;
+            Edge edge = listNodeValue(ougoingVertices);
+            GraphNode child = edge->nodeDestination;
             dfsPrintingCircles2(child, child, list, minSum);
             printf("\n");
         }
@@ -384,8 +384,8 @@ void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list) {
     for (ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
         outgoingVertices != NULL; outgoingVertices = listGetNext(outgoingVertices)){
 
-        Vertex vertex = listNodeValue(outgoingVertices);
-        GraphNode child = vertex->nodeDestination;
+        Edge edge = listNodeValue(outgoingVertices);
+        GraphNode child = edge->nodeDestination;
 
         //Αν ο κόμβος είναι που ξεκινάμε είναι ίδιος με τον κόμβο που έχουμε φτάσει τότε έχει βρεθεί κύκλος
         if (child->id == startNode->id) {

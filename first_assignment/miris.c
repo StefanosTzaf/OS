@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
     id2 = strtok(NULL, " ");
     amount = atoi(strtok(NULL, " "));
     date = strtok(NULL, "\n");
-    addVertex(graph, date, amount, id1, id2, map);
+    addEdge(graph, date, amount, id1, id2, map);
   }
   fclose(file);
 
@@ -159,7 +159,7 @@ int main(int argc, char *argv[]){
       }
       else{
         printf("   introduce an edge with direction from Ni to Nj with label\n   sum + date if either Ni or Nj does not exist in the graph,\n   do the appropriate node insertion first.\n\n");
-        addVertex(graph, date, atoi(sum), token, token2, map);
+        addEdge(graph, date, atoi(sum), token, token2, map);
       }
     }
 
@@ -221,12 +221,12 @@ int main(int argc, char *argv[]){
         printf("   Format error:\n");
         printf("   Command Name : l Ni Nj or delete2 Ni Nj\n\n");
       }
-      else if(findVertex(token, token2, map) == NULL){
+      else if(findEdge(token, token2, map) == NULL){
         printf("   Edge between %s - %s not found\n\n", token, token2);
       }
       else{
         printf("   remove the edge between Ni and Nj; if there are\n   more than one edges, remove one of the edges.\n\n");
-        removeVertex(token, token2, map);
+        removeEdge(token, token2, map);
       }
     }
 
@@ -244,7 +244,7 @@ int main(int argc, char *argv[]){
         printf("   Format error:\n");
         printf("   Command Name :m Ni Nj sum sum1 date date1 or modify Ni Nj sum sum1 date date1\n\n");
       }
-      else if(modifyVertex(id1, id2, date, atoi(sum), date2, atoi(sum2), map) == 1){
+      else if(modifyEdge(id1, id2, date, atoi(sum), date2, atoi(sum2), map) == 1){
         printf("   Non-existing edge:\n\n" );
       }
       else{
