@@ -321,9 +321,32 @@ int main(int argc, char *argv[]){
         printf("   Non-existing node %s \n\n", token);
       }
       else{
-        printf("   find circular relationships in which %s is involved and moves at least k units of funds.", token);
+        printf("   find circular relationships in which %s is involved and moves at least k units of funds.\n", token);
         findCircles(token, graph, map, atoi(sum), 1);
       }
+    }
+
+
+    //--------------------------------------------------------------- 11 --------------------------------------------------------
+    else if(strcmp(token, "o") == 0 || strcmp(token, "connected") == 0){
+      token = strtok(NULL, " ");
+      char* id2 = strtok(NULL, " ");
+      char* next = strtok(NULL, " ");
+      if(token == NULL || id2 == NULL || next != NULL){
+        printf("   Format error:\n");
+        printf("   Command Name : o Ni Nj or connected Ni Nj\n\n");
+      }
+      else if(mapFind(map, token) == NULL){
+        printf("   Non-existing node %s \n\n", token);
+      }
+      else if(mapFind(map, id2) == NULL){
+        printf("   Non-existing node %s \n\n", id2);
+      }
+      else{
+        findPath(graph, token, id2, map);
+      }
+      
+
     }
 
     //--------------------------------------------------------------- 12 --------------------------------------------------------

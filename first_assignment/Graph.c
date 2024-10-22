@@ -347,31 +347,19 @@ void findCircles(char* id, Graph graph, Map map, int minSum, bool flag) {
     List list = listCreate(NULL, compareGraphNodes);
     //8
     if(!flag){
-        dfsPrintingCircles(startNode, startNode, list);
+        dfsPrintingCircles(startNode, startNode, list, minSum);
         printf("\n");
-        for(ListNode ougoingVertices = listGetFirst(startNode->outgoingVertices); ougoingVertices != NULL; ougoingVertices = listGetNext(ougoingVertices)){
-            Edge edge = listNodeValue(ougoingVertices);
-            GraphNode child = edge->nodeDestination;
-            dfsPrintingCircles(child, child, list);
-            printf("\n");
-        }
     }
     //9
     else{
-        dfsPrintingCircles2(startNode, startNode, list, minSum);
+        dfsPrintingCircles(startNode, startNode, list, minSum);
         printf("\n");
-        for(ListNode ougoingVertices = listGetFirst(startNode->outgoingVertices); ougoingVertices != NULL; ougoingVertices = listGetNext(ougoingVertices)){
-            Edge edge = listNodeValue(ougoingVertices);
-            GraphNode child = edge->nodeDestination;
-            dfsPrintingCircles2(child, child, list, minSum);
-            printf("\n");
-        }
     }
     listDestroy(list);
 }
 
 
-void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list) {
+void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list, int minSum) {
 
     node->visited = true;
     //Αν δεν έχει καμία ακμή τότε δεν υπάρχει κύκλος
@@ -385,18 +373,23 @@ void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list) {
         outgoingVertices != NULL; outgoingVertices = listGetNext(outgoingVertices)){
 
         Edge edge = listNodeValue(outgoingVertices);
+        //για τους κύκλους μεγαλύτερους από ένα συγκεκριμένο ποσό, αν η διαδρομή που ψάχνουμε κ
+        //έχει ακμή μικρότερη από αυτόν τον αριθμό , συνεχίζουμε με την επόμενη
+        if(edge->amount < minSum){
+            continue;
+        }
         GraphNode child = edge->nodeDestination;
 
         //Αν ο κόμβος είναι που ξεκινάμε είναι ίδιος με τον κόμβο που έχουμε φτάσει τότε έχει βρεθεί κύκλος
-        if (child->id == startNode->id) {
+        if (strcmp(child->id, startNode->id) == 0) {
             printf("   ");
             foundCircle = true;
             listInsert(list, child);
             ListNode circleNode = listGetFirst(list);
     	    //Εκτύπωση του κύκλου
             while (circleNode != NULL) {
-                GraphNode node = listNodeValue(circleNode);
-                printf("%s ", node->id);
+                GraphNode node1 = listNodeValue(circleNode);
+                printf("%s ", node1->id);
                 circleNode = listGetNext(circleNode);
                 if(circleNode != NULL){
                     printf("-> ");
@@ -411,12 +404,12 @@ void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list) {
         
         else if (!child->visited) {
             //Αν δεν έχει επισκεφτεί τον κόμβο τότε εμβαθύνουμε στο παιδί
-            dfsPrintingCircles(child, startNode, list);
+            dfsPrintingCircles(child, startNode, list, minSum);
         }
 
         //Αν ο κόμβος είναι ο ίδιος με τον αρχικό KAI έχει βρεθεί κύκλος ,δηλαδή δεν είμαστε στον αρχικό κόμβο
         // γιατι από εκεί ξεκινάμε αλλα γιατί έχουμε ξαναφτάσει, τότε σταματάμε(θέλουμε απλούς κυκλους)
-        if(node->id == startNode->id && foundCircle){
+        if((strcmp(node->id, startNode->id) == 0 )&& foundCircle){
             break;
         }
     }
@@ -425,6 +418,65 @@ void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list) {
     listDeleteNode(list, node);
 }
 
-void dfsPrintingCircles2(GraphNode node, GraphNode startNode, List list, int minSum){
+void findPath(Graph graph, char* id1, char* id2, Map map){
+    GraphNode node1 = mapFind(map, id1);
+
+    List list = listCreate(NULL, compareGraphNodes);
+    bool* found;
+    found = malloc(sizeof(bool));
+    *found = false;
+    dfsPath(node1, id2, list, map, found);
+    if(!(*found)){
+        printf("   No path found\n");
+    }
+    free(found);
+    listDestroy(list);
     
+}
+
+void dfsPath(GraphNode node, char* destination, List list, Map map, bool* found){
+    node->visited = true;
+    //Αν δεν έχει καμία ακμή τότε δεν υπάρχει μονοπάτι
+    if(node->outgoingVertices == NULL){
+        return;
+    }
+    listInsert(list, node);  
+    //για κάθε εξερχόμενη ακμή
+    for (ListNode outgoingVertices = listGetFirst(node->outgoingVertices);
+        outgoingVertices != NULL; outgoingVertices = listGetNext(outgoingVertices)){
+
+        Edge edge = listNodeValue(outgoingVertices);
+        GraphNode child = edge->nodeDestination;
+
+        //Αν ο κόμβος είναι που ξεκινάμε είναι ίδιος με τον κόμβο destination τοτε βρήκαμε μονοπάτι
+        if (strcmp(child->id, destination) == 0) {
+            printf("   ");
+            (*found) = true;
+            listInsert(list, child);
+            ListNode pathNode = listGetFirst(list);
+    	    //Εκτύπωση του μονοπατιού
+            while (pathNode != NULL) {
+                GraphNode node1 = listNodeValue(pathNode);
+                printf("%s ", node1->id);
+                pathNode = listGetNext(pathNode);
+                if(pathNode != NULL){
+                    printf("-> ");
+                }
+            }
+
+            printf("\n");
+            listRemoveLast(list);
+        } 
+        
+        else if (!child->visited) {
+            //Αν δεν έχει επισκεφτεί τον κόμβο τότε εμβαθύνουμε στο παιδί
+            dfsPath(child, destination, list, map, found);
+        }
+
+        if(*found){
+            break;
+        }
+    }
+    node->visited = false;
+    listDeleteNode(list, node);
 }

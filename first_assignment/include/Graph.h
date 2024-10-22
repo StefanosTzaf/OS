@@ -47,8 +47,7 @@ void displayOutgoingEdges(char* id, Map map);
 void displayIncomingEdges(char* id, Map map);
 
 void findCircles(char* id,Graph graph, Map map, int minSum, bool flag);
-void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list);
+void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list, int minSum);
 
-
-
-void dfsPrintingCircles2(GraphNode node, GraphNode startNode, List list, int minSum);
+void findPath(Graph graph, char* id1, char* id2, Map map);
+void dfsPath(GraphNode node, char* destination, List list, Map map, bool* found);
