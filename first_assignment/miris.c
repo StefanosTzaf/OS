@@ -2,24 +2,6 @@
 #include <getopt.h>
 #include <stdbool.h>
 
-size_t currentMemoryUsage = 0;
-
-// // Wrapper συναρτήσεις για να μπορούμε να μετράμε σε έναν global counter την μνήμη που χρησιμοποιοώυμε
-// void* myMalloc(size_t size) {
-//     void* ptr = malloc(size);
-//     if (ptr != NULL) {
-//         currentMemoryUsage += size;
-//     }
-//     return ptr;
-// }
-
-// void myFree(void* ptr, size_t size) {
-//     if (ptr != NULL) {
-//         currentMemoryUsage -= size;
-//         free(ptr);
-//     }
-// }
-
 int main(int argc, char *argv[]){
 
 
@@ -394,8 +376,6 @@ int main(int argc, char *argv[]){
     //--------------------------------------------------------------- 12 --------------------------------------------------------
     else if(strcmp(token, "e") == 0 || strcmp(token, "exit") == 0){
       printf("terminate the program.\n");
-      //%zu για να τυπωσουμε size_t
-      printf("%zu Bytes released\n\n", currentMemoryUsage);
       exit = true;
     }
     else{
