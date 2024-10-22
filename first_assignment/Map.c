@@ -1,4 +1,4 @@
-#include "hash.h"
+#include "Map.h"
 #include "Graph.h"
 
 //Κόμβος του hash table

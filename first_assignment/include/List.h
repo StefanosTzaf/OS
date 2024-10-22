@@ -1,6 +1,7 @@
 //--------------------------------------Υλοποίηση διπλά συνδεδεμένης λίστας-----------------------------------------
 #include <stdlib.h>
 #include <stdio.h>
+#include "miris.h"
 
 typedef void* Pointer;
 //H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχει pointer σε στοιχεία τύπου void(είτε Graphnode είτε edge)
@@ -24,6 +25,8 @@ void listInsert(List list, Pointer value);
 
 //(Ο(n)) λόγω της ListFind
 void listDeleteNode(List list, Pointer value);
+//O(1)
+void listRemoveLast(List list);
 
 //(Ο(n))
 void listDestroy(List list);
@@ -38,5 +41,3 @@ ListNode listGetNext(ListNode node);
 Pointer listNodeValue(ListNode node);
 int listSize(List list);
 void listSetDestroyValue(List list, DestroyFunc destroyValue);
-
-void listRemoveLast(List list);

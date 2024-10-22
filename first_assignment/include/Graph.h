@@ -1,7 +1,10 @@
-#include "hash.h"
+#include "Map.h"
 typedef struct graph* Graph;
 typedef struct graph_node* GraphNode;
 typedef struct edge* Edge;
+
+
+//------------------------------------------------------- Συναρτήσεις για τις λίστες ------------------------------------------
 
 //συναρτηση compare για την συγκριση των id των κομβων στην λιστα από κόμβους
 int compareGraphNodes(Pointer a, Pointer b);
@@ -21,14 +24,21 @@ void destroyEdge(Pointer edgeToDelete);
 //καταστρέφει το value από τους κόμβους των λιστών hash table
 void destroyMapNodes(Pointer value);
 
+//---------------------------------------------------------------------------------------------------------------------------------
 
+
+//Ο(1)
 Graph graphCreate();
 
+//Ο(1)
 void graphAddNode(Graph graph, char* id, Map map);
 void addEdge(Graph graph, char* dateOfTransmission, int amount, char* id1, char* id2, Map map);
 
+//Ο(n) λογω της listDeleteNode
 void removeGraphNode(char* id, Map map, Graph graph);
+//Ο(n) λόγω της findEdge
 void removeEdge(char* id1, char* id2, Map map);
+
 
 bool modifyEdge(char* id1, char* id2, char* date, int amount,char* date2, int amount2, Map map);
 

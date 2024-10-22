@@ -1,7 +1,7 @@
 CC = gcc
 
 CFLAGS = -Wall -I ./include
-OBJS = List.o Graph.o miris.o hash.o
+OBJS = List.o Graph.o miris.o Map.o
 EXEC = miris
 
 $(EXEC): $(OBJS)
@@ -10,8 +10,5 @@ $(EXEC): $(OBJS)
 clean:
 	rm -f $(OBJS) $(EXEC)
 
-run: $(EXEC)
-	./$(EXEC) $(ARGS)
-
 valgrind: $(EXEC)
-	valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all ./$(EXEC) $(ARGS)
+	valgrind --error-exitcode=1 --leak-check=full --show-leak-kinds=all ./$(EXEC)
