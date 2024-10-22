@@ -280,7 +280,7 @@ int main(int argc, char *argv[]){
 
     //--------------------------------------------------------------- 6 --------------------------------------------------------
 
-    else if(strcmp(token, "f") ==0 || strcmp(token, "find") == 0){
+    else if(strcmp(token, "f") == 0 || strcmp(token, "find") == 0){
       token = strtok(NULL, " ");
       char* next = strtok(NULL, " ");
 

@@ -58,11 +58,12 @@ void destroyMapNodes(Pointer value){
 }
 
 
-//Συνάρτηση που μας λέει στην λίστα απο Graphnodes πως να καταστρέψει κάθε κομβο της
+//Συνάρτηση που μας λέει στην λίστα απο Graphnode πως να καταστρέψει κάθε κομβο της
 void destroyGraphListNode(Pointer nodeToDelete){
     GraphNode node = nodeToDelete;
     //Πρέπει να διαγράψουμε όλες τις incoming edges αλλα και απο τις λιστες outgoing edges της προελευσης
-    //πχ αν διαγράφουμε τον κομβο 3 και έχει μια ακμη 5->3 τότε πρέπει να διαγράψουμε την ακμή απο την incoming list του 5 και την outgoing list του 3
+    //πχ αν διαγράφουμε τον κομβο 3 και έχει μια ακμη 5->3 τότε πρέπει να διαγράψουμε την ακμή απο την incoming
+    //list του 5 και την outgoing list του 3
     //αντίστοιχα ολες τις ouygoing edges αλλα λαι απο τις incoming edges του προορισμού
 
     //!!Εδώ φαίνεται η αξία της generic υλοποίησης εμείς απλά καλούμε την list destroy και αυτη με τη σειρά της όταν πάει να διαγράψει κάθε κόμβο
@@ -195,6 +196,26 @@ void removeEdge(char* id1, char* id2, Map map){
 
 }
 
+Edge findEdge(char* id1,char* id2, Map map){
+    GraphNode node1 = mapFind(map, id1);
+    GraphNode node2 = mapFind(map, id2);
+    if(node1 == NULL || node2 == NULL){
+        return NULL;
+    }
+    Edge temp = malloc(sizeof(*temp));
+    temp->nodeDestination = node2;
+    temp->nodeOrigin = node1;
+
+    if(listFind(node1->outgoingEdges, temp) == NULL){
+        free (temp);
+        printf("------------");
+        return NULL;
+    }
+    else{
+        free (temp);
+        return listNodeValue(listFind(node1->outgoingEdges, temp));
+    }
+}
 
 bool modifyEdge(char* id1, char* id2, char* date, int amount,char* date2, int amount2, Map map){
     //η find edge δεν μπορεί να μας βοηθήσει αυτή την στιγμή γιατί συγκρίνει βάση μόνο των Ids
@@ -220,96 +241,6 @@ bool modifyEdge(char* id1, char* id2, char* date, int amount,char* date2, int am
     }
     return 1;
 }
-
-
-
-Edge findEdge(char* id1,char* id2, Map map){
-    GraphNode node1 = mapFind(map, id1);
-    GraphNode node2 = mapFind(map, id2);
-    if(node1 == NULL || node2 == NULL){
-        return NULL;
-    }
-    Edge temp = malloc(sizeof(*temp));
-    temp->nodeDestination = node2;
-    temp->nodeOrigin = node1;
-
-    if(listFind(node1->outgoingEdges, temp) == NULL){
-        free (temp);
-        printf("------------");
-        return NULL;
-    }
-    else{
-        free (temp);
-        return listNodeValue(listFind(node1->outgoingEdges, temp));
-    }
-}
-
-
-void displayGraph(Graph graph, Map map){
-    printf("\nGraph with %d nodes\n\n", graph->size);
-    ListNode nodes = listGetFirst(graph->nodes);
-
-    while(nodes != NULL){
-
-        GraphNode node = listNodeValue(nodes);
-        printf("   Node with id: %s\n\n", node->id);
-        ListNode outgoingEdges = listGetFirst(node->outgoingEdges);
-        printf("                         Outgoing Vertices:\n");
-        while(outgoingEdges != NULL){
-            Edge edge = listNodeValue(outgoingEdges);
-            printf("     Date of transaction: %s - Ammount of Transaction : %d$\n", edge->dateOfTransaction, edge->amount);
-            printf("     Destination node: %s\n", ((edge->nodeDestination)) -> id);
-            outgoingEdges = listGetNext(outgoingEdges);
-        }
-
-
-        ListNode incomingEdges = listGetFirst(node->incomingEdges);
-        printf("\n                         Incoming Vertices:\n");
-        while(incomingEdges != NULL){
-            Edge edge = listNodeValue(incomingEdges);
-            printf("     Date of transaction: %s - Amount of Transaction : %d$\n", edge->dateOfTransaction, edge->amount);
-            printf("     Origin node: %s\n", ((edge->nodeOrigin)) -> id);
-            incomingEdges = listGetNext(incomingEdges);
-        }
-    printf("\n\n");
-    nodes = listGetNext(nodes);
-
-    }
-
-}
-
-void printToFile(Graph graph, FILE* file){
-    ListNode listNode = listGetFirst(graph->nodes);
-    //Κάθε κόμβο του γράφου
-    while(listNode != NULL){
-
-        GraphNode node = listNodeValue(listNode);
-        //Εκτυπώνουμε μόνο τις Outgoing ακμλες για να μην εκτυπ΄σουμε κάθε ακμή 2 φορές
-        if(listSize( node->outgoingEdges) == 0 && listSize(node->incomingEdges) == 0){
-            fprintf(file, "%s (No transactions)\n", node->id);
-        
-        }
-        ListNode outgoingEdges = listGetFirst(node->outgoingEdges);
-
-        while(outgoingEdges != NULL){
-            Edge edge = listNodeValue(outgoingEdges);
-            fprintf(file,"%s ", edge->nodeOrigin->id);
-            fprintf(file,"%s ", edge->nodeDestination->id);
-            fprintf(file, "%d ", edge->amount);
-            fprintf(file, "%s\n", edge->dateOfTransaction);
-
-            outgoingEdges = listGetNext(outgoingEdges);
-        }
-        listNode = listGetNext(listNode);
-    }
-}
-
-void destroyGraph(Graph graph){
-    //όλη η δουλειά γίνεται στην destroyGraphListNode που περνάμε στην λίστα
-    listDestroy(graph->nodes);
-    free(graph);
-}
-
 
 void displayOutgoingEdges(char* id, Map map){
     GraphNode node = mapFind(map, id);
@@ -338,7 +269,42 @@ void displayIncomingEdges(char* id, Map map){
     }
 }
 
-//αν το flag είναι 0 θέλουμε να βρούμε απλούς κύκλους αλλιώς σημαίνει οτι κλήθηκε για κύκλους με συνολικό ποσό
+
+void printToFile(Graph graph, FILE* file){
+    ListNode listNode = listGetFirst(graph->nodes);
+    //Κάθε κόμβο του γράφου
+    while(listNode != NULL){
+
+        GraphNode node = listNodeValue(listNode);
+        //Εκτυπώνουμε μόνο τις Outgoing ακμλες για να μην εκτυπ΄σουμε κάθε ακμή 2 φορές
+        if(listSize( node->outgoingEdges) == 0 && listSize(node->incomingEdges) == 0){
+            fprintf(file, "%s (No transactions)\n", node->id);
+        
+        }
+        //κάθε εξερχόμενη ακμή(δεν χρειάζεται να ελένξουμε και τις εισερχόμενες , θα εκτυπώνονταν 2 φορές!)
+        ListNode outgoingEdges = listGetFirst(node->outgoingEdges);
+
+        while(outgoingEdges != NULL){
+            Edge edge = listNodeValue(outgoingEdges);
+            fprintf(file,"%s ", edge->nodeOrigin->id);
+            fprintf(file,"%s ", edge->nodeDestination->id);
+            fprintf(file, "%d ", edge->amount);
+            fprintf(file, "%s\n", edge->dateOfTransaction);
+
+            outgoingEdges = listGetNext(outgoingEdges);
+        }
+        listNode = listGetNext(listNode);
+    }
+}
+
+void destroyGraph(Graph graph){
+    //όλη η δουλειά γίνεται στην destroyGraphListNode που περνάμε στην λίστα
+    listDestroy(graph->nodes);
+    free(graph);
+}
+
+
+//αν το flag είναι 0 θέλουμε να βρούμε απλούς κύκλους αλλιώς σημαίνει οτι κλήθηκε για κύκλους με ελάχιστο συνολικό ποσό
 void findCircles(char* id, Graph graph, Map map, int minSum, bool flag) {
     GraphNode startNode = mapFind(map, id);
     if (startNode == NULL) {
@@ -349,7 +315,7 @@ void findCircles(char* id, Graph graph, Map map, int minSum, bool flag) {
     List list = listCreate(NULL, compareGraphNodes);
     //8
     if(!flag){
-        dfsPrintingCircles(startNode, startNode, list, minSum);
+        dfsPrintingCircles(startNode, startNode, list, -1);
         printf("\n");
     }
     //9
@@ -376,7 +342,8 @@ void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list, int minS
 
         Edge edge = listNodeValue(outgoingEdges);
         //για τους κύκλους μεγαλύτερους από ένα συγκεκριμένο ποσό, αν η διαδρομή που ψάχνουμε κ
-        //έχει ακμή μικρότερη από αυτόν τον αριθμό , συνεχίζουμε με την επόμενη
+        //έχει ακμή μικρότερη από αυτόν τον αριθμό , συνεχίζουμε με την επόμενη, σε περίπτωση που
+        // θέλουμε κύκλους ανεξαρτήτου ποσού(8) το minSum θα είναι -1 άρα δεν θα ισχύει ποτέ
         if(edge->amount < minSum){
             continue;
         }
@@ -411,11 +378,12 @@ void dfsPrintingCircles(GraphNode node, GraphNode startNode, List list, int minS
 
         //Αν ο κόμβος είναι ο ίδιος με τον αρχικό KAI έχει βρεθεί κύκλος ,δηλαδή δεν είμαστε στον αρχικό κόμβο
         // γιατι από εκεί ξεκινάμε αλλα γιατί έχουμε ξαναφτάσει, τότε σταματάμε(θέλουμε απλούς κυκλους)
-        if((strcmp(node->id, startNode->id) == 0 )&& foundCircle){
+        if((strcmp(node->id, startNode->id) == 0 ) && foundCircle){
             break;
         }
     }
 
+    //για να μην επηρεάσει επόμενες αναζητήσεις
     node->visited = false;
     listDeleteNode(list, node);
 }

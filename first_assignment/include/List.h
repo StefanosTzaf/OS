@@ -1,7 +1,6 @@
 //--------------------------------------Υλοποίηση διπλά συνδεδεμένης λίστας-----------------------------------------
 #include <stdlib.h>
 #include <stdio.h>
-#include "miris.h"
 
 typedef void* Pointer;
 //H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχει pointer σε στοιχεία τύπου void(είτε Graphnode είτε edge)
