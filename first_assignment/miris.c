@@ -157,12 +157,15 @@ int main(int argc, char *argv[]){
       char* token2 = strtok(NULL, " ");
       char* sum = strtok(NULL, " ");
       char* date = strtok(NULL, " ");
-      //μετά την ημερομηνία δδεν πρέπει να υπάρχει κάτι άλλο
+      //μετά την ημερομηνία δεν πρέπει να υπάρχει κάτι άλλο
       char* next = strtok(NULL, " ");
 
       if(token == NULL || token2 == NULL || sum == NULL || date == NULL || next != NULL){
         printf("   Format error:\n");
         printf("   Command Name : n Ni Nj amount date or insert2 n Ni Nj sum date\n\n");
+      }
+      else if(strcmp(token, token2) == 0){
+        printf("   Transaction with the same origin and destination not allowed\n\n");
       }
       else{
         printf("   introduce an edge with direction from %s to %s with label\n   %s + %s if either %s or %s does not exist in the graph,\n   do the appropriate node insertion first.\n\n", token, token2, sum, date, token, token2);
