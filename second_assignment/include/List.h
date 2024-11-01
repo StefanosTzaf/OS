@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 typedef void* Pointer;
-//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχει pointer σε στοιχεία τύπου void(είτε Graphnode είτε edge)
+//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχει pointer σε στοιχεία τύπου void
 typedef struct list* List;
 typedef struct list_node* ListNode;
 
@@ -12,8 +12,7 @@ typedef struct list_node* ListNode;
 //Χρησιμοποιείται στην listFind
 typedef int (*CompareFunc)(Pointer a, Pointer b);
 
-//Πάρόμοια η Destroy διαφέρει ανάλογα που δείχνει ο δείκτης. Πχ στην εργασία χρησιμοποιούμε τρία είδη λίστας που δεσμεύουν διαφορετική μν΄ήμη.
-//Η destroy είναι  στοθχείο του struct list
+
 typedef void (*DestroyFunc)(Pointer value);
 
 //(Ο(1))
