@@ -25,6 +25,3 @@ $(SPLITTER_EXEC): $(SPLITTER_OBJS)
 clean:
 	rm -f $(ROOT_OBJS) $(SPLITTER_OBJS) $(ROOT_EXEC) $(SPLITTER_EXEC)
 
-# Specify how to create object files from source files
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
