@@ -7,6 +7,6 @@
 #include <fcntl.h>
 
 int main(int argc, char* argv[]){
-
+   printf("Builder started %d \n", getpid());
    exit(0);
 }

@@ -93,12 +93,21 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    pid_t builderPids[numOfBuilders];
     for (int b = 0; b < numOfBuilders; b++) {
         pid_t pid = fork();
         
         if (pid == -1) {
             perror("Error forking builder process");
             exit(1);
+        }
+        else if (pid == 0) {
+            char fifoBuilder[1024];
+            execlp("./builder", "./builder", NULL);
+            exit(EXIT_SUCCESS);
+        }
+        else {
+            builderPids[b] = pid;
         }
     }
 //---------------------------------------------------------------------splitters---------------------------------------------------------------------
@@ -133,8 +142,6 @@ int main(int argc, char* argv[]) {
             close(pipes[i][1]);
             dup2(pipes[i][0], STDIN_FILENO);
             close(pipes[i][0]);
-            
-            printf("Splitter %d created.\n", i);
             execlp("./splitter", "./splitter", NULL);
             fprintf(stderr, "Error executing splitter %d\n", i);
             exit(EXIT_SUCCESS); // Τερματισμός του splitter
@@ -199,7 +206,10 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < numOfSplitter; i++) {
         waitpid(splitterPids[i], NULL, 0);
     }
-    //TODO builders wait
+    for (int i = 0; i < numOfBuilders; i++) {
+        waitpid(builderPids[i], NULL, 0);
+    }
+
     
     //στην αποδεύσμευση της λίστας θα καλείται η free για κάθε κόμβο
     //αρα θα απελευθερώνεται και ο χώρος που έχει δεσμευτεί για το string στην Main
