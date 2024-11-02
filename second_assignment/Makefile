@@ -25,3 +25,5 @@ $(SPLITTER_EXEC): $(SPLITTER_OBJS)
 clean:
 	rm -f $(ROOT_OBJS) $(SPLITTER_OBJS) $(ROOT_EXEC) $(SPLITTER_EXEC)
 
+clean_pipes:
+	rm -f fifo*

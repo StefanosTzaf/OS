@@ -9,18 +9,7 @@ int main(int argc, char* argv[]){
         fprintf(stderr, "Usage: ./splitter <startLine> <endLine> <file descriptor>\n");
         return 1;
     }
-    printf("pid : %d\n", getpid());
-        char buffer[256];
-
-    while(1){
-        ssize_t bytesRead = read(STDIN_FILENO, buffer, sizeof(buffer));
-        if(bytesRead <= 0){
-            break;
-        }
-        write(STDOUT_FILENO, buffer, bytesRead);
-    }
-    // Optional: if any processing or cleanup is required after reading all lines
-    fprintf(stderr, "Splitter process complete.\n");
+    
 
     return 0;
 
