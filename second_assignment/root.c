@@ -69,6 +69,7 @@ int main(int argc, char* argv[]) {
     }
 
     //δείκτης ανάγνωσης στην αρχή του αρχείου
+    memset(buffer, 0, sizeof(buffer));
     lseek(fdInput, 0, SEEK_SET);
 
     //φτίαχνουμε pipes οσα και οι splitters
@@ -85,7 +86,11 @@ int main(int argc, char* argv[]) {
     int linesForSplitter = lines / numOfSplitter;
     pid_t splitterPids[numOfSplitter];
 
+    int currentLine = 0;
+
     for (int i = 0; i < numOfSplitter; i++) {
+        int nextCharToRead = 0;
+        int bytesRemainingInBuffer = 0;
         pid_t pid = fork();
         
         if (pid < 0) {
@@ -102,33 +107,47 @@ int main(int argc, char* argv[]) {
             execlp("./splitter", "./splitter", NULL);
             fprintf(stderr, "Error executing splitter %d\n", i);
             exit(EXIT_SUCCESS); // Τερματισμός του splitter
-        } 
+        }
+         
         else {
             close(pipes[i][0]);
             int startLine = i * linesForSplitter;
             //αν είναι η τελευταία γραμμή τότε το τελευταίο splitter θα πάρει τις υπόλοιπες γραμμές
             //(μπορεί να μην διαιρείται ακριβώς με τον αριθμό των splitters και να υπάρχουν κάποιες παραπάνω γραμμές)
             int endLine = (i == numOfSplitter - 1) ? lines : (i + 1) * linesForSplitter;
+            
+            //Διαβάζουμε το αρχείο γραμμή προς γραμμή και γράφουμε στο pipe του splitter
+            do{
+                if (bytesRemainingInBuffer == 0) {
+                    memset(buffer, 0, sizeof(buffer));
+                    bytesRemainingInBuffer = read(fdInput, buffer, sizeof(buffer));
+                    if(bytesRemainingInBuffer <= 0){
+                        break;
+                    }
+                    nextCharToRead = 0;
+                }
 
-            //Γράφουμε στο pipe του splitter τις γραμμές που του αναλογούν
-            int currentLine = 0;
-            char buffer[4096];
-            while (read(fdInput, buffer, sizeof(buffer)) > 0) {
-                for (int j = 0; j < sizeof(buffer); j++) {
+                for (int j = nextCharToRead; j < sizeof(buffer); j++) {
                     if (buffer[j] == '\n') {
                         currentLine++;
                     }
-                    if (currentLine >= startLine && currentLine < endLine) {
+                    if (currentLine >= startLine && currentLine <= endLine) {
                         write(pipes[i][1], buffer + j, 1);
+                        bytesRemainingInBuffer--;
+                        nextCharToRead = j + 1;
                     }
-                    if (currentLine >= endLine) {
+                    if (currentLine > endLine) {
+                        write(pipes[i][1], buffer + j, 1);
+                        bytesRemainingInBuffer--;
+                        nextCharToRead = j + 1;
                         break;
                     }
                 }
-                if (currentLine >= endLine) {
+                if (currentLine > endLine) {
                     break;
                 }
-            }
+
+            }while(bytesRemainingInBuffer > 0);
 
 
             close(pipes[i][1]);
