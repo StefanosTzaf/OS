@@ -10,7 +10,7 @@ int main(int argc, char* argv[]){
         return 1;
     }
     
-
+    //printf("Splitter started %d \n", getpid());
     return 0;
 
 }

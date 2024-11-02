@@ -133,7 +133,8 @@ int main(int argc, char* argv[]) {
             close(pipes[i][1]);
             dup2(pipes[i][0], STDIN_FILENO);
             close(pipes[i][0]);
-
+            
+            printf("Splitter %d created.\n", i);
             execlp("./splitter", "./splitter", NULL);
             fprintf(stderr, "Error executing splitter %d\n", i);
             exit(EXIT_SUCCESS); // Τερματισμός του splitter
