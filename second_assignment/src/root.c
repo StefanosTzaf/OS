@@ -72,6 +72,29 @@ int main(int argc, char* argv[]) {
             }
         }
     }
+
+    int* bytesPerLine = malloc((lines+1) * sizeof(int));
+    bytesPerLine[0] = 0;
+    //η αρίθμηση των γραμμών ξεκινάει απο 1
+    lines = 1;
+    lseek(fdInput, 0, SEEK_SET);
+    int bytesOfLine = 0;
+    //μετρημα bytes ανα γραμμή για να το περάσουμε στον κάθε splitter 
+    //ωστε να ξέρει από που θα ξεκινήσει να διαβάζει
+    while( (bytesRead = read(fdInput, buffer, sizeof(buffer))) > 0){
+        for (int i = 0; i < bytesRead; i++) {
+            bytesOfLine += sizeof(buffer[i]); ;
+            if (buffer[i] == '\n') {
+                bytesPerLine[lines] = bytesOfLine + bytesPerLine[lines - 1];
+                lines++;
+                bytesOfLine = 0;
+            }
+        }
+    }   
+
+    //κλείνουμε το αρχείο, κάθε φορά οι splitters το ανοιγουν για να μη χρειάστει να 
+    //κάνουμε επανατοποθέτηση του δείκτη ανάγνωσης
+    close(fdInput);
     
     //δείκτης ανάγνωσης στην αρχή του αρχείου
     memset(buffer, 0, sizeof(buffer));
@@ -80,48 +103,41 @@ int main(int argc, char* argv[]) {
 
 //---------------------------------------------------------------------builders---------------------------------------------------------------------
     //δημιουργία n*l named pipes για την επικοινωνία των splitter με τους builders
-    char fifoName[1024];
-    for (int s = 0; s < numOfSplitter; s++) {
-        for (int b = 0; b < numOfBuilders; b++) {
-            //print σαν συμβολοσειρά τον αριθμό του named pipe
-            //που καθορίζεται μονοσύμαντα από τον αριθμό του splitter και του builder
-            snprintf(fifoName, 1024, "fifo_splitter%d_builder%d", s, b);
-            if (mkfifo(fifoName, 0666) == -1) {
-                perror("Error creating FIFO");
-                exit(1);
-            }
-        }
-    }
+    // char fifoName[1024];
+    // for (int s = 0; s < numOfSplitter; s++) {
+    //     for (int b = 0; b < numOfBuilders; b++) {
+    //         //print σαν συμβολοσειρά τον αριθμό του named pipe
+    //         //που καθορίζεται μονοσύμαντα από τον αριθμό του splitter και του builder
+    //         snprintf(fifoName, 1024, "fifo_splitter%d_builder%d", s, b);
+    //         if (mkfifo(fifoName, 0666) == -1) {
+    //             perror("Error creating FIFO");
+    //             exit(1);
+    //         }
+    //     }
+    // }
 
-    pid_t builderPids[numOfBuilders];
-    for (int b = 0; b < numOfBuilders; b++) {
-        pid_t pid = fork();
+    // pid_t builderPids[numOfBuilders];
+    // for (int b = 0; b < numOfBuilders; b++) {
+    //     pid_t pid = fork();
         
-        if (pid == -1) {
-            perror("Error forking builder process");
-            exit(1);
-        }
-        else if (pid == 0) {
-            char fifoBuilder[1024];
-            execlp("./builder", "./builder", NULL);
-            exit(EXIT_SUCCESS);
-        }
-        else {
-            builderPids[b] = pid;
-        }
-    }
+    //     if (pid == -1) {
+    //         perror("Error forking builder process");
+    //         exit(1);
+    //     }
+    //     else if (pid == 0) {
+    //         char fifoBuilder[1024];
+    //         execlp("./builder", "./builder", NULL);
+    //         exit(EXIT_SUCCESS);
+    //     }
+    //     else {
+    //         builderPids[b] = pid;
+    //     }
+    // }
 //---------------------------------------------------------------------splitters---------------------------------------------------------------------
-    //φτίαχνουμε pipes οσα και οι splitters
-    int pipes[numOfSplitter][2];
 
-    for (int i = 0; i < numOfSplitter; i++) {
-        if (pipe(pipes[i]) == -1) {
-            fprintf(stderr,"Error creating pipe %d\n", i);
-            exit(1);
-        }
-    }
 
     //δημιουργούμε l splitters με lines/l γραμμές το καθένα
+    //εκτος από το τελευταίο που ίσως πάρει λίγες παραπάνω λόγω μη τέλειας διαίρεσης
     int linesForSplitter = lines / numOfSplitter;
     pid_t splitterPids[numOfSplitter];
 
@@ -129,74 +145,41 @@ int main(int argc, char* argv[]) {
 
     int bytesRemainingInBuffer = 0;
     int nextCharToRead = 0;
+
     for (int i = 0; i < numOfSplitter; i++) {
         pid_t pid = fork();
         
         if (pid < 0) {
-            fprintf(stderr, "Error forking splitter %d\n", i);
+            perror("Error forking splitter %d");
             exit(EXIT_FAILURE);
         }
+
         //splitter
         else if (pid == 0){
-            //κλείνουμε το γράψιμο στουςς splitter
-            close(pipes[i][1]);
-            dup2(pipes[i][0], STDIN_FILENO);
-            close(pipes[i][0]);
-            execlp("./splitter", "./splitter", NULL);
-            fprintf(stderr, "Error executing splitter %d\n", i);
-            exit(EXIT_SUCCESS); // Τερματισμός του splitter
+            //κλείνουμε το γράψιμο στους splitter
+            int startLine = ( (i == 0) ? 1 : (i * linesForSplitter) + 1);
+
+            //αν είναι η τελευταία γραμμή τότε το τελευταίο splitter θα πάρει τις υπόλοιπες γραμμές
+            int endLine = (i == numOfSplitter - 1) ? lines : (i + 1) * linesForSplitter;
+
+            char start[16];
+            char end[16];
+            sprintf(start, "%d", startLine);
+            sprintf(end, "%d", endLine);
+
+            //μετά από πόσες γραμμές θα ξεκινήσει να διαβάζει
+            int position = i*linesForSplitter;
+            char firstByteForSplitter[32];
+            sprintf(firstByteForSplitter, "%d", bytesPerLine[position]);
+            execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, NULL);
+
+            perror("Error executing splitter");
+            exit(EXIT_FAILURE);
         }
          
         else {
-            close(pipes[i][0]);
-            int startLine = ( (i == 0) ? 1 : (i * linesForSplitter) + 1);
-            //αν είναι η τελευταία γραμμή τότε το τελευταίο splitter θα πάρει τις υπόλοιπες γραμμές
-            //(μπορεί να μην διαιρείται ακριβώς με τον αριθμό των splitters και να υπάρχουν κάποιες παραπάνω γραμμές)
-            int endLine = (i == numOfSplitter - 1) ? lines : (i + 1) * linesForSplitter;
-            
-            //Διαβάζουμε το αρχείο γραμμή προς γραμμή και γράφουμε στο pipe του splitter
-            if (bytesRemainingInBuffer == 0) {
-                memset(buffer, 0, sizeof(buffer));
-                bytesRemainingInBuffer = read(fdInput, buffer, sizeof(buffer));
-                if(bytesRemainingInBuffer <= 0){
-                    break;
-                }
-                nextCharToRead = 0;
-            }
-            do{
 
-                for (int j = nextCharToRead; j < sizeof(buffer); j++) {
-                    if (buffer[j] == '\n') {
-                        currentLine++;
-                    }
-                    if (currentLine >= startLine && currentLine <= endLine) {
-                        write(pipes[i][1], buffer + j, 1);
-                        bytesRemainingInBuffer--;
-                        nextCharToRead = j + 1;
-                    }
-                    if (currentLine > endLine) {
-                        write(pipes[i][1], buffer + j, 1);
-                        bytesRemainingInBuffer--;
-                        nextCharToRead = j + 1;
-                        break;
-                    }
-                }
-                if (currentLine > endLine) {
-                    break;
-                }
-                if (bytesRemainingInBuffer == 0) {
-                    memset(buffer, 0, sizeof(buffer));
-                    bytesRemainingInBuffer = read(fdInput, buffer, sizeof(buffer));
-                    if(bytesRemainingInBuffer <= 0){
-                        break;
-                    }
-                    nextCharToRead = 0;
-                }
-            }while(bytesRemainingInBuffer > 0);
-
-
-            close(pipes[i][1]);
-            // Στον γονέα, αποθηκεύουμε το PID του splitter
+            // Στον γονέα, αποθηκεύουμε το PID του splitter που δημιουργήσαμε
             splitterPids[i] = pid;
         }
     }
@@ -206,11 +189,11 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < numOfSplitter; i++) {
         waitpid(splitterPids[i], NULL, 0);
     }
-    for (int i = 0; i < numOfBuilders; i++) {
-        waitpid(builderPids[i], NULL, 0);
-    }
+    // for (int i = 0; i < numOfBuilders; i++) {
+    //     waitpid(builderPids[i], NULL, 0);
+    // }
 
-    
+    free(bytesPerLine);
     //στην αποδεύσμευση της λίστας θα καλείται η free για κάθε κόμβο
     //αρα θα απελευθερώνεται και ο χώρος που έχει δεσμευτεί για το string στην Main
     listDestroy(exclusionList);
