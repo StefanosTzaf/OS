@@ -10,8 +10,8 @@
 #include "root.h"
 
 int main(int argc, char* argv[]) {
-    if(argc < 13){
-        fprintf(stderr, "Usage: ./lexan -i <TextFile> -l <numOfSplitter> -m <numOfBuilders> -t <TopPopular> -e ExclusoionList -o <OutputFile>\n" );
+    if(argc != 13){
+        fprintf(stderr, "Usage: ./lexan -i <TextFile> -l <numOfSplitter> -m <numOfBuilders> -t <TopPopular> -e <ExclusoionListFile> -o <OutputFile>\n" );
     }
 
     int option;
@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
     int topPopular;
     char* outputFile = NULL;
     List exclusionList = listCreate(free, NULL);
+    char* exclusionFile = NULL;
     while((option = getopt(argc, argv, "i:l:m:t:e:o:")) != -1){
 
         if(option == 'i'){
@@ -36,16 +37,7 @@ int main(int argc, char* argv[]) {
             topPopular = atoi(optarg);
         }
         else if(option == 'e'){
-            //optind είναι το επόμενο όρισμα στο argv, μέχρι να βρούμε -
-            //δηλαδή να τελειώσουν τα ορίσματα της -e παραμέτρου
-            while (optind < argc && argv[optind][0] != '-') {
-                //δεσμευω εδω χόρω για το string που θα μπει στην λίστα
-                //η λίστα θα αποθηκεύση δυναμικά μόνο τον pointer
-                char* nodeToAdd = malloc(strlen(argv[optind]) + 1);
-                strcpy(nodeToAdd, argv[optind]);
-                listInsert(exclusionList, nodeToAdd);
-                optind++;
-            }
+            exclusionFile = optarg;
         }
         else if(option == 'o'){
             outputFile = optarg;
@@ -64,7 +56,8 @@ int main(int argc, char* argv[]) {
     int lines = 1;
     int bytesRead;
     char buffer[4096];
-    //μετρημα γραμμών
+
+    // calculate the number of lines in the file
     while ((bytesRead = read(fdInput, buffer, sizeof(buffer))) > 0) {
         for (int i = 0; i < bytesRead; i++) {
             if (buffer[i] == '\n') {
@@ -73,14 +66,14 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    int* bytesPerLine = malloc((lines+1) * sizeof(int));
+    int* bytesPerLine = malloc((lines + 1) * sizeof(int));
     bytesPerLine[0] = 0;
-    //η αρίθμηση των γραμμών ξεκινάει απο 1
+    // lines are 1 based
     lines = 1;
     lseek(fdInput, 0, SEEK_SET);
     int bytesOfLine = 0;
-    //μετρημα bytes ανα γραμμή για να το περάσουμε στον κάθε splitter 
-    //ωστε να ξέρει από που θα ξεκινήσει να διαβάζει
+    // count bytes per line to pass to each splitter 
+    // so that it knows where to start reading from
     while( (bytesRead = read(fdInput, buffer, sizeof(buffer))) > 0){
         for (int i = 0; i < bytesRead; i++) {
             bytesOfLine += sizeof(buffer[i]); ;
@@ -92,11 +85,11 @@ int main(int argc, char* argv[]) {
         }
     }   
 
-    //κλείνουμε το αρχείο, κάθε φορά οι splitters το ανοιγουν για να μη χρειάστει να 
-    //κάνουμε επανατοποθέτηση του δείκτη ανάγνωσης
+    // Close the file, each time the splitters open it so that 
+    // we don't need to reposition the read pointer
     close(fdInput);
     
-    //δείκτης ανάγνωσης στην αρχή του αρχείου
+    // Set the read pointer to the beginning of the file
     memset(buffer, 0, sizeof(buffer));
     lseek(fdInput, 0, SEEK_SET);
 
@@ -136,8 +129,8 @@ int main(int argc, char* argv[]) {
 //---------------------------------------------------------------------splitters---------------------------------------------------------------------
 
 
-    //δημιουργούμε l splitters με lines/l γραμμές το καθένα
-    //εκτος από το τελευταίο που ίσως πάρει λίγες παραπάνω λόγω μη τέλειας διαίρεσης
+    // Create l splitters with lines/l lines each
+    // except for the last one which might take a few more lines due to imperfect division
     int linesForSplitter = lines / numOfSplitter;
     pid_t splitterPids[numOfSplitter];
 
@@ -154,12 +147,12 @@ int main(int argc, char* argv[]) {
             exit(EXIT_FAILURE);
         }
 
-        //splitter
+        // splitter
         else if (pid == 0){
-            //κλείνουμε το γράψιμο στους splitter
+            // Close the write end of the pipe in the splitter
             int startLine = ( (i == 0) ? 1 : (i * linesForSplitter) + 1);
 
-            //αν είναι η τελευταία γραμμή τότε το τελευταίο splitter θα πάρει τις υπόλοιπες γραμμές
+            // If it is the last line, the last splitter will take the remaining lines
             int endLine = (i == numOfSplitter - 1) ? lines : (i + 1) * linesForSplitter;
 
             char start[16];
@@ -167,8 +160,8 @@ int main(int argc, char* argv[]) {
             sprintf(start, "%d", startLine);
             sprintf(end, "%d", endLine);
 
-            //μετά από πόσες γραμμές θα ξεκινήσει να διαβάζει
-            int position = i*linesForSplitter;
+            // after how many lines it will start reading
+            int position = i * linesForSplitter;
             char firstByteForSplitter[32];
             sprintf(firstByteForSplitter, "%d", bytesPerLine[position]);
             execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, NULL);
@@ -179,13 +172,13 @@ int main(int argc, char* argv[]) {
          
         else {
 
-            // Στον γονέα, αποθηκεύουμε το PID του splitter που δημιουργήσαμε
+            // In the parent, we store the PID of the created splitter
             splitterPids[i] = pid;
         }
     }
 
 
-    // Περιμένουμε όλους τους splitters να ολοκληρωθούν
+    // Waiting every splitter to finish
     for (int i = 0; i < numOfSplitter; i++) {
         waitpid(splitterPids[i], NULL, 0);
     }
@@ -194,7 +187,7 @@ int main(int argc, char* argv[]) {
     // }
 
     free(bytesPerLine);
-    //στην αποδεύσμευση της λίστας θα καλείται η free για κάθε κόμβο
-    //αρα θα απελευθερώνεται και ο χώρος που έχει δεσμευτεί για το string στην Main
+    // When freeing the list, free will be called for each node
+    // so the space allocated for the string in the main will also be freed
     listDestroy(exclusionList);
 }

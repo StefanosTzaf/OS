@@ -1,7 +1,7 @@
 #include "List.h"
 
-//διπλα συνδεδεμενη λιστα
-//Η λιστα θα είναι ένας pointer σε αυτό το struct
+// doubly linked list
+// The list will be a pointer to this struct
 struct list {
 	ListNode head;
 	ListNode last;
@@ -30,14 +30,14 @@ List listCreate(DestroyFunc destroyValue, CompareFunc compare) {
 void listInsert(List list, Pointer value) {
 	ListNode new = malloc(sizeof(*new));
 	new->value = value;
-	new->next = NULL;	//προσθέτουμε τον κόμβο στο τέλος της λίστας
+	new->next = NULL;	// add the node at the end of the list
 	new->prev = list->last;	
 
-	//Εαν υπάρχει κόμβος μέσα στην λίστα
+	// If there is a node in the list
 	if (list->last != NULL){
 		list->last->next = new;
 	}
-	///αν η λιστα είναι κενή
+	// if the list is empty
 	else{
 		list->head = new;
 	}
@@ -49,27 +49,27 @@ void listInsert(List list, Pointer value) {
 void listDeleteNode(List list, Pointer value){
 	ListNode node = listFind(list, value);
 	
-    // Έλεγχος αν η λίστα είναι άδεια
-    if (node == NULL) {
-	    return;
-    }
+	// Check if the list is empty
+	if (node == NULL) {
+		return;
+	}
 
 	ListNode previousNode = node->prev;
 	ListNode nextNode = node->next;
 
-	//Ο μόνος κόμβος της λίστας είναι αυτός που διαγράφεται
+	// The only node in the list is the one being deleted
 	if (previousNode == NULL && nextNode == NULL) {
 		list->head = NULL;
 		list->last = NULL;
 	}
 
-	//ο κόμβος ήταν στην αρχή αλλά έχει επόμενο
+	// the node was at the beginning but has a next node
 	else if (previousNode == NULL) {
 		list->head = nextNode;
 		nextNode->prev = NULL;
 	}
 
-	//ο κόμβος ήταν στο τέλος αλλά έχει προηγούμενο
+	// the node was at the end but has a previous node
 	else if (nextNode == NULL) {
 		list->last = previousNode;
 		previousNode->next = NULL;
@@ -80,7 +80,7 @@ void listDeleteNode(List list, Pointer value){
 		nextNode->prev = previousNode;
 	}
 
-	// Απελευθέρωση μνήμης του κόμβου που διαγράφεται
+	// Free the memory of the node being deleted
 	if(list->destroyValue != NULL){
 		list->destroyValue(node->value);
 	}
@@ -100,7 +100,7 @@ void listRemoveLast(List list){
 		return;
 	}
 	ListNode previous = last->prev;
-	//Αν η λίστα έχει μόνο έναν κόμβο
+	// If the list has only one node
 	if(previous == NULL){
 		list->head = NULL;
 	}
@@ -120,14 +120,13 @@ void listDestroy(List list) {
 	ListNode node = list->head;
 	while (node != NULL) {
 		ListNode next = node->next;
-		//κανουμε destroy τον κάθε κόμβπ βάση της συνάρτησης destroyValue
-		//(o Pointer μπορει να δειχνει σε διαφορετικο τύπο δεδομένων αρα κάθε φορά πρέπει να 
-		//χειριζίμαστε αλλιώς το free για να μην έχουμε leaks)
+		// destroy each node based on the destroyValue function
+		// (the Pointer may point to different data types so each time we must handle free differently to avoid leaks)
 		list->destroyValue(node->value);
 		node = next;
 	}
 
-	//Απελευθέρωση χώρου που έχει δεσμευτεί για τους κόμβους
+	// Free the memory allocated for the nodes
 	node = list->head;
 	while (node != NULL) {
 		ListNode next = node->next;
@@ -135,14 +134,14 @@ void listDestroy(List list) {
 		node = next;
 	}
 
-	//free τον χώρο που έχει δεσμευτεί για το struct
+	// Free the memory allocated for the struct
 	free(list);
 }
 
 
-//Αναζήτηση στην λίστα βάση της compare
+// Search the list based on the compare function
 ListNode listFind(List list, Pointer value) {
-	// διάσχιση όλης της λίστας, καλούμε την compare μέχρι να επιστρέψει 0
+	// traverse the entire list, call compare until it returns 0
 	for (ListNode node = list->head; node != NULL; node = node->next){
 		if (list->compare(value, listNodeValue(node)) == 0)
 			return node;
@@ -150,7 +149,7 @@ ListNode listFind(List list, Pointer value) {
 	return NULL;
 }
 
-//για να μην υπάρχει πρόσβαση εκτος του αρχείου σε στοιχεία του struct list δημιουργούμε getters που θα χρειαστούν
+// to prevent access outside the file to elements of the struct list, we create getters that will be needed
 ListNode listGetFirst(List list){
 	return list->head;
 }

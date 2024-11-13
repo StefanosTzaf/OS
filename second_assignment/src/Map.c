@@ -1,21 +1,20 @@
 #include "Map.h"
 
-//Κόμβος του hash table
-struct map_node{
+// Node of the hash table
+struct map_node {
 	char* keyId; 
 	Pointer value;    
 };
 
 struct map {
-	List* arrayOfBuckets;	    // Ο πίνακας των buckets του hash table(seperate chainening)
-	int capacity;				// Πόσο χώρο έχουμε δεσμεύσει εώς τώρα.
-	//συναρτήσεις που θα χρησιμοποιηθούν από την λίστα στα buckets
+	List* arrayOfBuckets;	    // The array of buckets of the hash table (separate chaining)
+	int capacity;				// How much space we have allocated so far.
+	// Functions that will be used by the list in the buckets
 	DestroyFunc destroyMapNodes;
 	CompareFunc compareMapNodes;
 };
 
-
-//η compare και η destroy για τις Lists απο MapNode
+// The compare and destroy functions for the Lists of MapNode
 Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile) {
 
 	Map map = malloc(sizeof(*map));
@@ -24,18 +23,17 @@ Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile) {
 	map->destroyMapNodes = destroy;
 	map->compareMapNodes = compare;
 
-	for (int i = 0; i < map->capacity; i++){
+	for (int i = 0; i < map->capacity; i++) {
 		map->arrayOfBuckets[i] = NULL;
 	}
 	return map;
 }
 
-
 void mapInsert(Map map, char* key, Pointer value) {
-	int pos = hashFunction(key) % map->capacity; // mod για να μην ξεπεράσουμε το μέγεθος του πίνακα
+	int pos = hashFunction(key) % map->capacity; // mod to not exceed the size of the array
 	
-	//αν είναι ο πρώτος κόμβος που hasharei σε αυτήν την θέση του πίνακα
-	if(map->arrayOfBuckets[pos] == NULL){
+	// if it is the first node that hashes to this position of the array
+	if (map->arrayOfBuckets[pos] == NULL) {
 		map->arrayOfBuckets[pos] = listCreate(map->destroyMapNodes, map->compareMapNodes);
 	}
 
@@ -43,59 +41,53 @@ void mapInsert(Map map, char* key, Pointer value) {
 	node->value = value;
 	node->keyId = key;
 
-	//Η Λιστα έχει MapNode
+	// The list contains MapNode
 	listInsert((map->arrayOfBuckets[pos]), node);
 }
 
-
 void mapRemove(Map map, char* key) {
 	MapNode node = mapFindNode(map, key);
-	if (node == NULL){
+	if (node == NULL) {
 		return;
-	}
-	else{
+	} else {
 		listDeleteNode(map->arrayOfBuckets[hashFunction(key) % map->capacity], node);
 	}
 }
 
 Pointer mapFind(Map map, char* key) {
 	MapNode node = mapFindNode(map, key);
-	if(node == NULL){
+	if (node == NULL) {
 		return NULL;
-	}
-	else{
+	} else {
 		return node->value;
 	}
 }
 
-//επιστρέφει τον κόμβο που αντιστοιχεί στο key , καλείται από την mapFind
+// Returns the node that corresponds to the key, called by mapFind
 MapNode mapFindNode(Map map, char* key) {
 	int pos = hashFunction(key) % map->capacity;
 	
-	if( map->arrayOfBuckets[pos] == NULL){
+	if (map->arrayOfBuckets[pos] == NULL) {
 		return NULL;
 	}
-	//Η δουλεία της find θα γίνει ουσιαστικά από την compare που παραθέτουμε κάθε φορά στην λίστα
+	// The work of find will essentially be done by the compare function that we provide each time to the list
 	ListNode node = listFind(map->arrayOfBuckets[pos], key);
-	if(node == NULL){
+	if (node == NULL) {
 		return NULL;
-	}
-	else{
+	} else {
 		return listNodeValue(node);
 	}
 }
 
-
 void mapDestroy(Map map) {
 	for (int i = 0; i < map->capacity; i++) {
-		if(map->arrayOfBuckets[i] != NULL){
+		if (map->arrayOfBuckets[i] != NULL) {
 			listDestroy(map->arrayOfBuckets[i]);
 		}
 	}
 	free(map->arrayOfBuckets);
 	free(map);
 }
-
 
 Pointer mapNodeKey(Map map, MapNode node) {
 	return node->keyId;
@@ -105,10 +97,10 @@ Pointer mapNodeValue(MapNode node) {
 	return node->value;
 }
 
-// djb2 hash function για strings (όπως αναφέρθηκε στο piazza επιτρέπεται να χρησιμοποιηθεί έτοιμη συνάρτηση)
+// djb2 hash function for strings (as mentioned on Piazza, it is allowed to use a ready-made function)
 unsigned int hashFunction(char* value) {
-    unsigned int  hash = 5381;
-    for (char* s = value; *s != '\0'; s++)
+	unsigned int hash = 5381;
+	for (char* s = value; *s != '\0'; s++)
 		hash = (hash << 5) + hash + *s;
-    return hash;
+	return hash;
 }

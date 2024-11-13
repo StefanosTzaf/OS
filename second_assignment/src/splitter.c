@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 int main(int argc, char* argv[]){
-    //χωρίς ορίσματα(το αρχείο είναι ανοιχτό από τη κλήση της exec δεν το περνάμε σαν όρισμα)
+    // without arguments (the file is open from the exec call, we do not pass it as an argument)
     if(argc != 5){
         fprintf(stderr, "Usage: ./splitter <inputFile> <startLine> <endLine> <numberOfBytes>\n");
         exit(1);
@@ -17,7 +17,7 @@ int main(int argc, char* argv[]){
         perror("Error opening file");
         exit(1);
     }
-    //διαβάζουμε το αρχείο από εκεί που ξεκινάει ο συγκεκριμένος splitter
+    // read the file from where this specific splitter starts
     int startLine = atoi(argv[2]);
     int endLine = atoi(argv[3]);
     int firstByteToRead = atoi(argv[4]);
@@ -36,10 +36,10 @@ int main(int argc, char* argv[]){
     while(bytesRead > 0){
 
         int size = 0;
-        //αν μία λέξη τελειώνει με σημείο στίξης
+        // if a word ends with punctuation
         int endsWithPunct = 0;
         int capacity = 10;
-        //αν μία λέξη είναι της μορφης λ3ξη$ τότε δεν είναι έγκυρη
+        // if a word is of the form λ3ξη$ then it is not valid
         int valid = 1;
         int ch;
         char *word = malloc(capacity * sizeof(char));
@@ -49,14 +49,14 @@ int main(int argc, char* argv[]){
             if (ch == '\n') {
                 currentLine++;
             }
-            //αν φτάσαμε στην επόμενη γραμμή, από την τελευταία η δουλειά του splitter έχει τελειώσει
+            // if we reached the next line, after the last one, the splitter's job is done
             if(currentLine == atoi(argv[3]) + 1){
                 allLinesRead = true;
                 break;
             }
 
             if (isalpha(ch)) {
-                //δυναμική αύξηση του word (δεν έχουμε όριο στο μέγεθος της λέξης)
+                // dynamic increase of word (we have no limit on the word size)
                 if (size >= capacity - 1) {
                     capacity *= 2;
                     word = realloc(word, capacity * sizeof(char));
@@ -79,15 +79,15 @@ int main(int argc, char* argv[]){
                         printf("Read valid word: %s\n", word);
                     }
                 }
-                //για την επόμενη λέξη
+                // for the next word
                 size = 0;
                 valid = 1;
                 endsWithPunct = 0;
             } 
             // else {
-            //     //σε περίπτωση που έχουμε μη εγκυρο χαρακτήρα
+            //     // in case we have an invalid character
             //     valid = 0;
-            //     //προσπερνάμε τους χαρακτήρες μέχρι να βρούμε κενό
+            //     // skip characters until we find a space
             //     while ((ch != EOF) && (ch != ' ' ) && (ch != '\n')) {
             //         printf("Skipping invalid character: %c\n", ch);
             //         ch = getchar();
@@ -111,8 +111,8 @@ int main(int argc, char* argv[]){
         if(allLinesRead){
             break;
         }
-        //εάν έχουμε διαβάσει όλο τον buffer και δεν έχουμε διαβάσει
-        //τις γραμμές που αναλογούν στον splitter τότε διαβάζουμε ξανά
+        // if we have read the entire buffer and have not read
+        // the lines corresponding to the splitter, then read again
 
         if(bytesRead == 0){
             bytesRead = read(fd, buffer, sizeof(buffer));

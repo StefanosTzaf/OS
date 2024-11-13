@@ -1,41 +1,41 @@
-//--------------------------------------Υλοποίηση διπλά συνδεδεμένης λίστας-----------------------------------------
+//--------------------------------------Implementation of a doubly linked list-----------------------------------------
 #include <stdlib.h>
 #include <stdio.h>
 
 typedef void* Pointer;
-//H λίστα μας θελουμε να ειναι generic γιαυτο θα περιέχει pointer σε στοιχεία τύπου void
+// We want our list to be generic, so it will contain pointers to elements of type void
 typedef struct list* List;
 typedef struct list_node* ListNode;
 
-//Χρησιμοποιύμε δείκτη σε συνάρτηση για συγκριση 2 στοιχείων, επιστρέφει:
-// 0 αν είναι ίσα βάση της συνάρτησης (όχι αναγκαστικά *a == *b μπορει να έχουμε να κάνουμε με struct αρα η compare θα είναι διαφορετική και αυτή είναι η αξία της)
-//Χρησιμοποιείται στην listFind
+// We use a function pointer for comparing 2 elements, it returns:
+// 0 if they are equal based on the function (not necessarily *a == *b, we might be dealing with structs so the compare function will be different and this is its value)
+// It is used in listFind
 typedef int (*CompareFunc)(Pointer a, Pointer b);
-
 
 typedef void (*DestroyFunc)(Pointer value);
 
-//(Ο(1))
+// (O(1))
 List listCreate(DestroyFunc destroyValue, CompareFunc compare);
 
-//(Ο(1))
+// (O(1))
 void listInsert(List list, Pointer value);
 
-//(Ο(n)) λόγω της ListFind
+// (O(n)) due to ListFind
 void listDeleteNode(List list, Pointer value);
-//O(1)
+// O(1)
 void listRemoveLast(List list);
 
-//(Ο(n))
+// (O(n))
 void listDestroy(List list);
 
-//(Ο(n))
+// (O(n))
 ListNode listFind(List list, Pointer value);
 
-//(Ο(1))
+// (O(1))
 ListNode listGetLast(List list);
 ListNode listGetFirst(List list);
 ListNode listGetNext(ListNode node);
 Pointer listNodeValue(ListNode node);
 int listSize(List list);
 void listSetDestroyValue(List list, DestroyFunc destroyValue);
+
