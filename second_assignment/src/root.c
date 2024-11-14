@@ -95,37 +95,43 @@ int main(int argc, char* argv[]) {
 
 
 //---------------------------------------------------------------------builders---------------------------------------------------------------------
-    //δημιουργία n*l named pipes για την επικοινωνία των splitter με τους builders
-    // char fifoName[1024];
-    // for (int s = 0; s < numOfSplitter; s++) {
-    //     for (int b = 0; b < numOfBuilders; b++) {
-    //         //print σαν συμβολοσειρά τον αριθμό του named pipe
-    //         //που καθορίζεται μονοσύμαντα από τον αριθμό του splitter και του builder
-    //         snprintf(fifoName, 1024, "fifo_splitter%d_builder%d", s, b);
-    //         if (mkfifo(fifoName, 0666) == -1) {
-    //             perror("Error creating FIFO");
-    //             exit(1);
-    //         }
-    //     }
-    // }
+    //creating pipes for communication from splitters to builders(one for every builder)
+    int pipesSplitterToBuilder[numOfBuilders][2];
+    for (int b = 0; b < numOfBuilders; b++) {
+        if(pipe(pipesSplitterToBuilder[b]) == -1){
+            perror("Error creating pipe");
+            exit(1);
+        }
+    }
 
-    // pid_t builderPids[numOfBuilders];
-    // for (int b = 0; b < numOfBuilders; b++) {
-    //     pid_t pid = fork();
+
+    pid_t builderPids[numOfBuilders];
+    for (int b = 0; b < numOfBuilders; b++) {
+        pid_t pid = fork();
         
-    //     if (pid == -1) {
-    //         perror("Error forking builder process");
-    //         exit(1);
-    //     }
-    //     else if (pid == 0) {
-    //         char fifoBuilder[1024];
-    //         execlp("./builder", "./builder", NULL);
-    //         exit(EXIT_SUCCESS);
-    //     }
-    //     else {
-    //         builderPids[b] = pid;
-    //     }
-    // }
+        if (pid == -1) {
+            perror("Error forking builder process");
+            exit(1);
+        }
+        else if (pid == 0) {
+            // Close the read end of the pipe in the builder
+            for(int i = 0; i < numOfBuilders; i++){
+                if(i != b){
+                    close(pipesSplitterToBuilder[i][0]);
+                }
+                // Close the write end of the pipe in the builder
+                close(pipesSplitterToBuilder[i][1]);
+            }
+            int fdForBuilder = pipesSplitterToBuilder[b][0];
+            char fdForBuilderStr[16];
+            sprintf(fdForBuilderStr, "%d", fdForBuilder);
+            execlp("./builder", "./builder", fdForBuilder, NULL);
+            exit(EXIT_SUCCESS);
+        }
+        else {
+            builderPids[b] = pid;
+        }
+    }
 //---------------------------------------------------------------------splitters---------------------------------------------------------------------
 
 
@@ -139,6 +145,9 @@ int main(int argc, char* argv[]) {
     int bytesRemainingInBuffer = 0;
     int nextCharToRead = 0;
 
+    char numberOfBuilders[16];
+    sprintf(numberOfBuilders, "%d", numOfBuilders);
+
     for (int i = 0; i < numOfSplitter; i++) {
         pid_t pid = fork();
         
@@ -150,6 +159,13 @@ int main(int argc, char* argv[]) {
         // splitter
         else if (pid == 0){
             // Close the write end of the pipe in the splitter
+            for(int b = 0; b < numOfBuilders; b++){
+                // Close the read end of the pipe in the splitter
+                close(pipesSplitterToBuilder[b][0]);
+                // Redirect the standar output of the splitter into the pipe
+                dup2(pipesSplitterToBuilder[b][1], 1);
+            }
+
             int startLine = ( (i == 0) ? 1 : (i * linesForSplitter) + 1);
 
             // If it is the last line, the last splitter will take the remaining lines
@@ -159,12 +175,13 @@ int main(int argc, char* argv[]) {
             char end[16];
             sprintf(start, "%d", startLine);
             sprintf(end, "%d", endLine);
+            
 
             // after how many lines it will start reading
             int position = i * linesForSplitter;
             char firstByteForSplitter[32];
             sprintf(firstByteForSplitter, "%d", bytesPerLine[position]);
-            execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, NULL);
+            execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, numberOfBuilders, NULL);
 
             perror("Error executing splitter");
             exit(EXIT_FAILURE);
@@ -182,10 +199,11 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < numOfSplitter; i++) {
         waitpid(splitterPids[i], NULL, 0);
     }
-    // for (int i = 0; i < numOfBuilders; i++) {
-    //     waitpid(builderPids[i], NULL, 0);
-    // }
+    for (int i = 0; i < numOfBuilders; i++) {
+        waitpid(builderPids[i], NULL, 0);
+    }
 
+    
     free(bytesPerLine);
     // When freeing the list, free will be called for each node
     // so the space allocated for the string in the main will also be freed

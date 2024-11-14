@@ -49,7 +49,8 @@ void mapRemove(Map map, char* key) {
 	MapNode node = mapFindNode(map, key);
 	if (node == NULL) {
 		return;
-	} else {
+	} 
+	else{	
 		listDeleteNode(map->arrayOfBuckets[hashFunction(key) % map->capacity], node);
 	}
 }
@@ -58,7 +59,8 @@ Pointer mapFind(Map map, char* key) {
 	MapNode node = mapFindNode(map, key);
 	if (node == NULL) {
 		return NULL;
-	} else {
+	} 
+	else{
 		return node->value;
 	}
 }
@@ -74,7 +76,8 @@ MapNode mapFindNode(Map map, char* key) {
 	ListNode node = listFind(map->arrayOfBuckets[pos], key);
 	if (node == NULL) {
 		return NULL;
-	} else {
+	} 
+	else{
 		return listNodeValue(node);
 	}
 }

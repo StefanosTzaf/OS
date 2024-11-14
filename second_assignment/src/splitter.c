@@ -5,10 +5,11 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include "utils.h"
 
 int main(int argc, char* argv[]){
     // without arguments (the file is open from the exec call, we do not pass it as an argument)
-    if(argc != 5){
+    if(argc != 6){
         fprintf(stderr, "Usage: ./splitter <inputFile> <startLine> <endLine> <numberOfBytes>\n");
         exit(1);
     }
@@ -23,16 +24,17 @@ int main(int argc, char* argv[]){
     int startLine = atoi(argv[2]);
     int endLine = atoi(argv[3]);
     int firstByteToRead = atoi(argv[4]);
+    int numberOfBuilders = atoi(argv[5]);
 
     // set the read pointer to the first byte of the splitter
     lseek(fd, firstByteToRead, SEEK_SET);
-
     int linesToRead = endLine - startLine + 1;
-
     int currentLine = startLine;
+
+    write(STDOUT_FILENO, &linesToRead, sizeof(int));
+
     char buffer[1024];
     bool allLinesRead = false;
-    
     int bytesRead = read(fd, buffer, sizeof(buffer));
     while(bytesRead > 0){
 
@@ -41,7 +43,6 @@ int main(int argc, char* argv[]){
         int capacity = 10;
         // if a word is of the form w#ord then it is not valid
         int valid = 1;
-        int ch;
         char *word = malloc(capacity * sizeof(char));
 
         //----------------------------------------------- words' seperation and checks -----------------------------------------------
@@ -57,7 +58,7 @@ int main(int argc, char* argv[]){
                 // Handle the last word
                 if(size > 0 && valid){
                     word[size] = '\0';
-                    printf("Read valid word: %s\n", word);
+                    int hash = splitterHashFunction(word, numberOfBuilders);
                 }
                 break;
             }
@@ -71,15 +72,22 @@ int main(int argc, char* argv[]){
                 }
                 word[size++] = ch;
             } 
-            else if (ispunct(ch) && (size > 0) && (valid)) {
-                word[size] = '\0';
-                printf("Read valid word: %s\n", word);
-                size = 0;
+            else if (ispunct(ch) && (valid)) {
+                //a punctuation character  found in the beginning etc "word
+
+                if(size == 0){
+                }
+                // a punctuation character found and the word ends 
+                else{
+                    word[size] = '\0';
+                    int hash = splitterHashFunction(word, numberOfBuilders);
+                    size = 0;
+                }
             } 
             else if (ch == ' ' ||ch == '\n') {
                 if (size > 0 && valid) {
                     word[size] = '\0';
-                    printf("Read valid word: %s\n", word);
+                    int hash = splitterHashFunction(word, numberOfBuilders);
                 }
                 // for the next word
                 size = 0;
@@ -101,10 +109,12 @@ int main(int argc, char* argv[]){
                 i++;
             }
         }
+
+        
         //--------------------------------------------------------------------------------------------------
         if(size > 0 && valid){
             word[size] = '\0';
-            printf("Read valid word: %s\n", word);
+            int hash = splitterHashFunction(word, numberOfBuilders);
         }
         free(word);
         if(allLinesRead){
@@ -118,6 +128,8 @@ int main(int argc, char* argv[]){
 
     }
 
+
+    printf("Splitter %d done\n", getpid());
     close(fd);
     return 0;
 

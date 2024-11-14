@@ -1,0 +1,1 @@
+int splitterHashFunction(char *word, int numberOfBuilders);
