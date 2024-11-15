@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
 
 int main(int argc, char* argv[]){
    if(argc != 2){
@@ -15,33 +16,37 @@ int main(int argc, char* argv[]){
    char buffer[1024];
 
    int sizeofWord = 0;
-   char* word = NULL;
+   int capacity = 10;
+   char* word = malloc(capacity);
+   
    while (1) {
       int bytes = read(fd, buffer, sizeof(buffer));
       if (bytes == 0) {
          break;
       }
-     //printf ("%s\n", buffer);
+
       for(int i = 0; i < bytes; i++){
          sizeofWord++;
-         word = realloc(word, sizeofWord);
 
-         // if(buffer[i] == ' ' && sizeofWord > 0){
-         //    word[sizeofWord - 1] = '\0';
-         //    printf("%s\n", word);
-         //    free(word);
-         //    word = NULL;
-         //    sizeofWord = 0;
-         // }
-         // else{
-         //    word[sizeofWord - 1] = buffer[i];
+         if (sizeofWord > capacity){
+            capacity *= 2;
+            word = realloc(word, capacity);
+         }
 
-         // } 
+
+         if(buffer[i] == '-' && sizeofWord > 0){
+            memset(word, '\0', sizeofWord);
+            sizeofWord = 0;
+         }
+         else{
+            word[sizeofWord - 1] = buffer[i];
+
+         } 
 
       }
 
    }
-
+   free(word);
    close(fd);
    
    exit(0);
