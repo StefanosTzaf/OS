@@ -48,9 +48,10 @@ int main(int argc, char* argv[]){
         int valid = 1;
         char *word = malloc(capacity * sizeof(char));
         //if the word is the last one
-        bool eofWord = true;
+
         //----------------------------------------------- words' seperation and checks -----------------------------------------------
-        int i = 0; 
+        int i = 0;
+        
         while(i < bytesRead){
 
             char ch = buffer[i];
@@ -62,10 +63,13 @@ int main(int argc, char* argv[]){
                 allLinesRead = true;
                 // Handle the last word
                 if(size > 0 && valid){
-                    word[size] = ' ';
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    eofWord = false;
-                    write(writeEndFds[hash], word, strlen(word));
+                    word[size] = ' ';
+
+                    printf("%s\n", word);
+                  //  write(writeEndFds[hash], word, strlen(word));
+                    // for the next word
+                    memset(word, '\0', size);
                 }
                 break;
             }
@@ -78,27 +82,34 @@ int main(int argc, char* argv[]){
                     word = realloc(word, capacity * sizeof(char));
                 }
                 word[size++] = ch;
-            } 
+            }
+
             else if (ispunct(ch) && (valid)) {
                 //a punctuation character  found in the beginning etc "word
 
-                if(size == 0){
-                }
+                
                 // a punctuation character found and the word ends 
-                else{
-                    word[size] = ' ';
+                if(size > 0){
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    write(writeEndFds[hash], word, strlen(word));
-                    eofWord = false;
+                    word[size] = ' ';
+                    printf("%s\n", word);
+                //    write(writeEndFds[hash], word, strlen(word));
+
+                    memset(word, '\0', size);
                     size = 0;
                 }
-            } 
+                //else skip the punctuation character if it is in the beggining of the word
+            }
+
             else if (ch == ' ' ||ch == '\n') {
                 if (size > 0 && valid) {
-                    word[size] = ' ';
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    write(writeEndFds[hash], word, strlen(word));
-                    eofWord = false;
+                    word[size] = ' ';
+                    printf("%s\n", word);
+                 //   write(writeEndFds[hash], word, strlen(word));
+
+                    memset(word, '\0', size);
+                    
                 }
                 // for the next word
                 size = 0;
@@ -112,8 +123,6 @@ int main(int argc, char* argv[]){
                     i++;
                     ch = buffer[i];
                 }
-                
-
             }
             if(valid){
                 //if the character was not invalid, we move to the next character
@@ -124,15 +133,11 @@ int main(int argc, char* argv[]){
         
         //--------------------------------------------------------------------------------------------------
         //if the word was the last of the file
-        // if(size > 0 && valid && eofWord){
-        //     word[size] = '\0';
-
-        //     FILE *file = fopen("re.txt", "a");
-
-        //     fprintf(file, "%s\n", word);
-        //     fclose(file);
-        //     int hash = splitterHashFunction(word, numberOfBuilders);
-        // }
+        if(size > 0 && valid){
+            int hash = splitterHashFunction(word, numberOfBuilders);
+            word[size] = ' ';
+            printf("%s\n", word);
+        }
         
         free(word);
         if(allLinesRead){
