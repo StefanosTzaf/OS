@@ -64,12 +64,12 @@ int main(int argc, char* argv[]){
                 // Handle the last word
                 if(size > 0 && valid){
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    word[size] = ' ';
-
+                    word[size] = '-';
                     printf("%s\n", word);
-                  //  write(writeEndFds[hash], word, strlen(word));
+                    write(writeEndFds[hash], word, strlen(word));
                     // for the next word
-                    memset(word, '\0', size);
+                    memset(word, '\0', capacity);
+
                 }
                 break;
             }
@@ -91,11 +91,10 @@ int main(int argc, char* argv[]){
                 // a punctuation character found and the word ends 
                 if(size > 0){
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    word[size] = ' ';
+                    word[size] = '-';
+                    write(writeEndFds[hash], word, strlen(word));
+                    memset(word, '\0', capacity);
                     printf("%s\n", word);
-                //    write(writeEndFds[hash], word, strlen(word));
-
-                    memset(word, '\0', size);
                     size = 0;
                 }
                 //else skip the punctuation character if it is in the beggining of the word
@@ -104,15 +103,14 @@ int main(int argc, char* argv[]){
             else if (ch == ' ' ||ch == '\n') {
                 if (size > 0 && valid) {
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    word[size] = ' ';
+                    word[size] = '-';
                     printf("%s\n", word);
-                 //   write(writeEndFds[hash], word, strlen(word));
-
-                    memset(word, '\0', size);
+                    //write(writeEndFds[hash], word, strlen(word));
+                    memset(word, '\0', capacity);
+                    size = 0;
                     
                 }
                 // for the next word
-                size = 0;
                 valid = 1;
             } 
             else {
@@ -134,9 +132,13 @@ int main(int argc, char* argv[]){
         //--------------------------------------------------------------------------------------------------
         //if the word was the last of the file
         if(size > 0 && valid){
+
             int hash = splitterHashFunction(word, numberOfBuilders);
-            word[size] = ' ';
+            word[size] = '-';
             printf("%s\n", word);
+            memset(word, '\0', capacity);
+            size = 0;
+
         }
         
         free(word);
@@ -158,6 +160,6 @@ int main(int argc, char* argv[]){
     close(fd);
     free(writeEndFds);
 
-    return 0;
+    exit(0);
 
 }
