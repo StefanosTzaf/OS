@@ -180,12 +180,12 @@ int main(int argc, char* argv[]) {
             sprintf(end, "%d", endLine);
             
 
-            // after how many lines it will start reading
+            // after how many bytes it will start reading
             int position = i * linesForSplitter;
             char firstByteForSplitter[32];
             sprintf(firstByteForSplitter, "%d", bytesPerLine[position]);
 
-            
+           
             execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, numberOfBuilders, pipeWriteEnds, NULL);
 
             perror("Error executing splitter");

@@ -30,32 +30,29 @@ int main(int argc, char* argv[]){
     //file descriptors for writing in every pipe
     int* writeEndFds = writeFdsToInt(writeEnds, numberOfBuilders);
 
-    write(writeEndFds[0], "Hello", 5);
-    for(int i = 0; i < numberOfBuilders; i++){
-        close(writeEndFds[i]);
-    }
-
     // set the read pointer to the first byte of the splitter
     lseek(fd, firstByteToRead, SEEK_SET);
     int linesToRead = endLine - startLine + 1;
     int currentLine = startLine;
 
 
-/*    char buffer[1024];
+    char buffer[1024];
     bool allLinesRead = false;
     int bytesRead = read(fd, buffer, sizeof(buffer));
     while(bytesRead > 0){
 
-        int size = 0;
         //the initial capacity for the word
+        int size = 0;
         int capacity = 10;
         // if a word is of the form w#ord then it is not valid
         int valid = 1;
         char *word = malloc(capacity * sizeof(char));
-
+        //if the word is the last one
+        bool eofWord = true;
         //----------------------------------------------- words' seperation and checks -----------------------------------------------
         int i = 0; 
         while(i < bytesRead){
+
             char ch = buffer[i];
             if (ch == '\n') {
                 currentLine++;
@@ -65,8 +62,10 @@ int main(int argc, char* argv[]){
                 allLinesRead = true;
                 // Handle the last word
                 if(size > 0 && valid){
-                    word[size] = '\0';
+                    word[size] = ' ';
                     int hash = splitterHashFunction(word, numberOfBuilders);
+                    eofWord = false;
+                    write(writeEndFds[hash], word, strlen(word));
                 }
                 break;
             }
@@ -87,15 +86,19 @@ int main(int argc, char* argv[]){
                 }
                 // a punctuation character found and the word ends 
                 else{
-                    word[size] = '\0';
+                    word[size] = ' ';
                     int hash = splitterHashFunction(word, numberOfBuilders);
+                    write(writeEndFds[hash], word, strlen(word));
+                    eofWord = false;
                     size = 0;
                 }
             } 
             else if (ch == ' ' ||ch == '\n') {
                 if (size > 0 && valid) {
-                    word[size] = '\0';
+                    word[size] = ' ';
                     int hash = splitterHashFunction(word, numberOfBuilders);
+                    write(writeEndFds[hash], word, strlen(word));
+                    eofWord = false;
                 }
                 // for the next word
                 size = 0;
@@ -120,10 +123,16 @@ int main(int argc, char* argv[]){
 
         
         //--------------------------------------------------------------------------------------------------
-        if(size > 0 && valid){
-            word[size] = '\0';
-            int hash = splitterHashFunction(word, numberOfBuilders);
-        }
+        //if the word was the last of the file
+        // if(size > 0 && valid && eofWord){
+        //     word[size] = '\0';
+
+        //     FILE *file = fopen("re.txt", "a");
+
+        //     fprintf(file, "%s\n", word);
+        //     fclose(file);
+        //     int hash = splitterHashFunction(word, numberOfBuilders);
+        // }
         
         free(word);
         if(allLinesRead){
@@ -136,8 +145,11 @@ int main(int argc, char* argv[]){
     
 
     }
-    */
+    
 
+    for(int i = 0; i < numberOfBuilders; i++){
+        close(writeEndFds[i]);
+    }
     close(fd);
     free(writeEndFds);
 
