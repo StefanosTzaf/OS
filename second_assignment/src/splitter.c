@@ -9,7 +9,7 @@
 
 int main(int argc, char* argv[]){
     // without arguments (the file is open from the exec call, we do not pass it as an argument)
-    if(argc != 6){
+    if(argc != 7){
         fprintf(stderr, "Usage: ./splitter <inputFile> <startLine> <endLine> <numberOfBytes>\n");
         exit(1);
     }
@@ -25,13 +25,19 @@ int main(int argc, char* argv[]){
     int endLine = atoi(argv[3]);
     int firstByteToRead = atoi(argv[4]);
     int numberOfBuilders = atoi(argv[5]);
+    char* writeEnds = argv[6];
+
+    //file descriptors for writing in every pipe
+    int* writeEndFds = writeFdsToInt(writeEnds, numberOfBuilders);
+    for(int i = 0; i < numberOfBuilders; i++){
+        printf("Splitter %d: %d\n", getpid(), writeEndFds[i]);
+    }
 
     // set the read pointer to the first byte of the splitter
     lseek(fd, firstByteToRead, SEEK_SET);
     int linesToRead = endLine - startLine + 1;
     int currentLine = startLine;
 
-    write(STDOUT_FILENO, &linesToRead, sizeof(int));
 
     char buffer[1024];
     bool allLinesRead = false;
@@ -127,9 +133,8 @@ int main(int argc, char* argv[]){
     
 
     }
+    free(writeEndFds);
 
-
-    printf("Splitter %d done\n", getpid());
     close(fd);
     return 0;
 

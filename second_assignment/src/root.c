@@ -8,7 +8,7 @@
 #include <string.h>
 #include <getopt.h>
 #include "root.h"
-
+#include "utils.h"
 int main(int argc, char* argv[]) {
     if(argc != 13){
         fprintf(stderr, "Usage: ./lexan -i <TextFile> -l <numOfSplitter> -m <numOfBuilders> -t <TopPopular> -e <ExclusoionListFile> -o <OutputFile>\n" );
@@ -53,10 +53,10 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Error opening file %s\n", inputFile);
         return 1;
     }
+
     int lines = 1;
     int bytesRead;
     char buffer[4096];
-
     // calculate the number of lines in the file
     while ((bytesRead = read(fdInput, buffer, sizeof(buffer))) > 0) {
         for (int i = 0; i < bytesRead; i++) {
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
         else if (pid == 0) {
-            // Close the read end of the pipe in the builder
+            // Close the read end of the pipe in the builder exept for the pipe of this builder
             for(int i = 0; i < numOfBuilders; i++){
                 if(i != b){
                     close(pipesSplitterToBuilder[i][0]);
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
             int fdForBuilder = pipesSplitterToBuilder[b][0];
             char fdForBuilderStr[16];
             sprintf(fdForBuilderStr, "%d", fdForBuilder);
-            execlp("./builder", "./builder", fdForBuilder, NULL);
+            execlp("./builder", "./builder", fdForBuilderStr, NULL);
             exit(EXIT_SUCCESS);
         }
         else {
@@ -148,6 +148,10 @@ int main(int argc, char* argv[]) {
     char numberOfBuilders[16];
     sprintf(numberOfBuilders, "%d", numOfBuilders);
 
+    //creating a string of write end file descriptors of pipes so as to pass it to every splitter
+    //also doing it one time before fork, so that we don't need to do it for every splitter
+    char* pipeWriteEnds = printingFdsToString(numOfBuilders, pipesSplitterToBuilder);
+
     for (int i = 0; i < numOfSplitter; i++) {
         pid_t pid = fork();
         
@@ -158,12 +162,10 @@ int main(int argc, char* argv[]) {
 
         // splitter
         else if (pid == 0){
-            // Close the write end of the pipe in the splitter
             for(int b = 0; b < numOfBuilders; b++){
                 // Close the read end of the pipe in the splitter
                 close(pipesSplitterToBuilder[b][0]);
                 // Redirect the standar output of the splitter into the pipe
-                dup2(pipesSplitterToBuilder[b][1], 1);
             }
 
             int startLine = ( (i == 0) ? 1 : (i * linesForSplitter) + 1);
@@ -181,7 +183,9 @@ int main(int argc, char* argv[]) {
             int position = i * linesForSplitter;
             char firstByteForSplitter[32];
             sprintf(firstByteForSplitter, "%d", bytesPerLine[position]);
-            execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, numberOfBuilders, NULL);
+
+            
+            execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, numberOfBuilders, pipeWriteEnds, NULL);
 
             perror("Error executing splitter");
             exit(EXIT_FAILURE);
@@ -205,6 +209,7 @@ int main(int argc, char* argv[]) {
 
     
     free(bytesPerLine);
+    free(pipeWriteEnds);
     // When freeing the list, free will be called for each node
     // so the space allocated for the string in the main will also be freed
     listDestroy(exclusionList);

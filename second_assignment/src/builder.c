@@ -13,7 +13,14 @@ int main(int argc, char* argv[]){
    }
    int fd = atoi(argv[1]);
    char buffer[1024];
-   int bytes  = read(fd, buffer, sizeof(buffer));
-   printf("Builder %d received %d bytes\n", fd, bytes);
+   
+   // while (1) {
+   //    int bytes = read(fd, buffer, sizeof(buffer));
+   //    if (bytes == 0) {
+   //       break;
+   //    }
+   //    printf("%s", buffer);
+   // }
+
    exit(0);
 }
