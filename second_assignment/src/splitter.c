@@ -29,8 +29,10 @@ int main(int argc, char* argv[]){
 
     //file descriptors for writing in every pipe
     int* writeEndFds = writeFdsToInt(writeEnds, numberOfBuilders);
+
+    write(writeEndFds[0], "Hello", 5);
     for(int i = 0; i < numberOfBuilders; i++){
-        printf("Splitter %d: %d\n", getpid(), writeEndFds[i]);
+        close(writeEndFds[i]);
     }
 
     // set the read pointer to the first byte of the splitter
@@ -39,7 +41,7 @@ int main(int argc, char* argv[]){
     int currentLine = startLine;
 
 
-    char buffer[1024];
+/*    char buffer[1024];
     bool allLinesRead = false;
     int bytesRead = read(fd, buffer, sizeof(buffer));
     while(bytesRead > 0){
@@ -122,6 +124,7 @@ int main(int argc, char* argv[]){
             word[size] = '\0';
             int hash = splitterHashFunction(word, numberOfBuilders);
         }
+        
         free(word);
         if(allLinesRead){
             break;
@@ -133,9 +136,11 @@ int main(int argc, char* argv[]){
     
 
     }
-    free(writeEndFds);
+    */
 
     close(fd);
+    free(writeEndFds);
+
     return 0;
 
 }

@@ -113,6 +113,7 @@ int main(int argc, char* argv[]) {
             perror("Error forking builder process");
             exit(1);
         }
+
         else if (pid == 0) {
             // Close the read end of the pipe in the builder exept for the pipe of this builder
             for(int i = 0; i < numOfBuilders; i++){
@@ -129,6 +130,7 @@ int main(int argc, char* argv[]) {
             exit(EXIT_SUCCESS);
         }
         else {
+            //for parent process close both write and read end
             builderPids[b] = pid;
         }
     }
@@ -165,7 +167,6 @@ int main(int argc, char* argv[]) {
             for(int b = 0; b < numOfBuilders; b++){
                 // Close the read end of the pipe in the splitter
                 close(pipesSplitterToBuilder[b][0]);
-                // Redirect the standar output of the splitter into the pipe
             }
 
             int startLine = ( (i == 0) ? 1 : (i * linesForSplitter) + 1);
@@ -192,10 +193,14 @@ int main(int argc, char* argv[]) {
         }
          
         else {
-
             // In the parent, we store the PID of the created splitter
             splitterPids[i] = pid;
         }
+        
+    }
+    for(int i = 0; i < numOfBuilders; i++){
+        close(pipesSplitterToBuilder[i][0]);
+        close(pipesSplitterToBuilder[i][1]);
     }
 
 
@@ -213,4 +218,5 @@ int main(int argc, char* argv[]) {
     // When freeing the list, free will be called for each node
     // so the space allocated for the string in the main will also be freed
     listDestroy(exclusionList);
+
 }
