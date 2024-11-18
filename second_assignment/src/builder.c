@@ -35,6 +35,7 @@ int main(int argc, char* argv[]){
 
 
          if(buffer[i] == '-' && sizeofWord > 0){
+            printf("%s\n",word);
             memset(word, '\0', sizeofWord);
             sizeofWord = 0;
          }
