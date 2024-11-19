@@ -1,5 +1,6 @@
 #include "utils.h"
 
+
 int splitterHashFunction(char *word, int numberOfBuilders){
 	unsigned int hash = 5381;
 	for (char* s = word; *s != '\0'; s++)
@@ -44,4 +45,31 @@ int* writeFdsToInt(char* pipeWriteEnds, int numOfBuilders){
 		i++;
 	}
 	return fds;
+}
+
+
+Map exclusionHashTable(int fd){
+	char buffer[1024];
+    int bytesRead;
+    int lineCount = 0;
+
+    // Read the file in chunks
+    while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
+        for (int i = 0; i < bytesRead; i++) {
+            if (buffer[i] == '\n') {
+                lineCount++;
+            }
+        }
+    }
+	Map exclusionMap = mapCreate(strcmp, free, lineCount);
+	lseek(fd, 0, SEEK_SET);
+	while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
+		char* token = strtok(buffer, "\n");
+		while(token != NULL){
+			mapInsert(exclusionMap, token, NULL);
+			token = strtok(NULL, "\n");
+		}
+	}
+	return exclusionMap;
+
 }

@@ -107,3 +107,4 @@ unsigned int hashFunction(char* value) {
 		hash = (hash << 5) + hash + *s;
 	return hash;
 }
+

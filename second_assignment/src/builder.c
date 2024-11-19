@@ -6,12 +6,14 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include "builder.h"
 
 int main(int argc, char* argv[]){
    if(argc != 2){
       fprintf(stderr, "Usage: ./builder <read end fd for pipe>\n");
       exit(1);
    }
+
    int fd = atoi(argv[1]);
    char buffer[1024];
 
@@ -35,6 +37,7 @@ int main(int argc, char* argv[]){
 
 
          if(buffer[i] == '-' && sizeofWord > 0){
+            printf("%s\n", word);
             memset(word, '\0', sizeofWord);
             sizeofWord = 0;
          }

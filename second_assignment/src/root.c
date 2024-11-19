@@ -20,7 +20,6 @@ int main(int argc, char* argv[]) {
     int numOfBuilders;
     int topPopular;
     char* outputFile = NULL;
-    List exclusionList = listCreate(free, NULL);
     char* exclusionFile = NULL;
     while((option = getopt(argc, argv, "i:l:m:t:e:o:")) != -1){
 
@@ -53,6 +52,7 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Error opening file %s\n", inputFile);
         return 1;
     }
+
 
     int lines = 1;
     int bytesRead;
@@ -136,6 +136,13 @@ int main(int argc, char* argv[]) {
     }
 //---------------------------------------------------------------------splitters---------------------------------------------------------------------
 
+    int fdExclusion = open(exclusionFile, O_RDONLY);
+    if(fdExclusion == -1){
+        perror("Error opening exclusion file");
+        exit(1);
+    }
+    char fdExclusionStr[16] ;
+    sprintf(fdExclusionStr, "%d", fdExclusion);
 
     // Create l splitters with lines/l lines each
     // except for the last one which might take a few more lines due to imperfect division
@@ -186,7 +193,7 @@ int main(int argc, char* argv[]) {
             sprintf(firstByteForSplitter, "%d", bytesPerLine[position]);
 
            
-            execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, numberOfBuilders, pipeWriteEnds, NULL);
+            execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, numberOfBuilders, pipeWriteEnds, fdExclusionStr, NULL);
 
             perror("Error executing splitter");
             exit(EXIT_FAILURE);
@@ -217,6 +224,6 @@ int main(int argc, char* argv[]) {
     free(pipeWriteEnds);
     // When freeing the list, free will be called for each node
     // so the space allocated for the string in the main will also be freed
-    listDestroy(exclusionList);
+
 
 }

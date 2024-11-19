@@ -28,3 +28,4 @@ Pointer mapNodeKey(Map map, MapNode node);
 Pointer mapNodeValue(MapNode node);
 
 unsigned int hashFunction(char* value);
+

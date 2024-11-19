@@ -9,7 +9,7 @@
 
 int main(int argc, char* argv[]){
     // without arguments (the file is open from the exec call, we do not pass it as an argument)
-    if(argc != 7){
+    if(argc != 8){
         fprintf(stderr, "Usage: ./splitter <inputFile> <startLine> <endLine> <numberOfBytes>\n");
         exit(1);
     }
@@ -26,6 +26,8 @@ int main(int argc, char* argv[]){
     int firstByteToRead = atoi(argv[4]);
     int numberOfBuilders = atoi(argv[5]);
     char* writeEnds = argv[6];
+    int fdExclusion = atoi(argv[7]);
+    Map exclusionMap = exclusionHashTable(fdExclusion);
 
     //file descriptors for writing in every pipe
     int* writeEndFds = writeFdsToInt(writeEnds, numberOfBuilders);
@@ -64,8 +66,10 @@ int main(int argc, char* argv[]){
                 // Handle the last word
                 if(size > 0 && valid){
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    word[size] = '-';
-                    //printf("%s\n", word);
+                    if(mapFindNode(exclusionMap, word) == NULL){
+                        word[size] = '-';
+                        write(writeEndFds[hash], word, strlen(word));
+                    }
                     write(writeEndFds[hash], word, strlen(word));
                     // for the next word
                     memset(word, '\0', capacity);
@@ -91,9 +95,11 @@ int main(int argc, char* argv[]){
                 // a punctuation character found and the word ends 
                 if(size > 0){
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    word[size] = '-';
-                    write(writeEndFds[hash], word, strlen(word));
-                    //printf("%s\n", word);
+                    if(mapFindNode(exclusionMap, word) == NULL){
+                        word[size] = '-';
+                        write(writeEndFds[hash], word, strlen(word));
+                    }
+
                     memset(word, '\0', capacity);
                     size = 0;
                 }
@@ -103,9 +109,10 @@ int main(int argc, char* argv[]){
             else if (isspace(ch) && (valid)) {
                 if (size > 0 && valid) {
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    word[size] = '-';
-                    //printf("%s\n", word);
-                    write(writeEndFds[hash], word, strlen(word));
+                    if(mapFindNode(exclusionMap, word) == NULL){
+                        word[size] = '-';
+                        write(writeEndFds[hash], word, strlen(word));
+                    }
                     memset(word, '\0', capacity);
                     size = 0;
                     
@@ -134,9 +141,10 @@ int main(int argc, char* argv[]){
         //if the word was the last of the file
         if(size > 0 && valid){
             int hash = splitterHashFunction(word, numberOfBuilders);
-            word[size] = '-';
-            //printf("%s\n", word);
-            write(writeEndFds[hash], word, strlen(word));
+            if(mapFindNode(exclusionMap, word) == NULL){
+                word[size] = '-';
+                write(writeEndFds[hash], word, strlen(word));
+            }
             memset(word, '\0', capacity);
             size = 0;
 
