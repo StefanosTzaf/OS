@@ -61,15 +61,46 @@ Map exclusionHashTable(int fd){
             }
         }
     }
-	Map exclusionMap = mapCreate(strcmp, free, lineCount);
+
+	Map exclusionMap = mapCreate(compareWords, free, lineCount);
+
 	lseek(fd, 0, SEEK_SET);
-	while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
-		char* token = strtok(buffer, "\n");
-		while(token != NULL){
-			mapInsert(exclusionMap, token, NULL);
-			token = strtok(NULL, "\n");
+	char ch;
+	int sizeOfWord = 0;
+	int capacity = 10;
+	char* word = malloc(capacity);
+	while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0){
+		for(int i = 0; i < bytesRead; i++){
+			ch = buffer[i];
+			if(sizeOfWord == capacity){
+				capacity *= 2;
+				word = realloc(word, capacity);
+			}
+			if(ch == '\n'){
+				char* newWord = malloc(sizeOfWord);
+				strcpy(newWord, word);
+				mapInsert(exclusionMap, newWord, newWord);
+				memset(word, '\0', sizeOfWord);
+				sizeOfWord = 0;
+			}
+			else{
+				word[sizeOfWord] = ch;
+				sizeOfWord++;
+			}
 		}
 	}
+	if(sizeOfWord > 0){
+		char* lastWord = malloc(sizeOfWord);
+		strcpy(lastWord, word);
+		mapInsert(exclusionMap, lastWord, lastWord);
+	}
+	
 	return exclusionMap;
 
+}
+
+int compareWords(Pointer a, Pointer b){
+	MapNode nodeA = (MapNode)a;
+	MapNode nodeB = (MapNode)b;
+	return strcmp(mapNodeKey(nodeA), mapNodeKey(nodeB));
 }

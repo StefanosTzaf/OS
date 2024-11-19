@@ -5,6 +5,9 @@
         "stdbool.h": "c",
         "graph.h": "c",
         "stat.h": "c",
-        "utils.h": "c"
+        "utils.h": "c",
+        "string.h": "c",
+        "stdlib.h": "c",
+        "map.h": "c"
     }
 }

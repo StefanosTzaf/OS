@@ -24,8 +24,9 @@ MapNode mapFindNode(Map map, char* key);
 void mapDestroy(Map map);
 
 // O(1)
-Pointer mapNodeKey(Map map, MapNode node);
+Pointer mapNodeKey(MapNode node);
 Pointer mapNodeValue(MapNode node);
 
 unsigned int hashFunction(char* value);
 
+void hashDisplay(Map table);

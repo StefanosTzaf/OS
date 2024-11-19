@@ -73,6 +73,8 @@ MapNode mapFindNode(Map map, char* key) {
 		return NULL;
 	}
 	// The work of find will essentially be done by the compare function that we provide each time to the list
+	
+	
 	ListNode node = listFind(map->arrayOfBuckets[pos], key);
 	if (node == NULL) {
 		return NULL;
@@ -92,7 +94,7 @@ void mapDestroy(Map map) {
 	free(map);
 }
 
-Pointer mapNodeKey(Map map, MapNode node) {
+Pointer mapNodeKey(MapNode node) {
 	return node->keyId;
 }
 
@@ -108,3 +110,21 @@ unsigned int hashFunction(char* value) {
 	return hash;
 }
 
+void hashDisplay(Map table){
+
+    for(int i = 0; i < table->capacity; i++){
+        if(table->arrayOfBuckets[i] == NULL){
+            continue;
+        }
+
+        List list = table->arrayOfBuckets[i];
+ 
+        ListNode node;
+        for(node = listGetFirst(list); node != NULL; node = listGetNext(node)){
+            MapNode hash_node = listNodeValue(node);
+
+            printf("key: %s \n", (char*)hash_node->keyId);
+
+        }
+    }
+}

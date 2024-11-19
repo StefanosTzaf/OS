@@ -27,6 +27,7 @@ int main(int argc, char* argv[]){
     int numberOfBuilders = atoi(argv[5]);
     char* writeEnds = argv[6];
     int fdExclusion = atoi(argv[7]);
+
     Map exclusionMap = exclusionHashTable(fdExclusion);
 
     //file descriptors for writing in every pipe
@@ -36,7 +37,6 @@ int main(int argc, char* argv[]){
     lseek(fd, firstByteToRead, SEEK_SET);
     int linesToRead = endLine - startLine + 1;
     int currentLine = startLine;
-
 
     char buffer[1024];
     bool allLinesRead = false;
@@ -66,11 +66,10 @@ int main(int argc, char* argv[]){
                 // Handle the last word
                 if(size > 0 && valid){
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    if(mapFindNode(exclusionMap, word) == NULL){
+                    if(mapFind(exclusionMap, word) == NULL){
                         word[size] = '-';
                         write(writeEndFds[hash], word, strlen(word));
                     }
-                    write(writeEndFds[hash], word, strlen(word));
                     // for the next word
                     memset(word, '\0', capacity);
                     size = 0;
@@ -95,11 +94,10 @@ int main(int argc, char* argv[]){
                 // a punctuation character found and the word ends 
                 if(size > 0){
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    if(mapFindNode(exclusionMap, word) == NULL){
+                    if(mapFind(exclusionMap, word) == NULL){
                         word[size] = '-';
                         write(writeEndFds[hash], word, strlen(word));
                     }
-
                     memset(word, '\0', capacity);
                     size = 0;
                 }
@@ -109,7 +107,7 @@ int main(int argc, char* argv[]){
             else if (isspace(ch) && (valid)) {
                 if (size > 0 && valid) {
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                    if(mapFindNode(exclusionMap, word) == NULL){
+                    if(mapFind(exclusionMap, word) == NULL){
                         word[size] = '-';
                         write(writeEndFds[hash], word, strlen(word));
                     }
@@ -141,7 +139,7 @@ int main(int argc, char* argv[]){
         //if the word was the last of the file
         if(size > 0 && valid){
             int hash = splitterHashFunction(word, numberOfBuilders);
-            if(mapFindNode(exclusionMap, word) == NULL){
+            if(mapFind(exclusionMap, word) == NULL){
                 word[size] = '-';
                 write(writeEndFds[hash], word, strlen(word));
             }
