@@ -8,6 +8,7 @@
         "utils.h": "c",
         "string.h": "c",
         "stdlib.h": "c",
-        "map.h": "c"
+        "map.h": "c",
+        "vector": "c"
     }
 }

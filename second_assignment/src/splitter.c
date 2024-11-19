@@ -27,9 +27,8 @@ int main(int argc, char* argv[]){
     int numberOfBuilders = atoi(argv[5]);
     char* writeEnds = argv[6];
     int fdExclusion = atoi(argv[7]);
-
+    
     Map exclusionMap = exclusionHashTable(fdExclusion);
-
     //file descriptors for writing in every pipe
     int* writeEndFds = writeFdsToInt(writeEnds, numberOfBuilders);
 
@@ -38,11 +37,12 @@ int main(int argc, char* argv[]){
     int linesToRead = endLine - startLine + 1;
     int currentLine = startLine;
 
+
     char buffer[1024];
     bool allLinesRead = false;
     int bytesRead = read(fd, buffer, sizeof(buffer));
-
     while(bytesRead > 0){
+
         //the initial capacity for the word
         int size = 0;
         int capacity = 10;
@@ -53,10 +53,10 @@ int main(int argc, char* argv[]){
 
         //----------------------------------------------- words' seperation and checks -----------------------------------------------
         int i = 0;
-        char ch;
+        
         while(i < bytesRead){
-            ch = buffer[i];
-                        
+
+            char ch = buffer[i];
             if (ch == '\n') {
                 currentLine++;
             }
@@ -66,11 +66,12 @@ int main(int argc, char* argv[]){
                 // Handle the last word
                 if(size > 0 && valid){
                     int hash = splitterHashFunction(word, numberOfBuilders);
-                        printf("%s\n", word);
                     if(mapFind(exclusionMap, word) == NULL){
-                        printf("here\n");
                         word[size] = '-';
                         write(writeEndFds[hash], word, strlen(word));
+                    }
+                    else{
+                        //printf("Excluded word: %s\n", word);
                     }
                     // for the next word
                     memset(word, '\0', capacity);
@@ -98,11 +99,12 @@ int main(int argc, char* argv[]){
                     int hash = splitterHashFunction(word, numberOfBuilders);
                     if(mapFind(exclusionMap, word) == NULL){
                         word[size] = '-';
-                                                printf("%s\n", word);
-
-
                         write(writeEndFds[hash], word, strlen(word));
                     }
+                    else{
+                        //printf("Excluded word: %s\n", word);
+                    }
+
                     memset(word, '\0', capacity);
                     size = 0;
                 }
@@ -114,9 +116,10 @@ int main(int argc, char* argv[]){
                     int hash = splitterHashFunction(word, numberOfBuilders);
                     if(mapFind(exclusionMap, word) == NULL){
                         word[size] = '-';
-                                                printf("%s\n", word);
-
                         write(writeEndFds[hash], word, strlen(word));
+                    }
+                    else{
+                        //printf("Excluded :%s\n",word);
 
                     }
                     memset(word, '\0', capacity);
@@ -141,6 +144,7 @@ int main(int argc, char* argv[]){
                 i++;
             }
         }
+
         
         //--------------------------------------------------------------------------------------------------
         //if the word was the last of the file
@@ -148,9 +152,7 @@ int main(int argc, char* argv[]){
             int hash = splitterHashFunction(word, numberOfBuilders);
             if(mapFind(exclusionMap, word) == NULL){
                 word[size] = '-';
-                printf("%s\n", word);
                 write(writeEndFds[hash], word, strlen(word));
-
             }
             memset(word, '\0', capacity);
             size = 0;
@@ -175,7 +177,7 @@ int main(int argc, char* argv[]){
     }
     close(fd);
     free(writeEndFds);
-
+    printf("Splitter finished\n");
     exit(0);
 
 }

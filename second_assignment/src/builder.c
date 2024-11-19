@@ -20,10 +20,11 @@ int main(int argc, char* argv[]){
    int sizeofWord = 0;
    int capacity = 10;
    char* word = malloc(capacity);
-   
    while (1) {
 
       int bytes = read(fd, buffer, sizeof(buffer));
+
+
       if (bytes == 0) {
          break;
       }
@@ -54,3 +55,4 @@ int main(int argc, char* argv[]){
    
    exit(0);
 }
+

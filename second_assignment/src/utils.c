@@ -100,7 +100,6 @@ Map exclusionHashTable(int fd){
 }
 
 int compareWords(Pointer a, Pointer b){
-	MapNode nodeA = (MapNode)a;
 	MapNode nodeB = (MapNode)b;
-	return strcmp(mapNodeKey(nodeA), mapNodeKey(nodeB));
+	return strcmp(a, mapNodeKey(nodeB));
 }
