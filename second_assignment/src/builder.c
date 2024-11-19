@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
    char* word = malloc(capacity);
    
    while (1) {
-      printf("%s",buffer   );
+
       int bytes = read(fd, buffer, sizeof(buffer));
       if (bytes == 0) {
          break;
@@ -38,14 +38,13 @@ int main(int argc, char* argv[]){
 
 
          if(buffer[i] == '-' && sizeofWord > 0){
-            printf("%s\n",word);
+            //printf("%s\n",word);
             memset(word, '\0', sizeofWord);
             sizeofWord = 0;
          }
          else{
             word[sizeofWord - 1] = buffer[i];
-
-         } 
+         }
 
       }
 
