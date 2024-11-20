@@ -23,9 +23,7 @@ int main(int argc, char* argv[]){
    while (1) {
 
       int bytes = read(fd, buffer, sizeof(buffer));
-
-
-      if (bytes == 0) {
+      if (bytes <= 0) {
          break;
       }
 
@@ -39,7 +37,7 @@ int main(int argc, char* argv[]){
 
 
          if(buffer[i] == '-' && sizeofWord > 0){
-            //printf("%s\n",word);
+            printf("%s\n",word);
             memset(word, '\0', sizeofWord);
             sizeofWord = 0;
          }

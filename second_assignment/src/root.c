@@ -107,14 +107,6 @@ int main(int argc, char* argv[]) {
     
 //---------------------------------------------------------------------splitters---------------------------------------------------------------------
 
-    int fdExclusion = open(exclusionFile, O_RDONLY);
-    if(fdExclusion == -1){
-        perror("Error opening exclusion file");
-        exit(1);
-    }
-    char fdExclusionStr[16] ;
-    sprintf(fdExclusionStr, "%d", fdExclusion);
-
     // Create l splitters with lines/l lines each
     // except for the last one which might take a few more lines due to imperfect division
     int linesForSplitter = lines / numOfSplitter;
@@ -164,7 +156,7 @@ int main(int argc, char* argv[]) {
             sprintf(firstByteForSplitter, "%d", bytesPerLine[position]);
 
             
-            execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, numberOfBuilders, pipeWriteEnds, fdExclusionStr, NULL);
+            execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, numberOfBuilders, pipeWriteEnds, exclusionFile, NULL);
 
             perror("Error executing splitter");
             exit(EXIT_FAILURE);
@@ -180,44 +172,54 @@ int main(int argc, char* argv[]) {
 
 
     pid_t builderPids[numOfBuilders];
-        for (int b = 0; b < numOfBuilders; b++) {
-            pid_t pid = fork();
-            
-            if (pid == -1) {
-                perror("Error forking builder process");
-                exit(1);
-            }
-
-            else if (pid == 0) {
-                // Close the read end of the pipe in the builder exept for the pipe of this builder
-                for(int i = 0; i < numOfBuilders; i++){
-                    if(i != b){
-                        close(pipesSplitterToBuilder[i][0]);
-                    }
-                    // Close the write end of the pipe in the builder
-                    close(pipesSplitterToBuilder[i][1]);
-                }
-                int fdForBuilder = pipesSplitterToBuilder[b][0];
-                char fdForBuilderStr[16];
-                sprintf(fdForBuilderStr, "%d", fdForBuilder);
-                execlp("./builder", "./builder", fdForBuilderStr, NULL);
-                exit(EXIT_SUCCESS);
-            }
-            else {
-                //for parent process close both write and read end
-                builderPids[b] = pid;
-            }
+    for (int b = 0; b < numOfBuilders; b++) {
+        pid_t pid = fork();
+        
+        if (pid == -1) {
+            perror("Error forking builder process");
+            exit(1);
         }
+
+        else if (pid == 0) {
+            // Close the read end of the pipe in the builder exept for the pipe of this builder
+            for(int i = 0; i < numOfBuilders; i++){
+                if(i != b){
+                    close(pipesSplitterToBuilder[i][0]);
+                }
+                // Close the write end of the pipe in the builder
+                close(pipesSplitterToBuilder[i][1]);
+            }
+            int fdForBuilder = pipesSplitterToBuilder[b][0];
+            char fdForBuilderStr[16];
+            sprintf(fdForBuilderStr, "%d", fdForBuilder);
+            execlp("./builder", "./builder", fdForBuilderStr, NULL);
+            exit(EXIT_SUCCESS);
+        }
+        else {
+            //for parent process close both write and read end
+            builderPids[b] = pid;
+        }
+    }
+
     for(int i = 0; i < numOfBuilders; i++){
         close(pipesSplitterToBuilder[i][0]);
         close(pipesSplitterToBuilder[i][1]);
     }   
 
     for (int i = 0; i < numOfSplitter; i++) {
-        waitpid(splitterPids[i], NULL, 0);
+        int status;
+        if(waitpid(splitterPids[i], &status, 0) == -1){
+            perror("Error waiting for splitter");
+            exit(1);
+        }
     }
+
     for (int i = 0; i < numOfBuilders; i++) {
-        waitpid(builderPids[i], NULL, 0);
+        int status;
+        if(waitpid(builderPids[i], &status, 0) == -1){
+            perror("Error waiting for builder");
+            exit(1);
+        }
     }
 
     

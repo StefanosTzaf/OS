@@ -48,11 +48,15 @@ int* writeFdsToInt(char* pipeWriteEnds, int numOfBuilders){
 }
 
 
-Map exclusionHashTable(int fd){
+Map exclusionHashTable(char* fileName){
 	char buffer[1024];
     int bytesRead;
     int lineCount = 0;
-
+	int fd = open(fileName, O_RDONLY);
+	if(fd == -1){
+		perror("Error opening file");
+		exit(1);
+	}
     // Read the file in chunks
     while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
         for (int i = 0; i < bytesRead; i++) {
@@ -94,7 +98,7 @@ Map exclusionHashTable(int fd){
 		strcpy(lastWord, word);
 		mapInsert(exclusionMap, lastWord, lastWord);
 	}
-	
+	close(fd);
 	return exclusionMap;
 
 }
