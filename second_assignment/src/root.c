@@ -93,7 +93,6 @@ int main(int argc, char* argv[]) {
 
 
 
-//---------------------------------------------------------------------builders---------------------------------------------------------------------
     //creating pipes for communication from splitters to builders(one for every builder)
     int pipesSplitterToBuilder[numOfBuilders][2];
     for (int b = 0; b < numOfBuilders; b++) {
@@ -102,6 +101,14 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
     }
+
+    int pipesBuilderToRoot[2];
+    if(pipe(pipesBuilderToRoot) == -1){
+        perror("Error creating pipe");
+        exit(1);
+    }
+    
+
 
 
     
@@ -134,6 +141,10 @@ int main(int argc, char* argv[]) {
 
         // splitter
         else if (pid == 0){
+            //this pipe has no to do with the splitter
+            close(pipesBuilderToRoot[0]);
+            close(pipesBuilderToRoot[1]);
+
             for(int b = 0; b < numOfBuilders; b++){
                 // Close the read end of the pipe in the splitter
                 close(pipesSplitterToBuilder[b][0]);
@@ -171,6 +182,7 @@ int main(int argc, char* argv[]) {
 
 
 
+//---------------------------------------------------------------------builders---------------------------------------------------------------------
     pid_t builderPids[numOfBuilders];
     for (int b = 0; b < numOfBuilders; b++) {
         pid_t pid = fork();
@@ -181,7 +193,9 @@ int main(int argc, char* argv[]) {
         }
 
         else if (pid == 0) {
-            // Close the read end of the pipe in the builder exept for the pipe of this builder
+            //close the read end of the pipe root - builder
+            close(pipesBuilderToRoot[0]);
+            // Close the read end of the pipe SPLITER - BUILDER in the builder exept for the pipe of this builder
             for(int i = 0; i < numOfBuilders; i++){
                 if(i != b){
                     close(pipesSplitterToBuilder[i][0]);
@@ -189,10 +203,16 @@ int main(int argc, char* argv[]) {
                 // Close the write end of the pipe in the builder
                 close(pipesSplitterToBuilder[i][1]);
             }
-            int fdForBuilder = pipesSplitterToBuilder[b][0];
-            char fdForBuilderStr[16];
-            sprintf(fdForBuilderStr, "%d", fdForBuilder);
-            execlp("./builder", "./builder", fdForBuilderStr, NULL);
+
+            int readEndForBuilder = pipesSplitterToBuilder[b][0];
+            char readEndForBuilderStr[16];
+            sprintf(readEndForBuilderStr, "%d", readEndForBuilder);
+
+            int writeEndForBuilder = pipesBuilderToRoot[1];
+            char writeEndForBuilderStr[16];
+            sprintf(writeEndForBuilderStr, "%d", writeEndForBuilder);
+
+            execlp("./builder", "./builder", readEndForBuilderStr, writeEndForBuilderStr, NULL);
             exit(EXIT_SUCCESS);
         }
         else {
@@ -201,6 +221,18 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    close(pipesBuilderToRoot[1]);
+
+
+
+
+
+
+
+
+
+
+    close(pipesBuilderToRoot);
     for(int i = 0; i < numOfBuilders; i++){
         close(pipesSplitterToBuilder[i][0]);
         close(pipesSplitterToBuilder[i][1]);
@@ -222,7 +254,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    
+
     free(bytesPerLine);
     free(pipeWriteEnds);
     // When freeing the list, free will be called for each node
