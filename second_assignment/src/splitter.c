@@ -31,14 +31,14 @@ int main(int argc, char* argv[]){
     Map exclusionMap = exclusionHashTable(fdExclusion);
     //file descriptors for writing in every pipe
     int* writeEndFds = writeFdsToInt(writeEnds, numberOfBuilders);
-
+    
     // set the read pointer to the first byte of the splitter
     lseek(fd, firstByteToRead, SEEK_SET);
     int linesToRead = endLine - startLine + 1;
     int currentLine = startLine;
 
 
-    char buffer[1024];
+    char buffer[4096];
     bool allLinesRead = false;
     int bytesRead = read(fd, buffer, sizeof(buffer));
     while(bytesRead > 0){
@@ -172,10 +172,10 @@ int main(int argc, char* argv[]){
     }
     
 
+    close(fd);
     for(int i = 0; i < numberOfBuilders; i++){
         close(writeEndFds[i]);
     }
-    close(fd);
     free(writeEndFds);
     printf("Splitter finished\n");
     exit(0);

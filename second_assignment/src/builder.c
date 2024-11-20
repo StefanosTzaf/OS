@@ -15,7 +15,7 @@ int main(int argc, char* argv[]){
    }
 
    int fd = atoi(argv[1]);
-   char buffer[1024];
+   char buffer[4096];
 
    int sizeofWord = 0;
    int capacity = 10;
