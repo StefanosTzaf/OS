@@ -15,9 +15,7 @@ int main(int argc, char* argv[]){
       exit(1);
    }
 
-
    Map wordHashTable = mapCreate(compareWords, free, 1000);
-
 
    int fd = atoi(argv[1]);
    char buffer[4096];
@@ -66,8 +64,21 @@ int main(int argc, char* argv[]){
 
    }
    free(word);
+   
+
+   for(MapNode node = mapFirst(wordHashTable); node != NULL; node = mapGetNext(wordHashTable, node)){
+      int frequency;
+      char wordToPrint[strlen(mapNodeKey(node))];
+
+      strcpy(wordToPrint, mapNodeKey(node));
+      frequency = *(int*)mapNodeValue(node);
+      //printf("%s %d\n", wordToPrint, frequency);
+   }
+
+
+
+   mapDestroy(wordHashTable);
    close(fd);
-   hashDisplay(wordHashTable);
    exit(0);
 }
 

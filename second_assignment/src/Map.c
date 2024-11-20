@@ -45,15 +45,6 @@ void mapInsert(Map map, char* key, Pointer value) {
 	listInsert((map->arrayOfBuckets[pos]), node);
 }
 
-void mapRemove(Map map, char* key) {
-	MapNode node = mapFindNode(map, key);
-	if (node == NULL) {
-		return;
-	} 
-	else{	
-		listDeleteNode(map->arrayOfBuckets[hashFunction(key) % map->capacity], node);
-	}
-}
 
 Pointer mapFind(Map map, char* key) {
 	MapNode node = mapFindNode(map, key);
@@ -127,4 +118,45 @@ void hashDisplay(Map table){
 
         }
     }
+}
+
+int mapGetSize(Map map){
+	return map->capacity;
+}
+
+MapNode mapFirst(Map map){
+	// Find the first non-empty bucket and get its first node
+	for(int i = 0; i < map->capacity; i++){
+		if(map->arrayOfBuckets[i] != NULL){
+			return listNodeValue( listGetFirst(map->arrayOfBuckets[i]) );
+		}
+	}
+	return NULL;
+}
+
+MapNode mapGetNext(Map map, MapNode node){
+	//find the bucket of the node and get the next node
+	int pos = hashFunction(node->keyId) % map->capacity;
+	List list = map->arrayOfBuckets[pos];
+	ListNode listNode = listGetFirst(list);
+	while(listNode != NULL){
+		//if the node is found, return the next node
+		if(listNodeValue(listNode) == node){
+			listNode = listGetNext(listNode);
+			//if the next node is not null, return it
+			if(listNode == NULL){
+				for(int i = pos + 1; i < map->capacity; i++){
+					if(map->arrayOfBuckets[i] != NULL){
+						return listNodeValue( listGetFirst(map->arrayOfBuckets[i]));
+					}
+				}
+				//if there are no more nodes, return NULL
+				return NULL;
+			}
+			//if the next node is not null, return it
+			return listNodeValue( listNode);
+		}
+		listNode = listGetNext(listNode);
+	}
+	return NULL;
 }

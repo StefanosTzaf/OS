@@ -13,9 +13,6 @@ Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile);
 // O(1)
 void mapInsert(Map map, char* key, Pointer value);
 
-// O(1)
-void mapRemove(Map map, char* key);
-
 // Returns the value associated with the specific key, or NULL if the key does not exist in the map. O(1)
 Pointer mapFind(Map map, char* key);
 MapNode mapFindNode(Map map, char* key);
@@ -30,3 +27,8 @@ Pointer mapNodeValue(MapNode node);
 unsigned int hashFunction(char* value);
 
 void hashDisplay(Map table);
+
+int mapGetSize(Map map);
+
+MapNode mapFirst(Map map);
+MapNode mapGetNext(Map map, MapNode node);
