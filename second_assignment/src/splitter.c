@@ -70,6 +70,7 @@ int main(int argc, char* argv[]){
                         word[size] = '-';
                         write(writeEndFds[hash], word, strlen(word));
                     }
+
                     // for the next word
                     memset(word, '\0', capacity);
                     size = 0;

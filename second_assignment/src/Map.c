@@ -123,7 +123,7 @@ void hashDisplay(Map table){
         for(node = listGetFirst(list); node != NULL; node = listGetNext(node)){
             MapNode hash_node = listNodeValue(node);
 
-            printf("key: %s \n", (char*)hash_node->keyId);
+            printf("key: %s count: %d \n", (char*)hash_node->keyId, *(int*)hash_node->value);
 
         }
     }

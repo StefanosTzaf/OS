@@ -8,11 +8,16 @@
 #include <string.h>
 #include "builder.h"
 
+
 int main(int argc, char* argv[]){
    if(argc != 2){
       fprintf(stderr, "Usage: ./builder <read end fd for pipe>\n");
       exit(1);
    }
+
+
+   Map wordHashTable = mapCreate(compareWords, free, 1000);
+
 
    int fd = atoi(argv[1]);
    char buffer[4096];
@@ -37,7 +42,19 @@ int main(int argc, char* argv[]){
 
 
          if(buffer[i] == '-' && sizeofWord > 0){
-            printf("%s\n",word);
+            //if the word arrives first time in the builder add it to  the hash table
+            if(mapFind(wordHashTable, word) == NULL){
+               char* newWord = malloc(sizeofWord);
+               int* frequency = malloc(sizeof(int));
+               *frequency = 1;
+               strcpy(newWord, word);
+               mapInsert(wordHashTable, newWord, frequency);
+            }
+            //else increment the frequency of the word
+            else{
+               int* frequency = mapFind(wordHashTable, word);
+               (*frequency)++;
+            }
             memset(word, '\0', sizeofWord);
             sizeofWord = 0;
          }
@@ -50,7 +67,7 @@ int main(int argc, char* argv[]){
    }
    free(word);
    close(fd);
-   
+   hashDisplay(wordHashTable);
    exit(0);
 }
 
