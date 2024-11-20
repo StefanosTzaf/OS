@@ -85,6 +85,10 @@ int main(int argc, char* argv[]){
                     capacity *= 2;
                     word = realloc(word, capacity * sizeof(char));
                 }
+                //to deem word GoodmorninG and goodmorning as the same word
+                if(ch >= 'A' && ch <= 'Z'){
+                    ch = tolower(ch);
+                }
                 word[size++] = ch;
             }
 
