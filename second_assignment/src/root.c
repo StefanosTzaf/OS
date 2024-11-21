@@ -107,8 +107,6 @@ int main(int argc, char* argv[]) {
         perror("Error creating pipe");
         exit(1);
     }
-    
-
 
 
     
@@ -224,6 +222,7 @@ int main(int argc, char* argv[]) {
     close(pipesBuilderToRoot[1]);
 
 
+    
 
 
 
@@ -231,8 +230,7 @@ int main(int argc, char* argv[]) {
 
 
 
-
-    close(pipesBuilderToRoot);
+    close(pipesBuilderToRoot[0]);
     for(int i = 0; i < numOfBuilders; i++){
         close(pipesSplitterToBuilder[i][0]);
         close(pipesSplitterToBuilder[i][1]);
@@ -253,7 +251,6 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
     }
-
 
     free(bytesPerLine);
     free(pipeWriteEnds);

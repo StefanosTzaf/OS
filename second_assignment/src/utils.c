@@ -107,3 +107,51 @@ int compareWords(Pointer a, Pointer b){
 	MapNode nodeB = (MapNode)b;
 	return strcmp(a, mapNodeKey(nodeB));
 }
+
+
+// void rootReadFromPipe(int readEnd){
+// 	char buffer[4096];
+
+// 	int sizeofWord = 0;
+// 	int capacity = 10;
+// 	char* word = malloc(capacity);
+
+// 	int sizeOfFrequency = 0;
+// 	int capacityFrequency = 10;
+// 	char* frequency = malloc(capacityFrequency);
+
+
+// 	while (1) {
+// 		int bytes = read(readEnd, buffer, sizeof(buffer));
+
+// 		if (bytes <= 0) {
+// 			break;
+// 		}
+
+// 		for(int i = 0; i < bytes; i++){
+			
+
+// 			if(buffer[i] == '-' || buffer[i] == '*'){
+// 				continue;
+// 			}
+// 			else if(buffer[i] == '\0'){
+
+// 			}
+// 			else if(isalpha(buffer[i])){
+// 				sizeofWord++;
+// 				if (sizeofWord > capacity){
+// 					capacity *= 2;
+// 					word = realloc(word, capacity);
+// 				}
+			
+// 			}
+// 			else if(isdigit(buffer[i])){
+			
+// 			}
+
+// 		}
+
+// 	}
+
+// 	free(word);
+// }

@@ -12,3 +12,4 @@ char* printingFdsToString(int numOfBuilders, int pipesSplitterToBuilder[][2]);
 int* writeFdsToInt(char* pipeWriteEnds, int numOfBuilders);
 Map exclusionHashTable(char* fileName);
 int compareWords(Pointer a, Pointer b);
+// void rootReadFromPipe(int readEnd);

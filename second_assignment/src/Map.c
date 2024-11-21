@@ -9,6 +9,7 @@ struct map_node {
 struct map {
 	List* arrayOfBuckets;	    // The array of buckets of the hash table (separate chaining)
 	int capacity;				// How much space we have allocated so far.
+	int size;
 	// Functions that will be used by the list in the buckets
 	DestroyFunc destroyMapNodes;
 	CompareFunc compareMapNodes;
@@ -19,6 +20,7 @@ Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile) {
 
 	Map map = malloc(sizeof(*map));
 	map->capacity = sizeByFile * 3 + 7;
+	map->size = 0;
 	map->arrayOfBuckets = malloc(sizeof(List) * map->capacity);
 	map->destroyMapNodes = destroy;
 	map->compareMapNodes = compare;
@@ -43,6 +45,7 @@ void mapInsert(Map map, char* key, Pointer value) {
 
 	// The list contains MapNode
 	listInsert((map->arrayOfBuckets[pos]), node);
+	map->size++;
 }
 
 
@@ -121,7 +124,7 @@ void hashDisplay(Map table){
 }
 
 int mapGetSize(Map map){
-	return map->capacity;
+	return map->size;
 }
 
 MapNode mapFirst(Map map){
