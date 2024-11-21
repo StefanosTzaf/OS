@@ -28,6 +28,7 @@ int main(int argc, char* argv[]){
    while (1) {
 
       int bytes = read(readEndFd, buffer, sizeof(buffer));
+
       if (bytes <= 0) {
          break;
       }
@@ -97,6 +98,7 @@ int main(int argc, char* argv[]){
 
       write(writeEndFd, bufferToWrite, strlen(bufferToWrite));
    }
+
 
    mapDestroy(wordHashTable);
    close(writeEndFd);

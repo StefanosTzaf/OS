@@ -128,10 +128,10 @@ void rootReadFromPipe(int readEnd){
 	while (1) {
 		//reading from pipe until there is no more data
 		int bytes = read(readEnd, buffer, sizeof(buffer));
-
 		if (bytes <= 0) {
 			break;
 		}
+		printf("%s\n", buffer);
 
 		for(int i = 0; i < bytes; i++){
 			
@@ -166,7 +166,7 @@ void rootReadFromPipe(int readEnd){
 				strcpy(wordInRoot->word, word);
 				wordInRoot->word[sizeofWord] = '\0';
 				wordInRoot->frequency = atoi(frequency);
-				printf("Word: %s Frequency: %d\n", wordInRoot->word, wordInRoot->frequency);
+				//printf("Word: %s Frequency: %d\n", wordInRoot->word, wordInRoot->frequency);
 
 			}
 			//ready for the next word

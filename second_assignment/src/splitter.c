@@ -164,5 +164,6 @@ int main(int argc, char* argv[]){
         close(writeEndFds[i]);
     }
     free(writeEndFds);
+    printf("Splitter finished\n");
     exit(0);
 }

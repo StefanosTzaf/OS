@@ -220,20 +220,12 @@ int main(int argc, char* argv[]) {
     }
 
     close(pipesBuilderToRoot[1]);
-
-
-    
-    rootReadFromPipe(pipesBuilderToRoot[0]);
-
-
-
-
     for(int i = 0; i < numOfBuilders; i++){
         close(pipesSplitterToBuilder[i][0]);
         close(pipesSplitterToBuilder[i][1]);
     }   
-    close(pipesBuilderToRoot[0]);
 
+    rootReadFromPipe(pipesBuilderToRoot[0]);
     for (int i = 0; i < numOfSplitter; i++) {
         int status;
         if(waitpid(splitterPids[i], &status, 0) == -1){
@@ -250,6 +242,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    close(pipesBuilderToRoot[0]);
     free(bytesPerLine);
     free(pipeWriteEnds);
     // When freeing the list, free will be called for each node

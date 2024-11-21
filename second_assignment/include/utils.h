@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "Map.h"
 #include <fcntl.h>
+#include <ctype.h>
 
 int splitterHashFunction(char *word, int numberOfBuilders);
 int countDigits(int number);
