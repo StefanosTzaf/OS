@@ -128,10 +128,10 @@ void rootReadFromPipe(int readEnd){
 	while (1) {
 		//reading from pipe until there is no more data
 		int bytes = read(readEnd, buffer, sizeof(buffer));
-		
 		if (bytes <= 0) {
 			break;
 		}
+
 		for(int i = 0; i < bytes; i++){
 			
 			//creating the word
@@ -141,7 +141,7 @@ void rootReadFromPipe(int readEnd){
 					capacity *= 2;
 					word = realloc(word, capacity);
 				}
-				//word[sizeOfWord - 1] = buffer[i];
+				word[sizeOfWord - 1] = buffer[i];
 			
 			}
 			//copying the word
@@ -151,7 +151,7 @@ void rootReadFromPipe(int readEnd){
 			//creating the frequency 
 			else if(isdigit(buffer[i])){
 				sizeOfFrequency++;
-				if (sizeOfFrequency > capacityFrequency){
+				if (sizeOfFrequency >= capacityFrequency){
 					capacityFrequency *= 2;
 					frequency = realloc(frequency, capacityFrequency);
 				}
@@ -160,18 +160,16 @@ void rootReadFromPipe(int readEnd){
 			}
 			//copying the frequency and the word to the struct
 			else if(buffer[i] == '-' ){
-				// if(sizeOfFrequency > capacityFrequency){
-				// 	capacityFrequency+=1;
-				// 	frequency = realloc(frequency, capacityFrequency);
-				// }
-				// frequency[sizeOfFrequency] = '\0';
+				//there will be alawys one more position because we realloc when the sizeOfFrequency becomes equal to the size
+				frequency[sizeOfFrequency] = '\0';
 
 				struct wordsInRoot* wordInRoot = malloc(sizeof(struct wordsInRoot));
 				wordInRoot->word = malloc(sizeOfWord + 1);
 				strcpy(wordInRoot->word, word);
 				wordInRoot->word[sizeOfWord] = '\0';
 				wordInRoot->frequency = atoi(frequency);
-				//printf("Word: %s Frequency: %d\n", wordInRoot->word, wordInRoot->frequency);
+
+				printf("Word: %s Frequency: %s\n", word, frequency);
 
 			}
 			//ready for the next word
@@ -188,4 +186,5 @@ void rootReadFromPipe(int readEnd){
 	}
 
 	free(word);
+	free(frequency);
 }
