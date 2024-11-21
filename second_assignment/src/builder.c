@@ -71,7 +71,7 @@ int main(int argc, char* argv[]){
 
    free(word);
    close(readEndFd);
-   int count = 0;
+
 
    for(MapNode node = mapFirst(wordHashTable); node != NULL; node = mapGetNext(wordHashTable, node)){
 
@@ -94,7 +94,6 @@ int main(int argc, char* argv[]){
       strcpy(bufferToWrite + strlen(wordToPrint) + 1, frequencyStr);
       bufferToWrite[sizeOfBuffer - 2] = '-';
       bufferToWrite[sizeOfBuffer - 1] = '\0';
-      count++;
 
       write(writeEndFd, bufferToWrite, strlen(bufferToWrite));
    }

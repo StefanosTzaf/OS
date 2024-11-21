@@ -223,18 +223,16 @@ int main(int argc, char* argv[]) {
 
 
     
+    rootReadFromPipe(pipesBuilderToRoot[0]);
 
 
 
 
-
-
-
-    close(pipesBuilderToRoot[0]);
     for(int i = 0; i < numOfBuilders; i++){
         close(pipesSplitterToBuilder[i][0]);
         close(pipesSplitterToBuilder[i][1]);
     }   
+    close(pipesBuilderToRoot[0]);
 
     for (int i = 0; i < numOfSplitter; i++) {
         int status;

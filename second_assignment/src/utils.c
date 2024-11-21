@@ -1,5 +1,9 @@
 #include "utils.h"
 
+struct wordsInRoot{
+	char* word;
+	int frequency;
+};
 
 int splitterHashFunction(char *word, int numberOfBuilders){
 	unsigned int hash = 5381;
@@ -109,49 +113,74 @@ int compareWords(Pointer a, Pointer b){
 }
 
 
-// void rootReadFromPipe(int readEnd){
-// 	char buffer[4096];
+void rootReadFromPipe(int readEnd){
+	char buffer[4096];
 
-// 	int sizeofWord = 0;
-// 	int capacity = 10;
-// 	char* word = malloc(capacity);
+	int sizeofWord = 0;
+	int capacity = 10;
+	char* word = malloc(capacity);
 
-// 	int sizeOfFrequency = 0;
-// 	int capacityFrequency = 10;
-// 	char* frequency = malloc(capacityFrequency);
+	int sizeOfFrequency = 0;
+	int capacityFrequency = 10;
+	char* frequency = malloc(capacityFrequency);
 
 
-// 	while (1) {
-// 		int bytes = read(readEnd, buffer, sizeof(buffer));
+	while (1) {
+		//reading from pipe until there is no more data
+		int bytes = read(readEnd, buffer, sizeof(buffer));
 
-// 		if (bytes <= 0) {
-// 			break;
-// 		}
+		if (bytes <= 0) {
+			break;
+		}
 
-// 		for(int i = 0; i < bytes; i++){
+		for(int i = 0; i < bytes; i++){
 			
-
-// 			if(buffer[i] == '-' || buffer[i] == '*'){
-// 				continue;
-// 			}
-// 			else if(buffer[i] == '\0'){
-
-// 			}
-// 			else if(isalpha(buffer[i])){
-// 				sizeofWord++;
-// 				if (sizeofWord > capacity){
-// 					capacity *= 2;
-// 					word = realloc(word, capacity);
-// 				}
+			//creating the word
+			if(isalpha(buffer[i])){
+				sizeofWord++;
+				if (sizeofWord > capacity){
+					capacity *= 2;
+					word = realloc(word, capacity);
+				}
 			
-// 			}
-// 			else if(isdigit(buffer[i])){
+			}
+			//copying the word
+			else if( buffer[i] == '*'){
+				continue;
+			}
+			//creating the frequency 
+			else if(isdigit(buffer[i])){
+				sizeOfFrequency++;
+				if (sizeOfFrequency > capacityFrequency){
+					capacityFrequency *= 2;
+					frequency = realloc(frequency, capacityFrequency);
+				}
+				frequency[sizeOfFrequency - 1] = buffer[i];
 			
-// 			}
+			
+			}
+			//copying the frequency and the word to the struct
+			else if(buffer[i] == '-' ){
+				struct wordsInRoot* wordInRoot = malloc(sizeof(struct wordsInRoot));
+				wordInRoot->word = malloc(sizeofWord + 1);
+				strcpy(wordInRoot->word, word);
+				wordInRoot->word[sizeofWord] = '\0';
+				wordInRoot->frequency = atoi(frequency);
+				printf("Word: %s Frequency: %d\n", wordInRoot->word, wordInRoot->frequency);
 
-// 		}
+			}
+			//ready for the next word
+			else if(buffer[i] == '\0'){
+				sizeofWord = 0;
+				sizeOfFrequency = 0;
+				memset(word, '\0', sizeofWord);
+				memset(frequency, '\0', sizeOfFrequency);
 
-// 	}
+			}
 
-// 	free(word);
-// }
+		}
+
+	}
+
+	free(word);
+}
