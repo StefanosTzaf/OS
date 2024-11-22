@@ -2,36 +2,19 @@
 #include "types.h"
 #pragma once
 
-Set setCreate(CompareFunc compare, DestroyFunc destroy_value);
+Set setCreate(CompareFunc compare, DestroyFunc destroyValue);
 
 int setSize(Set set);
 
-void setInsert(Set set, Pointer value);
+SetNode setInsert(Set set, Pointer value, SetNode subtreRoot);
 
-// Ελευθερώνει όλη τη μνήμη που δεσμεύει το σύνολο.
-// Οποιαδήποτε λειτουργία πάνω στο set μετά το destroy είναι μη ορισμένη.
+void nodeDestroy(SetNode node, DestroyFunc destroyValue);
+void setDestroy(Set set);
 
-void set_destroy(Set set);
+SetNode setMin(Set set);
+SetNode setMax(Set set);
 
-// Διάσχιση του set ////////////////////////////////////////////////////////////
-//
-// Η διάσχιση γίνεται με τη σειρά διάταξης.
+Pointer setNodeValue(Set set, SetNode node);
 
-// Οι σταθερές αυτές συμβολίζουν εικονικούς κόμβους _πριν_ τον πρώτο και _μετά_ τον τελευταίο κόμβο του set
-#define SET_BOF (SetNode)0
-#define SET_EOF (SetNode)0
-
-// Επιστρέφουν τον πρώτο και τον τελευταίο κομβο του set, ή SET_BOF / SET_EOF αντίστοιχα αν το set είναι κενό
-
-SetNode set_first(Set set);
-SetNode set_last(Set set);
-
-// Επιστρέφουν τον επόμενο και τον προηγούμενο κομβο του node, ή SET_EOF / SET_BOF
-// αντίστοιχα αν ο node δεν έχει επόμενο / προηγούμενο.
-
-SetNode set_next(Set set, SetNode node);
-SetNode set_previous(Set set, SetNode node);
-
-// Επιστρέφει το περιεχόμενο του κόμβου node
-
-Pointer set_node_value(Set set, SetNode node);
+SetNode nodeFindPrevious(SetNode node, Set set, SetNode currentNode);
+SetNode nodeFindMax(SetNode node);

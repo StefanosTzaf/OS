@@ -130,7 +130,7 @@ void rootReadFromPipe(int readEnd){
 	int sizeOfFrequency = 0;
 	int capacityFrequency = 10;
 	char* frequency = malloc(capacityFrequency);
-
+int count = 0;
 	while (1) {
 		//reading from pipe until there is no more data
 		
@@ -176,7 +176,7 @@ void rootReadFromPipe(int readEnd){
 				strcpy(wordInRoot->word, word);
 				wordInRoot->word[sizeOfWord] = '\0';
 				wordInRoot->frequency = atoi(frequency);
-
+				count++;
 				// printf("Word: %s Frequency: %d\n", wordInRoot->word, wordInRoot->frequency);
 
 				//ready for the next word
@@ -194,7 +194,7 @@ void rootReadFromPipe(int readEnd){
 		}
 
 	}
-
+	//printf("Count: %d\n", count);
 	free(word);
 	free(frequency);
 }

@@ -12,6 +12,7 @@
         "vector": "c",
         "unistd.h": "c",
         "builder.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "functional": "c"
     }
 }
