@@ -127,17 +127,19 @@ void rootReadFromPipe(int readEnd){
 
 	while (1) {
 		//reading from pipe until there is no more data
+		
+		memset(buffer, '\0', sizeof(buffer));
 		int bytes = read(readEnd, buffer, sizeof(buffer));
 		if (bytes <= 0) {
 			break;
 		}
 
 		for(int i = 0; i < bytes; i++){
-			
+
 			//creating the word
 			if(isalpha(buffer[i])){
 				sizeOfWord++;
-				if (sizeOfWord > capacity){
+				if (sizeOfWord >= capacity){
 					capacity *= 2;
 					word = realloc(word, capacity);
 				}
@@ -169,17 +171,18 @@ void rootReadFromPipe(int readEnd){
 				wordInRoot->word[sizeOfWord] = '\0';
 				wordInRoot->frequency = atoi(frequency);
 
-				printf("Word: %s Frequency: %s\n", word, frequency);
-
-			}
-			//ready for the next word
-			else if(buffer[i] == '\0'){
+				//printf("Word: %s Frequency: %s\n", word, frequency);
+				//ready for the next word
 				sizeOfWord = 0;
 				sizeOfFrequency = 0;
 				memset(word, '\0', capacity);
 				memset(frequency, '\0', capacityFrequency);
 
 			}
+			else if(buffer[i] == '\0'){
+				continue;
+			}
+
 
 		}
 

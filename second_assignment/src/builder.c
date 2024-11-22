@@ -37,14 +37,14 @@ int main(int argc, char* argv[]){
 
 
          if(buffer[i] == '-' && sizeofWord > 0){
+            word[sizeofWord] = '\0';
             //if the word arrives first time in the builder add it to  the hash table
             if(mapFind(wordHashTable, word) == NULL){
-               char* newWord = malloc(sizeofWord);
+               char* newWord = malloc(sizeofWord + 1);
                int* frequency = malloc(sizeof(int));
                *frequency = 1;
                strcpy(newWord, word);
                mapInsert(wordHashTable, newWord, frequency);
-
             }
             //else increment the frequency of the word
             else{
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]){
          else{
             sizeofWord++;
 
-            if (sizeofWord > capacity){
+            if (sizeofWord >= capacity){
                capacity *= 2;
                word = realloc(word, capacity);
             }
@@ -75,8 +75,8 @@ int main(int argc, char* argv[]){
 
 
    for(MapNode node = mapFirst(wordHashTable); node != NULL; node = mapGetNext(wordHashTable, node)){
-
-      char wordToPrint[strlen(mapNodeKey(node))];
+      int sizeOfKey = strlen(mapNodeKey(node));
+      char wordToPrint[sizeOfKey];
       strcpy(wordToPrint, mapNodeKey(node));
 
       int frequency;
@@ -84,15 +84,15 @@ int main(int argc, char* argv[]){
       //convert frequency to string
       char frequencyStr[countDigits(frequency)];
       sprintf(frequencyStr, "%d", frequency);
-
+      // printf("Word: %s %d, Frequency: %d \n", wordToPrint,sizeOfKey, frequency);
       //a buffer to store a word like this: word*5-  (5 is the frequency of the word "*" and "-" to seperate frequency and real words)
-      int sizeOfBuffer = strlen(wordToPrint) + 3 + countDigits(frequency);
+      int sizeOfBuffer = sizeOfKey + 3 + countDigits(frequency);
 
       char bufferToWrite[sizeOfBuffer];
 
       strcpy(bufferToWrite, wordToPrint);
-      bufferToWrite[strlen(wordToPrint)] = '*';
-      strcpy(bufferToWrite + strlen(wordToPrint) + 1, frequencyStr);
+      bufferToWrite[sizeOfKey] = '*';
+      strcpy(bufferToWrite + sizeOfKey + 1, frequencyStr);
       bufferToWrite[sizeOfBuffer - 2] = '-';
       bufferToWrite[sizeOfBuffer - 1] = '\0';
 
