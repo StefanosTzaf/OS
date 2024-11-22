@@ -15,7 +15,7 @@ int main(int argc, char* argv[]){
       exit(1);
    }
 
-   Map wordHashTable = mapCreate(compareWords, free, 100000);
+   Map wordHashTable = mapCreate(compareWords, destroyMapNode, 10000);
 
    int readEndFd = atoi(argv[1]);
    int writeEndFd = atoi(argv[2]);
@@ -97,6 +97,8 @@ int main(int argc, char* argv[]){
       bufferToWrite[sizeOfBuffer - 1] = '\0';
 
       write(writeEndFd, bufferToWrite, strlen(bufferToWrite));
+
+
    }
 
 

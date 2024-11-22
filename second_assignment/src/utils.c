@@ -32,9 +32,10 @@ char* printingFdsToString(int numOfBuilders, int pipesSplitterToBuilder[][2]){
 	for(int i = 0; i < numOfBuilders; i++){
 		int digits = countDigits(pipesSplitterToBuilder[i][1]);
 		//1 position for space and digits for the file descriptor
-		pipeWriteEnds = realloc(pipeWriteEnds, digits + 1 + strlen(pipeWriteEnds));
+		pipeWriteEnds = realloc(pipeWriteEnds, digits + 2 + strlen(pipeWriteEnds));
 		sprintf(pipeWriteEnds + strlen(pipeWriteEnds), "%d ", pipesSplitterToBuilder[i][1]);
 	}
+	pipeWriteEnds[strlen(pipeWriteEnds) - 1] = '\0';
 	return pipeWriteEnds;
 }
 
@@ -51,6 +52,12 @@ int* writeFdsToInt(char* pipeWriteEnds, int numOfBuilders){
 	return fds;
 }
 
+void destroyMapNode(Pointer node){
+	MapNode mapNode = (MapNode)node;
+	free(mapNodeKey(mapNode));
+	free(mapNodeValue(mapNode));
+	free(mapNode);
+}
 
 Map exclusionHashTable(char* fileName){
 	char buffer[1024];
