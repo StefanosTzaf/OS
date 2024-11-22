@@ -5,7 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include "utils.h"
+#include "splitterUtils.h"
 
 int main(int argc, char* argv[]){
     // without arguments (the file is open from the exec call, we do not pass it as an argument)

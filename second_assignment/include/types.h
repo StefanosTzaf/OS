@@ -15,3 +15,5 @@ typedef struct map_node* MapNode;
 
 typedef struct set* Set;
 typedef struct set_node* SetNode;
+
+int countDigits(int number);

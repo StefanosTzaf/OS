@@ -6,7 +6,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
-#include "builder.h"
+#include "Map.h"
+#include "builderUtils.h"   
 
 
 int main(int argc, char* argv[]){
@@ -15,7 +16,7 @@ int main(int argc, char* argv[]){
       exit(1);
    }
 
-   Map wordHashTable = mapCreate(compareWords, destroyMapNode, 10000);
+   Map wordHashTable = mapCreate(builderCompareWords, destroyMapNode, 10000);
 
    int readEndFd = atoi(argv[1]);
    int writeEndFd = atoi(argv[2]);

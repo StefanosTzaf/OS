@@ -3,9 +3,9 @@ CC = gcc
 CFLAGS = -Wall -I ./include
 
 # Object files for root and splitter
-ROOT_OBJS = src/List.o src/Map.o src/root.o src/Set.o src/utils.o 
-SPLITTER_OBJS = src/List.o src/Map.o src/splitter.o src/utils.o src/Set.o
-BUILDER_OBJS = src/List.o src/Map.o src/builder.o src/utils.o src/Set.o
+ROOT_OBJS = src/root.o src/Set.o src/rootUtils.o src/types.o
+SPLITTER_OBJS = src/List.o src/Map.o src/splitter.o src/splitterUtils.o src/types.o
+BUILDER_OBJS = src/List.o src/Map.o src/builder.o src/builderUtils.o src/types.o
 
 # Executable names
 ROOT_EXEC = lexan

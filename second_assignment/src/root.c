@@ -7,8 +7,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <getopt.h>
-#include "root.h"
-#include "utils.h"
+#include "rootUtils.h"
+
 int main(int argc, char* argv[]) {
     if(argc != 13){
         fprintf(stderr, "Usage: ./lexan -i <TextFile> -l <numOfSplitter> -m <numOfBuilders> -t <TopPopular> -e <ExclusoionListFile> -o <OutputFile>\n" );
