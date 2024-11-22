@@ -11,6 +11,7 @@
         "map.h": "c",
         "vector": "c",
         "unistd.h": "c",
-        "builder.h": "c"
+        "builder.h": "c",
+        "stdio.h": "c"
     }
 }

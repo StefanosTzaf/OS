@@ -4,8 +4,7 @@
 #include <string.h>
 #include "List.h"
 
-typedef struct map* Map;
-typedef struct map_node* MapNode;
+
 
 // O(n) initialization of the lists for separate chaining with NULL
 Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile);
