@@ -20,5 +20,7 @@ SetNode setMax(SetNode node);
 
 Pointer setNodeValue(Set set, SetNode node);
 
-SetNode nodeFindPrevious(SetNode node, Set set, SetNode currentNode);
+SetNode nodeFindPrevious(SetNode root, Set set, SetNode currentNode);
 SetNode nodeFindMax(SetNode node);
+
+SetNode getRootNode(Set set);

@@ -164,3 +164,7 @@ SetNode nodeFindMax(SetNode node) {
 		return node;
 	}
 }
+
+SetNode getRootNode(Set set){
+	return set->root;
+}

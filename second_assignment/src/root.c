@@ -225,7 +225,11 @@ int main(int argc, char* argv[]) {
         close(pipesSplitterToBuilder[i][1]);
     }   
 
-    rootReadFromPipe(pipesBuilderToRoot[0]);
+    Set wordsWithFrequency = rootReadFromPipe(pipesBuilderToRoot[0]);
+
+    printingTopK(wordsWithFrequency, topPopular);
+
+
     for (int i = 0; i < numOfSplitter; i++) {
         int status;
         if(waitpid(splitterPids[i], &status, 0) == -1){

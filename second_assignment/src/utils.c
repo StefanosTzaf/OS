@@ -120,7 +120,30 @@ int compareWords(Pointer a, Pointer b){
 }
 
 
-void rootReadFromPipe(int readEnd){
+int compareSetNodes(Pointer a, Pointer b){
+	struct wordsInRoot* wordInRootA = (struct wordsInRoot*)a;
+	struct wordsInRoot* wordInRootB = (struct wordsInRoot*)b;
+	//firstly we compare the frequency of the words
+	if(wordInRootA->frequency > wordInRootB->frequency){
+		return 1;
+	}
+	else if(wordInRootA->frequency < wordInRootB->frequency){
+		return -1;
+	}
+	else{
+		return strcmp(wordInRootA->word, wordInRootB->word);
+	}
+}
+
+void destroySetNode(Pointer node){
+	struct wordsInRoot* wordInRoot = (struct wordsInRoot*)node;
+	free(wordInRoot->word);
+	free(wordInRoot);
+}
+
+Set rootReadFromPipe(int readEnd){
+	Set set = setCreate(compareSetNodes, destroySetNode);
+
 	char buffer[4096];
 
 	int sizeOfWord = 0;
@@ -130,7 +153,7 @@ void rootReadFromPipe(int readEnd){
 	int sizeOfFrequency = 0;
 	int capacityFrequency = 10;
 	char* frequency = malloc(capacityFrequency);
-int count = 0;
+
 	while (1) {
 		//reading from pipe until there is no more data
 		
@@ -176,9 +199,7 @@ int count = 0;
 				strcpy(wordInRoot->word, word);
 				wordInRoot->word[sizeOfWord] = '\0';
 				wordInRoot->frequency = atoi(frequency);
-				count++;
-				// printf("Word: %s Frequency: %d\n", wordInRoot->word, wordInRoot->frequency);
-
+				setInsert(set, wordInRoot);
 				//ready for the next word
 				sizeOfWord = 0;
 				sizeOfFrequency = 0;
@@ -194,7 +215,21 @@ int count = 0;
 		}
 
 	}
-	//printf("Count: %d\n", count);
+	return set;
 	free(word);
 	free(frequency);
+}
+
+
+void printingTopK(Set set, int k){
+	//the set is sorted in ascending order so the last k nodes are the k most frequent words
+	SetNode root = getRootNode(set);
+	SetNode node = setLast(set);
+	
+	for(int i = 0; i < k; i++){
+		struct wordsInRoot* wordInRoot = (struct wordsInRoot*)setNodeValue(set, node);
+		printf("%s %d\n", wordInRoot->word, wordInRoot->frequency);
+
+		node = nodeFindPrevious(root, set, node);
+	}
 }
