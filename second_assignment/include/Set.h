@@ -6,13 +6,17 @@ Set setCreate(CompareFunc compare, DestroyFunc destroyValue);
 
 int setSize(Set set);
 
-SetNode setInsert(Set set, Pointer value, SetNode subtreRoot);
+void setInsert(Set set, Pointer value);
+SetNode setInsertNode(Set set, Pointer value, SetNode subtreeRoot);
 
 void nodeDestroy(SetNode node, DestroyFunc destroyValue);
 void setDestroy(Set set);
 
-SetNode setMin(Set set);
-SetNode setMax(Set set);
+SetNode setFirst(Set set);
+SetNode setLast(Set set);
+
+SetNode setMin(SetNode node);
+SetNode setMax(SetNode node);
 
 Pointer setNodeValue(Set set, SetNode node);
 

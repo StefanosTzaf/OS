@@ -33,7 +33,8 @@ int setSize(Set set) {
 
 
 //recursive function to insert a node with a value in the set
-SetNode setInsert(Set set, Pointer value, SetNode subtreeRoot) {
+SetNode setInsertNode(Set set, Pointer value, SetNode subtreeRoot) {
+
 	//if the subtree is empty
 	if(subtreeRoot == NULL) {
 		SetNode node = malloc(sizeof(*node));
@@ -51,15 +52,21 @@ SetNode setInsert(Set set, Pointer value, SetNode subtreeRoot) {
 			//do nothing
 		}
 		else if(compareValue < 0) {
-			subtreeRoot->left = setInsert(set, subtreeRoot->left,  value);
+			subtreeRoot->left = setInsertNode(set, value , subtreeRoot->left);
+
 		}
 		else {
-			subtreeRoot->right = setInsert(set, subtreeRoot->right, value);
+			subtreeRoot->right = setInsertNode(set, value, subtreeRoot->right);
 		}
 
 	}
 	return subtreeRoot;
 
+}
+
+
+void setInsert(Set set, Pointer value){
+	set->root = setInsertNode(set, value, set->root);
 }
 
 
@@ -85,7 +92,7 @@ void setDestroy(Set set) {
 }
 
 
-//return the minimum of the set based to the compare function
+//return the minimum of the subtree with root node based to the compare function
 SetNode setMin(SetNode node) {
 	//if the left subtree exists , continue there
 	if(node != NULL && node->left != NULL){
@@ -105,6 +112,13 @@ SetNode setMax(SetNode node) {
 	}
 }
 
+SetNode setFirst(Set set) {
+	return setMin(set->root);
+}
+
+SetNode setLast(Set set) {
+	return setMax(set->root);
+}
 
 Pointer setNodeValue(Set set, SetNode node) {
 	return node->value;

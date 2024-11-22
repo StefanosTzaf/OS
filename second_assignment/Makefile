@@ -3,7 +3,7 @@ CC = gcc
 CFLAGS = -Wall -I ./include
 
 # Object files for root and splitter
-ROOT_OBJS = src/List.o src/Map.o src/root.o src/utils.o
+ROOT_OBJS = src/List.o src/Map.o src/root.o src/utils.o src/Set.o
 SPLITTER_OBJS = src/List.o src/Map.o src/splitter.o src/utils.o
 BUILDER_OBJS = src/List.o src/Map.o src/builder.o src/utils.o
 
