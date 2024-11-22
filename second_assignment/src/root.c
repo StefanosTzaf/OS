@@ -249,6 +249,7 @@ int main(int argc, char* argv[]) {
     close(pipesBuilderToRoot[0]);
     free(bytesPerLine);
     free(pipeWriteEnds);
+    setDestroy(wordsWithFrequency);
     // When freeing the list, free will be called for each node
     // so the space allocated for the string in the main will also be freed
 

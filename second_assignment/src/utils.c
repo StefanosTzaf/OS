@@ -215,9 +215,9 @@ Set rootReadFromPipe(int readEnd){
 		}
 
 	}
-	return set;
 	free(word);
 	free(frequency);
+	return set;
 }
 
 
@@ -227,8 +227,10 @@ void printingTopK(Set set, int k){
 	SetNode node = setLast(set);
 	
 	for(int i = 0; i < k; i++){
+		char counter[16] ;
+		sprintf(counter, "%d", i + 1);
 		struct wordsInRoot* wordInRoot = (struct wordsInRoot*)setNodeValue(set, node);
-		printf("%s %d\n", wordInRoot->word, wordInRoot->frequency);
+		printf("%s: {%s, %d}\n",counter, wordInRoot->word, wordInRoot->frequency);
 
 		node = nodeFindPrevious(root, set, node);
 	}

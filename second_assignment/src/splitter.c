@@ -64,17 +64,16 @@ int main(int argc, char* argv[]){
             if(currentLine > endLine){
                 allLinesRead = true;
                 // Handle the last word
-                if(size > 0){
+                if(size > 1){
                     int hash = splitterHashFunction(word, numberOfBuilders);
                     if(mapFind(exclusionMap, word) == NULL){
                         word[size] = '-';
                         write(writeEndFds[hash], word, strlen(word));
                     }
-
-                    // for the next word
-                    memset(word, '\0', capacity);
-                    size = 0;
                 }
+                // for the next word
+                memset(word, '\0', capacity);
+                size = 0;
                 break;
             }
             
@@ -97,30 +96,30 @@ int main(int argc, char* argv[]){
 
                 
                 // a punctuation character found and the word ends 
-                if(size > 0){
+                if(size > 1){
                     int hash = splitterHashFunction(word, numberOfBuilders);
                     if(mapFind(exclusionMap, word) == NULL){
                         word[size] = '-';
                         write(writeEndFds[hash], word, strlen(word));
                     }
-
-                    memset(word, '\0', capacity);
-                    size = 0;
                 }
+
+                memset(word, '\0', capacity);
+                size = 0;
                 //else skip the punctuation character if it is in the beggining of the word
             }
 
             else if (isspace(ch) ) {
-                if (size > 0 ) {
+                if (size > 1 ) {
                     int hash = splitterHashFunction(word, numberOfBuilders);
                     if(mapFind(exclusionMap, word) == NULL){
                         word[size] = '-';
                         write(writeEndFds[hash], word, strlen(word));
                     }
-                    memset(word, '\0', capacity);
-                    size = 0;
-                    
                 }
+                memset(word, '\0', capacity);
+                size = 0;
+                    
 
             } 
             i++;
@@ -129,16 +128,16 @@ int main(int argc, char* argv[]){
         
         //--------------------------------------------------------------------------------------------------
         //if the word was the last of the file
-        if(size > 0){
+        if(size > 1){
             int hash = splitterHashFunction(word, numberOfBuilders);
             if(mapFind(exclusionMap, word) == NULL){
                 word[size] = '-';
                 write(writeEndFds[hash], word, strlen(word));
             }
-            memset(word, '\0', capacity);
-            size = 0;
-
         }
+        memset(word, '\0', capacity);
+        size = 0;
+
         
         free(word);
         if(allLinesRead){
