@@ -55,16 +55,20 @@ int main(int argc, char* argv[]) {
 
 
     int lines = 1;
-    int bytesRead;
+    int totalBytesOfFIle = 0;
+    int bytesRead  ;
+
     char buffer[4096];
     // calculate the number of lines in the file
     while ((bytesRead = read(fdInput, buffer, sizeof(buffer))) > 0) {
+        totalBytesOfFIle += bytesRead;
         for (int i = 0; i < bytesRead; i++) {
             if (buffer[i] == '\n') {
                 lines++;
             }
         }
     }
+
 
     int* bytesPerLine = malloc((lines + 1) * sizeof(int));
     bytesPerLine[0] = 0;
@@ -92,7 +96,6 @@ int main(int argc, char* argv[]) {
     memset(buffer, 0, sizeof(buffer));
 
 
-
     //creating pipes for communication from splitters to builders(one for every builder)
     int pipesSplitterToBuilder[numOfBuilders][2];
     for (int b = 0; b < numOfBuilders; b++) {
@@ -117,10 +120,6 @@ int main(int argc, char* argv[]) {
     int linesForSplitter = lines / numOfSplitter;
     pid_t splitterPids[numOfSplitter];
 
-    int currentLine = 1;
-
-    int bytesRemainingInBuffer = 0;
-    int nextCharToRead = 0;
 
     char numberOfBuilders[16];
     sprintf(numberOfBuilders, "%d", numOfBuilders);
@@ -164,7 +163,6 @@ int main(int argc, char* argv[]) {
             char firstByteForSplitter[32];
             sprintf(firstByteForSplitter, "%d", bytesPerLine[position]);
 
-            
             execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, numberOfBuilders, pipeWriteEnds, exclusionFile, NULL);
 
             perror("Error executing splitter");
@@ -210,7 +208,15 @@ int main(int argc, char* argv[]) {
             char writeEndForBuilderStr[16];
             sprintf(writeEndForBuilderStr, "%d", writeEndForBuilder);
 
-            execlp("./builder", "./builder", readEndForBuilderStr, writeEndForBuilderStr, NULL);
+            //how many bytes each builder will read (approximatelly)
+            totalBytesOfFIle/=numOfBuilders; 
+            //the average length of an english word is 5 so we divide the total bytes by 5
+            //and thes are the number of words that each builder will read Approximatelly!
+            totalBytesOfFIle/=5;
+            char totalBytesStr[64];
+
+            sprintf(totalBytesStr, "%d", totalBytesOfFIle);
+            execlp("./builder", "./builder", readEndForBuilderStr, writeEndForBuilderStr, totalBytesStr, NULL);
             exit(EXIT_SUCCESS);
         }
         else {
@@ -227,7 +233,6 @@ int main(int argc, char* argv[]) {
 
     Set wordsWithFrequency = rootReadFromPipe(pipesBuilderToRoot[0]);
 
-    printingTopK(wordsWithFrequency, topPopular);
 
 
     for (int i = 0; i < numOfSplitter; i++) {
@@ -246,6 +251,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    printingTopK(wordsWithFrequency, topPopular);
     close(pipesBuilderToRoot[0]);
     free(bytesPerLine);
     free(pipeWriteEnds);

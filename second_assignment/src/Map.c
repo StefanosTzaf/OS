@@ -2,7 +2,7 @@
 
 // Node of the hash table
 struct map_node {
-	char* keyId; 
+	char* key; 
 	Pointer value;    
 };
 
@@ -19,7 +19,7 @@ struct map {
 Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile) {
 
 	Map map = malloc(sizeof(*map));
-	map->capacity = sizeByFile * 3 + 7;
+	map->capacity = sizeByFile * 2 + 7;
 	map->size = 0;
 	map->arrayOfBuckets = malloc(sizeof(List) * map->capacity);
 	map->destroyMapNodes = destroy;
@@ -41,7 +41,7 @@ void mapInsert(Map map, char* key, Pointer value) {
 
 	MapNode node = malloc(sizeof(*node));
 	node->value = value;
-	node->keyId = key;
+	node->key = key;
 
 	// The list contains MapNode
 	listInsert((map->arrayOfBuckets[pos]), node);
@@ -89,7 +89,7 @@ void mapDestroy(Map map) {
 }
 
 Pointer mapNodeKey(MapNode node) {
-	return node->keyId;
+	return node->key;
 }
 
 Pointer mapNodeValue(MapNode node) {
@@ -117,7 +117,7 @@ void hashDisplay(Map table){
         for(node = listGetFirst(list); node != NULL; node = listGetNext(node)){
             MapNode hash_node = listNodeValue(node);
 
-            printf("key: %s count: %d \n", (char*)hash_node->keyId, *(int*)hash_node->value);
+            printf("key: %s count: %d \n", (char*)hash_node->key, *(int*)hash_node->value);
 
         }
     }
@@ -139,7 +139,7 @@ MapNode mapFirst(Map map){
 
 MapNode mapGetNext(Map map, MapNode node){
 	//find the bucket of the node and get the next node
-	int pos = hashFunction(node->keyId) % map->capacity;
+	int pos = hashFunction(node->key) % map->capacity;
 	List list = map->arrayOfBuckets[pos];
 	ListNode listNode = listGetFirst(list);
 	while(listNode != NULL){

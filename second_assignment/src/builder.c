@@ -11,15 +11,16 @@
 
 
 int main(int argc, char* argv[]){
-   if(argc != 3){
+   if(argc != 4){
       fprintf(stderr, "Usage: ./builder <read end fd for pipe>\n");
       exit(1);
    }
 
-   Map wordHashTable = mapCreate(builderCompareWords, destroyMapNode, 10000);
 
    int readEndFd = atoi(argv[1]);
    int writeEndFd = atoi(argv[2]);
+   int hashSize = atoi(argv[3]);
+   Map wordHashTable = mapCreate(builderCompareWords, destroyMapNode, hashSize);
    char buffer[4096];
 
    int sizeofWord = 0;

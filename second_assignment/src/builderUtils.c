@@ -4,7 +4,6 @@
 #include "Map.h"
 
 
-
 int builderCompareWords(Pointer a, Pointer b){
 	MapNode nodeB = (MapNode)b;
 	return strcmp(a, mapNodeKey(nodeB));

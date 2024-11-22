@@ -3,7 +3,7 @@
 
 //Κόμβος του hash table
 struct map_node{
-	char* keyId; 
+	char* key; 
 	//δείκτης σε κ΄΄ομβο του γράφου μας GraphNode = struct graph_node*. 
 	//Έτσι και έχουμε πολύ γρήγορη πρόσβαση στον γράφο και διατηρούμε την ανεξαρτησία των δύο δομών όπως ζητείται
 	GraphNode value;    
@@ -44,7 +44,7 @@ void mapInsert(Map map, char* key, Pointer value) {
 
 	MapNode node = malloc(sizeof(*node));
 	node->value = value;
-	node->keyId = key;
+	node->key = key;
 
 	//Η Λιστα έχει MapNode
 	listInsert((map->arrayOfBuckets[pos]), node);
@@ -101,7 +101,7 @@ void mapDestroy(Map map) {
 
 
 Pointer mapNodeKey(Map map, MapNode node) {
-	return node->keyId;
+	return node->key;
 }
 
 Pointer mapNodeValue(MapNode node) {

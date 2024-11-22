@@ -34,7 +34,6 @@ int main(int argc, char* argv[]){
     
     // set the read pointer to the first byte of the splitter
     lseek(fd, firstByteToRead, SEEK_SET);
-    int linesToRead = endLine - startLine + 1;
     int currentLine = startLine;
 
 

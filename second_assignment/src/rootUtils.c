@@ -6,8 +6,6 @@ struct wordsInRoot{
 };
 
 
-
-
 char* printingFdsToString(int numOfBuilders, int pipesSplitterToBuilder[][2]){
 	char* pipeWriteEnds = malloc(1);
 	pipeWriteEnds[0] = '\0';
