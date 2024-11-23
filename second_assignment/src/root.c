@@ -8,6 +8,12 @@
 #include <string.h>
 #include <getopt.h>
 #include "rootUtils.h"
+#include <signal.h>
+//global counters for the signals
+int usr1Counter = 0;
+int usr2Counter = 0;
+
+
 
 int main(int argc, char* argv[]) {
     if(argc != 13){
@@ -111,6 +117,26 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    //a struct to define the signal's behavior
+    struct sigaction sa1;
+    sa1.sa_handler = splitterCompleted;  // ορισμος signal handler
+    sa1.sa_flags = SA_RESTART;       // SA_RESTART για να συνεχισουν πιθανον μπλοκαρισμενα sys calls 
+    sigemptyset(&sa1.sa_mask);       //να μην μπλοκαρει κανενα σημα κατα τη διαρκει της εκτελεσης του κωδικα του handler
+
+    if (sigaction(SIGUSR1, &sa1, NULL) == -1) {
+        perror("sigaction");
+        return 1;
+    }
+    struct sigaction sa2;
+    sa2.sa_handler = builderCompleted;  // ορισμος signal handler
+    sa2.sa_flags = SA_RESTART;       // SA_RESTART για να συνεχισουν πιθανον μπλοκαρισμενα sys calls 
+    sigemptyset(&sa2.sa_mask);     
+
+    // Install the handler for SIGUSR1
+    if (sigaction(SIGUSR2, &sa2, NULL) == -1) {
+        perror("sigaction");
+        return 1;
+    }
 
     
 //---------------------------------------------------------------------splitters---------------------------------------------------------------------
@@ -233,8 +259,6 @@ int main(int argc, char* argv[]) {
 
     Set wordsWithFrequency = rootReadFromPipe(pipesBuilderToRoot[0]);
 
-
-
     for (int i = 0; i < numOfSplitter; i++) {
         int status;
         if(waitpid(splitterPids[i], &status, 0) == -1){
@@ -259,5 +283,7 @@ int main(int argc, char* argv[]) {
     // When freeing the list, free will be called for each node
     // so the space allocated for the string in the main will also be freed
 
+    printf("Signal SIGUSR1 was received %d times\n", usr1Counter);
+    printf("Signal SIGUSR2 was received %d times\n", usr2Counter);
     exit(0);
 }

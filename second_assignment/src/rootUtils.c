@@ -1,4 +1,5 @@
 #include "rootUtils.h"
+#include <signal.h>
 
 struct wordsInRoot{
 	char* word;
@@ -135,4 +136,19 @@ void printingTopK(Set set, int k){
 
 		node = nodeFindPrevious(root, set, node);
 	}
+}
+
+extern int usr1Counter;
+//handler of signal USR1
+void splitterCompleted(int signum){
+		//re establish disposition of the signal
+        signal(SIGUSR1, splitterCompleted);
+        usr1Counter++;
+}
+
+extern int usr2Counter;
+//handler of signal USR2
+void builderCompleted(int signum){
+        signal(SIGUSR2, builderCompleted);
+        usr2Counter++;
 }

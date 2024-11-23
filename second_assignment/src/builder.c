@@ -8,7 +8,7 @@
 #include <string.h>
 #include "Map.h"
 #include "builderUtils.h"   
-
+#include <signal.h>
 
 int main(int argc, char* argv[]){
    if(argc != 4){
@@ -106,6 +106,11 @@ int main(int argc, char* argv[]){
 
    mapDestroy(wordHashTable);
    close(writeEndFd);
+   //parent process pid
+   pid_t rootPid = getppid();
+   //sending singal to root
+   kill(rootPid, SIGUSR2);
+   
    exit(0);
 }
 

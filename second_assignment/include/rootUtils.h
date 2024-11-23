@@ -18,3 +18,6 @@ int compareSetNodes(Pointer a, Pointer b);
 void destroySetNode(Pointer node);
 
 void printingTopK(Set set, int k);
+
+void splitterCompleted(int signum);
+void builderCompleted(int signum);

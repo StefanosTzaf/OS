@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include "splitterUtils.h"
+#include <signal.h>
 
 int main(int argc, char* argv[]){
     // without arguments (the file is open from the exec call, we do not pass it as an argument)
@@ -162,5 +163,10 @@ int main(int argc, char* argv[]){
         close(writeEndFds[i]);
     }
     free(writeEndFds);
+
+    //parent process pid
+    pid_t rootPid = getppid();
+    //sending singal to root
+    kill(rootPid, SIGUSR1);
     exit(0);
 }
