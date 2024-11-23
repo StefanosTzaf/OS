@@ -119,18 +119,21 @@ int main(int argc, char* argv[]) {
 
     //a struct to define the signal's behavior
     struct sigaction sa1;
-    sa1.sa_handler = splitterCompleted;  // ορισμος signal handler
-    sa1.sa_flags = SA_RESTART;       // SA_RESTART για να συνεχισουν πιθανον μπλοκαρισμενα sys calls 
-    sigemptyset(&sa1.sa_mask);       //να μην μπλοκαρει κανενα σημα κατα τη διαρκει της εκτελεσης του κωδικα του handler
+    //signal handler
+    sa1.sa_handler = splitterCompleted;
+    //SA_RESTART for syscalls that may have been stopped
+    sa1.sa_flags = SA_RESTART;
+    //so as not to block any signal       
+    sigemptyset(&sa1.sa_mask);
 
     if (sigaction(SIGUSR1, &sa1, NULL) == -1) {
         perror("sigaction");
         return 1;
     }
     struct sigaction sa2;
-    sa2.sa_handler = builderCompleted;  // ορισμος signal handler
-    sa2.sa_flags = SA_RESTART;       // SA_RESTART για να συνεχισουν πιθανον μπλοκαρισμενα sys calls 
-    sigemptyset(&sa2.sa_mask);     
+    sa2.sa_handler = builderCompleted;
+    sa2.sa_flags = SA_RESTART;
+    sigemptyset(&sa2.sa_mask);
 
     // Install the handler for SIGUSR1
     if (sigaction(SIGUSR2, &sa2, NULL) == -1) {
