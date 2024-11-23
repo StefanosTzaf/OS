@@ -33,7 +33,7 @@ int compareSetNodes(Pointer a, Pointer b){
 		return -1;
 	}
 	else{
-		return strcmp(wordInRootA->word, wordInRootB->word);
+		return strcmp(wordInRootB->word, wordInRootA->word);
 	}
 }
 
@@ -123,19 +123,42 @@ Set rootReadFromPipe(int readEnd){
 }
 
 
-void printingTopK(Set set, int k){
+void printingTopK(Set set, int k, char* outputFile, char* inputFile){
+	//open the file for writing if it doesn't exist create it, if it exists truncate it
+
+	char kStr[countDigits(k)];
+	sprintf(kStr, "%d", k);
+	int fd = open(outputFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+
 	//the set is sorted in ascending order so the last k nodes are the k most frequent words
+	write(fd, "Top ", 4);
+	write(fd, kStr, strlen(kStr));
+	write(fd, " words :         Input File : [ ", 32);
+
+	write(fd, inputFile, strlen(inputFile));
+	write(fd, " ]\n\n\n", 5);
 	SetNode root = getRootNode(set);
 	SetNode node = setLast(set);
 	
 	for(int i = 0; i < k; i++){
-		char counter[16] ;
+		char counter[countDigits(i + 1)]; ;
 		sprintf(counter, "%d", i + 1);
 		struct wordsInRoot* wordInRoot = (struct wordsInRoot*)setNodeValue(set, node);
-		printf("%s: {%s, %d}\n",counter, wordInRoot->word, wordInRoot->frequency);
+		//write("%s: {%s, %d}\n",counter, wordInRoot->word, wordInRoot->frequency);
+		write(fd, counter, strlen(counter));
+		write(fd, ": {", 3);
+		write(fd, wordInRoot->word, strlen(wordInRoot->word));
+		write(fd, ", ", 2);
+		char frequency[countDigits(wordInRoot->frequency)];
+		sprintf(frequency, "%d", wordInRoot->frequency);
+		write(fd, frequency, strlen(frequency));
+		write(fd, "}\n", 2);
+
 
 		node = nodeFindPrevious(root, set, node);
 	}
+
+	close(fd);
 }
 
 extern int usr1Counter;

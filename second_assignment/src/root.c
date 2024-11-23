@@ -278,8 +278,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    printingTopK(wordsWithFrequency, topPopular);
     close(pipesBuilderToRoot[0]);
+    printingTopK(wordsWithFrequency, topPopular, outputFile, inputFile);
     free(bytesPerLine);
     free(pipeWriteEnds);
     setDestroy(wordsWithFrequency);
