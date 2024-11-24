@@ -1,6 +1,5 @@
 #include <stdbool.h>
 #include "types.h"
-#pragma once
 
 Set setCreate(CompareFunc compare, DestroyFunc destroyValue);
 

@@ -4,30 +4,29 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/times.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
 #include <getopt.h>
 #include "rootUtils.h"
 #include <signal.h>
+
 //global counters for the signals
 int usr1Counter = 0;
 int usr2Counter = 0;
 
 
-
 int main(int argc, char* argv[]) {
 
-    double t1 , t2 , cpu_time ;
-    struct tms tb1 , tb2 ;
-    double ticspersec ;
+    double t1, t2, cpu_time;
+    struct tms tb1, tb2;
+    double ticspersec;
     //retrieves the number of clock ticks per second for your system and stores it in the variable ticspersec
-    ticspersec = ( double ) sysconf ( _SC_CLK_TCK );
+    ticspersec = (double) sysconf (_SC_CLK_TCK);
     //captures the current time (in clock ticks)
-    t1 = ( double ) times (& tb1) ;
+    t1 = (double) times (&tb1) ;
 
     if(argc != 13){
-        fprintf(stderr, "Usage: ./lexan -i <TextFile> -l <numOfSplitter> -m <numOfBuilders> -t <TopPopular> -e <ExclusoionListFile> -o <OutputFile>\n" );
+        fprintf(stderr, "Usage: ./lexan -i <InputFile> -l <numOfSplitter> -m <numOfBuilders> -t <TopPopular> -e <ExclusoionListFile> -o <OutputFile>\n" );
     }
 
     int option;
@@ -35,8 +34,8 @@ int main(int argc, char* argv[]) {
     int numOfSplitter;
     int numOfBuilders;
     int topPopular;
-    char* outputFile = NULL;
     char* exclusionFile = NULL;
+    char* outputFile = NULL;
     while((option = getopt(argc, argv, "i:l:m:t:e:o:")) != -1){
 
         if(option == 'i'){
@@ -72,9 +71,9 @@ int main(int argc, char* argv[]) {
 
     int lines = 1;
     int totalBytesOfFIle = 0;
-    int bytesRead  ;
-
+    int bytesRead;
     char buffer[4096];
+
     // calculate the number of lines in the file
     while ((bytesRead = read(fdInput, buffer, sizeof(buffer))) > 0) {
         totalBytesOfFIle += bytesRead;
@@ -85,9 +84,9 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
-    int* bytesPerLine = malloc((lines + 1) * sizeof(int));
-    bytesPerLine[0] = 0;
+    //indicates which byte(number etc the 3456st.) is the byte that the line starts
+    int* firstByteOfEachLine = malloc((lines + 1) * sizeof(int));
+    firstByteOfEachLine[0] = 0;
     // lines are 1 based
     lines = 1;
     lseek(fdInput, 0, SEEK_SET);
@@ -98,7 +97,7 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < bytesRead; i++) {
             bytesOfLine += sizeof(buffer[i]); ;
             if (buffer[i] == '\n') {
-                bytesPerLine[lines] = bytesOfLine + bytesPerLine[lines - 1];
+                firstByteOfEachLine[lines] = bytesOfLine + firstByteOfEachLine[lines - 1];
                 lines++;
                 bytesOfLine = 0;
             }
@@ -107,9 +106,7 @@ int main(int argc, char* argv[]) {
 
     // Close the file, each time the splitters open it so that 
     // we don't need to reposition the read pointer
-    close(fdInput);
-    
-    memset(buffer, 0, sizeof(buffer));
+    close(fdInput);    
 
 
     //creating pipes for communication from splitters to builders(one for every builder)
@@ -121,6 +118,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    //creating pipe for communication from builders to root
     int pipesBuilderToRoot[2];
     if(pipe(pipesBuilderToRoot) == -1){
         perror("Error creating pipe");
@@ -142,25 +140,23 @@ int main(int argc, char* argv[]) {
         perror("sigaction");
         return 1;
     }
+
     struct sigaction sa2;
     sa2.sa_handler = builderCompleted;
     sa2.sa_flags = SA_RESTART;
     sigemptyset(&sa2.sa_mask);
 
-    // Install the handler for SIGUSR1
     if (sigaction(SIGUSR2, &sa2, NULL) == -1) {
         perror("sigaction");
         return 1;
     }
 
-    
 //---------------------------------------------------------------------splitters---------------------------------------------------------------------
 
     // Create l splitters with lines/l lines each
     // except for the last one which might take a few more lines due to imperfect division
     int linesForSplitter = lines / numOfSplitter;
     pid_t splitterPids[numOfSplitter];
-
 
     char numberOfBuilders[16];
     sprintf(numberOfBuilders, "%d", numOfBuilders);
@@ -188,6 +184,7 @@ int main(int argc, char* argv[]) {
                 close(pipesSplitterToBuilder[b][0]);
             }
 
+            //calculating the start and end line of the splitter
             int startLine = ( (i == 0) ? 1 : (i * linesForSplitter) + 1);
 
             // If it is the last line, the last splitter will take the remaining lines
@@ -198,12 +195,12 @@ int main(int argc, char* argv[]) {
             sprintf(start, "%d", startLine);
             sprintf(end, "%d", endLine);
             
-
             // after how many bytes it will start reading
             int position = i * linesForSplitter;
             char firstByteForSplitter[32];
-            sprintf(firstByteForSplitter, "%d", bytesPerLine[position]);
-
+            sprintf(firstByteForSplitter, "%d", firstByteOfEachLine[position]);
+            
+            //list of aarguements and path of process
             execlp("./splitter", "./splitter", inputFile, start, end, firstByteForSplitter, numberOfBuilders, pipeWriteEnds, exclusionFile, NULL);
 
             perror("Error executing splitter");
@@ -218,7 +215,6 @@ int main(int argc, char* argv[]) {
     }
 
 
-
 //---------------------------------------------------------------------builders---------------------------------------------------------------------
     pid_t builderPids[numOfBuilders];
     for (int b = 0; b < numOfBuilders; b++) {
@@ -229,6 +225,7 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
 
+        //builder
         else if (pid == 0) {
             //close the read end of the pipe root - builder
             close(pipesBuilderToRoot[0]);
@@ -261,11 +258,11 @@ int main(int argc, char* argv[]) {
             exit(EXIT_SUCCESS);
         }
         else {
-            //for parent process close both write and read end
             builderPids[b] = pid;
         }
     }
 
+    //execution wii continue here only for the root process
     close(pipesBuilderToRoot[1]);
     for(int i = 0; i < numOfBuilders; i++){
         close(pipesSplitterToBuilder[i][0]);
@@ -274,6 +271,7 @@ int main(int argc, char* argv[]) {
 
     Set wordsWithFrequency = rootReadFromPipe(pipesBuilderToRoot[0]);
 
+    // Wait for all the splitters and builders to finish and ensure that they have finished properly
     for (int i = 0; i < numOfSplitter; i++) {
         int status;
         if(waitpid(splitterPids[i], &status, 0) == -1){
@@ -291,19 +289,19 @@ int main(int argc, char* argv[]) {
     }
 
     close(pipesBuilderToRoot[0]);
+
     printingTopK(wordsWithFrequency, topPopular, outputFile, inputFile);
-    free(bytesPerLine);
+
+    free(firstByteOfEachLine);
     free(pipeWriteEnds);
     setDestroy(wordsWithFrequency);
-    // When freeing the list, free will be called for each node
-    // so the space allocated for the string in the main will also be freed
 
-    printf("Signal SIGUSR1 was received %d times\n", usr1Counter);
-    printf("Signal SIGUSR2 was received %d times\n", usr2Counter);
-
+    fprintf(stdout,"Signal SIGUSR1 was received %d times\n", usr1Counter);
+    fprintf(stdout,"Signal SIGUSR2 was received %d times\n", usr2Counter);
 
     t2 = (double)times(&tb2) ;
     cpu_time = (double)(( tb2 . tms_utime + tb2 . tms_stime ) - ( tb1 . tms_utime + tb1 . tms_stime ));
-    printf ("Run time of root was %lf sec ( REAL time ) although we used the CPU for %lf sec ( CPU time ).\n", (t2 - t1) / ticspersec , cpu_time / ticspersec );
+    fprintf (stdout,"Run time of root was %lf sec ( REAL time ) although we used the CPU for %lf sec ( CPU time ).\n", (t2 - t1) / ticspersec , cpu_time / ticspersec );
+
     exit(0);
 }

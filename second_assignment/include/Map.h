@@ -6,7 +6,6 @@
 #include "types.h"
 
 
-
 // O(n) initialization of the lists for separate chaining with NULL
 Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile);
 
@@ -25,8 +24,6 @@ Pointer mapNodeKey(MapNode node);
 Pointer mapNodeValue(MapNode node);
 
 unsigned int hashFunction(char* value);
-
-void hashDisplay(Map table);
 
 int mapGetSize(Map map);
 

@@ -20,8 +20,7 @@ char* printingFdsToString(int numOfBuilders, int pipesSplitterToBuilder[][2]){
 	return pipeWriteEnds;
 }
 
-
-
+//for Set
 int compareSetNodes(Pointer a, Pointer b){
 	struct wordsInRoot* wordInRootA = (struct wordsInRoot*)a;
 	struct wordsInRoot* wordInRootB = (struct wordsInRoot*)b;
@@ -33,6 +32,7 @@ int compareSetNodes(Pointer a, Pointer b){
 		return -1;
 	}
 	else{
+		//if the frequency is the same we compare the words
 		return strcmp(wordInRootB->word, wordInRootA->word);
 	}
 }
@@ -42,6 +42,7 @@ void destroySetNode(Pointer node){
 	free(wordInRoot->word);
 	free(wordInRoot);
 }
+
 
 Set rootReadFromPipe(int readEnd){
 	Set set = setCreate(compareSetNodes, destroySetNode);
@@ -100,8 +101,11 @@ Set rootReadFromPipe(int readEnd){
 				wordInRoot->word = malloc(sizeOfWord + 1);
 				strcpy(wordInRoot->word, word);
 				wordInRoot->word[sizeOfWord] = '\0';
+
 				wordInRoot->frequency = atoi(frequency);
+
 				setInsert(set, wordInRoot);
+
 				//ready for the next word
 				sizeOfWord = 0;
 				sizeOfFrequency = 0;
@@ -112,10 +116,7 @@ Set rootReadFromPipe(int readEnd){
 			else if(buffer[i] == '\0'){
 				continue;
 			}
-
-
 		}
-
 	}
 	free(word);
 	free(frequency);
@@ -123,44 +124,49 @@ Set rootReadFromPipe(int readEnd){
 }
 
 
+
 void printingTopK(Set set, int k, char* outputFile, char* inputFile){
-	//open the file for writing if it doesn't exist create it, if it exists truncate it
 
 	char kStr[countDigits(k)];
 	sprintf(kStr, "%d", k);
+
+	//open the file for writing if it doesn't exist create it, if it exists truncate it
 	int fd = open(outputFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 
 	//the set is sorted in ascending order so the last k nodes are the k most frequent words
 	write(fd, "Top ", 4);
 	write(fd, kStr, strlen(kStr));
 	write(fd, " words :         Input File : [ ", 32);
-
 	write(fd, inputFile, strlen(inputFile));
 	write(fd, " ]\n\n\n", 5);
+	
 	SetNode root = getRootNode(set);
 	SetNode node = setLast(set);
 	
 	for(int i = 0; i < k; i++){
-		char counter[countDigits(i + 1)]; ;
+
+		char counter[countDigits(i + 1)];
 		sprintf(counter, "%d", i + 1);
+
 		struct wordsInRoot* wordInRoot = (struct wordsInRoot*)setNodeValue(set, node);
-		//write("%s: {%s, %d}\n",counter, wordInRoot->word, wordInRoot->frequency);
 		write(fd, counter, strlen(counter));
 		write(fd, ": {", 3);
 		write(fd, wordInRoot->word, strlen(wordInRoot->word));
 		write(fd, ", ", 2);
+
 		char frequency[countDigits(wordInRoot->frequency)];
 		sprintf(frequency, "%d", wordInRoot->frequency);
 		write(fd, frequency, strlen(frequency));
 		write(fd, "}\n", 2);
 
-
 		node = nodeFindPrevious(root, set, node);
 	}
 
 	close(fd);
+
 }
 
+//to have access to the global variable usr1Counter
 extern int usr1Counter;
 //handler of signal USR1
 void splitterCompleted(int signum){

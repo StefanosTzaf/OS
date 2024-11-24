@@ -19,6 +19,7 @@ struct map {
 Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile) {
 
 	Map map = malloc(sizeof(*map));
+	//keeping loadfactor low
 	map->capacity = sizeByFile * 2 + 7;
 	map->size = 0;
 	map->arrayOfBuckets = malloc(sizeof(List) * map->capacity);
@@ -32,7 +33,8 @@ Map mapCreate(CompareFunc compare, DestroyFunc destroy, int sizeByFile) {
 }
 
 void mapInsert(Map map, char* key, Pointer value) {
-	int pos = hashFunction(key) % map->capacity; // mod to not exceed the size of the array
+	// mod to not exceed the size of the array
+	int pos = hashFunction(key) % map->capacity; 
 	
 	// if it is the first node that hashes to this position of the array
 	if (map->arrayOfBuckets[pos] == NULL) {
@@ -67,8 +69,7 @@ MapNode mapFindNode(Map map, char* key) {
 		return NULL;
 	}
 	// The work of find will essentially be done by the compare function that we provide each time to the list
-	
-	
+		
 	ListNode node = listFind(map->arrayOfBuckets[pos], key);
 	if (node == NULL) {
 		return NULL;
@@ -96,7 +97,7 @@ Pointer mapNodeValue(MapNode node) {
 	return node->value;
 }
 
-// djb2 hash function for strings (as mentioned on Piazza, it is allowed to use a ready-made function)
+// djb2 hash function for strings (as mentioned on Piazza, it is allowed to use a ready function)
 unsigned int hashFunction(char* value) {
 	unsigned int hash = 5381;
 	for (char* s = value; *s != '\0'; s++)
@@ -104,24 +105,6 @@ unsigned int hashFunction(char* value) {
 	return hash;
 }
 
-void hashDisplay(Map table){
-
-    for(int i = 0; i < table->capacity; i++){
-        if(table->arrayOfBuckets[i] == NULL){
-            continue;
-        }
-
-        List list = table->arrayOfBuckets[i];
- 
-        ListNode node;
-        for(node = listGetFirst(list); node != NULL; node = listGetNext(node)){
-            MapNode hash_node = listNodeValue(node);
-
-            printf("key: %s count: %d \n", (char*)hash_node->key, *(int*)hash_node->value);
-
-        }
-    }
-}
 
 int mapGetSize(Map map){
 	return map->size;
