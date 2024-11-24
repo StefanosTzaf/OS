@@ -12,7 +12,7 @@ ROOT_EXEC = lexan
 SPLITTER_EXEC = splitter
 BUILDER_EXEC = builder
 
-# Default target: και τα 2 προγραμματα
+# Default target: 3 executables
 all: $(ROOT_EXEC) $(SPLITTER_EXEC) $(BUILDER_EXEC)
 	
 # Rule to create the root executable

@@ -11,16 +11,16 @@
 
 int main(int argc, char* argv[]){
    if(argc != 4){
-      fprintf(stderr, "Usage: ./builder <read end fd for pipe>\n");
+      fprintf(stderr, "Usage: ./builder, <readEndForBuilder>, <writeEndForBuilder>, <totalWordsToRead>\n");
       exit(1);
    }
-
 
    int readEndFd = atoi(argv[1]);
    int writeEndFd = atoi(argv[2]);
    int hashSize = atoi(argv[3]);
-   Map wordHashTable = mapCreate(builderCompareWords, destroyMapNode, hashSize);
    char buffer[4096];
+
+   Map wordHashTable = mapCreate(builderCompareWords, destroyMapNode, hashSize);
 
    int sizeofWord = 0;
    int capacity = 10;
@@ -65,17 +65,15 @@ int main(int argc, char* argv[]){
 
             word[sizeofWord - 1] = buffer[i];
          }
-
       }
-
    }
-
 
    free(word);
    close(readEndFd);
 
 
    for(MapNode node = mapFirst(wordHashTable); node != NULL; node = mapGetNext(wordHashTable, node)){
+
       int sizeOfKey = strlen(mapNodeKey(node));
       char wordToPrint[sizeOfKey];
       strcpy(wordToPrint, mapNodeKey(node));
@@ -85,10 +83,9 @@ int main(int argc, char* argv[]){
       //convert frequency to string
       char frequencyStr[countDigits(frequency)];
       sprintf(frequencyStr, "%d", frequency);
-      // printf("Word: %s %d, Frequency: %d \n", wordToPrint,sizeOfKey, frequency);
+
       //a buffer to store a word like this: word*5-  (5 is the frequency of the word "*" and "-" to seperate frequency and real words)
       int sizeOfBuffer = sizeOfKey + 3 + countDigits(frequency);
-
       char bufferToWrite[sizeOfBuffer];
 
       strcpy(bufferToWrite, wordToPrint);
@@ -98,10 +95,7 @@ int main(int argc, char* argv[]){
       bufferToWrite[sizeOfBuffer - 1] = '\0';
 
       write(writeEndFd, bufferToWrite, strlen(bufferToWrite));
-
-
    }
-
 
    mapDestroy(wordHashTable);
    close(writeEndFd);
@@ -112,4 +106,3 @@ int main(int argc, char* argv[]){
    
    exit(0);
 }
-
