@@ -121,11 +121,13 @@ int main(int argc, char* argv[]) {
     struct sigaction sa1;
     //signal handler
     sa1.sa_handler = splitterCompleted;
-    //SA_RESTART for syscalls that may have been stopped
+    //SA_RESTART means that if a system call was interrupted by the signal handler,
+    // the system call will automatically be restarted, rather than returning an error with EINTR
     sa1.sa_flags = SA_RESTART;
-    //so as not to block any signal       
+    //sa_mask is a set of signals that should be blocked while the signal handler is executing.
+    //with sigemptyset no other signals will be blocked or ignored    
     sigemptyset(&sa1.sa_mask);
-
+    //This line installs the signal handler for SIGUSR1 by calling sigaction
     if (sigaction(SIGUSR1, &sa1, NULL) == -1) {
         perror("sigaction");
         return 1;
