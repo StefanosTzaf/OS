@@ -28,6 +28,12 @@ int* writeFdsToInt(char* pipeWriteEnds, int numOfBuilders){
 	return fds;
 }
 
+void freeSplitterMapNode(Pointer node){
+	MapNode mapNode = (MapNode)node;
+	//free the key while the value for this hash is the same pointer
+	free(mapNodeKey(mapNode));
+	free(mapNode);
+}
 
 Map exclusionHashTable(char* fileName){
 	char buffer[4096];
@@ -49,7 +55,7 @@ Map exclusionHashTable(char* fileName){
         }
     }
 
-	Map exclusionMap = mapCreate(splitterCompareWords, free, lineCount);
+	Map exclusionMap = mapCreate(splitterCompareWords, freeSplitterMapNode, lineCount);
 
 	lseek(fd, 0, SEEK_SET);
 	char ch;
@@ -68,6 +74,7 @@ Map exclusionHashTable(char* fileName){
 			}
 			//in - line  file
 			if(ch == '\n'){
+				//this word should not be freed because it is used as a key in the map
 				char* newWord = malloc(sizeOfWord);
 				strcpy(newWord, word);
 				mapInsert(exclusionMap, newWord, newWord);
@@ -89,6 +96,7 @@ Map exclusionHashTable(char* fileName){
 		mapInsert(exclusionMap, lastWord, lastWord);
 	}
 
+	free(word);
 	close(fd);
 	return exclusionMap;
 }

@@ -129,11 +129,12 @@ int main(int argc, char* argv[]){
     free(word);
 
     close(fd);
-    
+
     for(int i = 0; i < numberOfBuilders; i++){
         close(writeEndFds[i]);
     }
     free(writeEndFds);
+    mapDestroy(exclusionMap);
 
     //parent process pid
     pid_t rootPid = getppid();
