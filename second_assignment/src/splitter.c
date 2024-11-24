@@ -41,15 +41,16 @@ int main(int argc, char* argv[]){
     char buffer[4096];
     bool allLinesRead = false;
     int bytesRead;
+
+    int size = 0;
+    //the initial capacity for words
+    int capacity = 10;
+    char *word = malloc(capacity * sizeof(char));
+
     while( (bytesRead = read(fd, buffer, sizeof(buffer))) > 0){
 
-        //the initial capacity for the word
-        int size = 0;
-        int capacity = 10;
         // if a word is of the form w#ord then it is not valid
-        char *word = malloc(capacity * sizeof(char));
         //if the word is the last one
-
         //----------------------------------------------- words' seperation and checks -----------------------------------------------
         int i = 0;
         
@@ -125,31 +126,14 @@ int main(int argc, char* argv[]){
             i++;
         }
 
-        
-        //--------------------------------------------------------------------------------------------------
-        //if the word was the last of the file
-        if(size > 1){
-            int hash = splitterHashFunction(word, numberOfBuilders);
-            if(mapFind(exclusionMap, word) == NULL){
-                word[size] = '-';
-                write(writeEndFds[hash], word, strlen(word));
-            }
-        }
-        memset(word, '\0', capacity);
-        size = 0;
-
-        
-        free(word);
+        // if we have read the entire buffer and have not read
+        // the lines corresponding to the splitter, then read again
         if(allLinesRead){
             break;
         }
-        // if we have read the entire buffer and have not read
-        // the lines corresponding to the splitter, then read again
-
-        
-
 
     }
+    free(word);
 
     if(bytesRead == 0){
     }
