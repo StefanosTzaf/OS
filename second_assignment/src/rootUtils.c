@@ -144,7 +144,9 @@ void printingTopK(Set set, int k, char* outputFile, char* inputFile){
 	SetNode node = setLast(set);
 	
 	for(int i = 0; i < k; i++){
-
+		if(node == NULL){
+			break;
+		}
 		char counter[countDigits(i + 1)];
 		sprintf(counter, "%d", i + 1);
 

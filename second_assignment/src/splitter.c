@@ -11,7 +11,7 @@
 int main(int argc, char* argv[]){
     // without arguments (the file is open from the exec call, we do not pass it as an argument)
     if(argc != 8){
-        fprintf(stderr, "Usage: ./splitter <inputFile> <startLine> <endLine> <numberOfBytes>\n");
+        fprintf(stderr, "Usage: ./splitter, <inputFile>, <startLine>, <endLine>, <firstByteForSplitter>, <numberOfBuilders>, <pipeWriteEnds>, <exclusionFile>\n");
         exit(1);
     }
 
@@ -49,11 +49,8 @@ int main(int argc, char* argv[]){
 
     while( (bytesRead = read(fd, buffer, sizeof(buffer))) > 0){
 
-        // if a word is of the form w#ord then it is not valid
-        //if the word is the last one
         //----------------------------------------------- words' seperation and checks -----------------------------------------------
         int i = 0;
-        
         while(i < bytesRead){
 
             char ch = buffer[i];
@@ -92,10 +89,7 @@ int main(int argc, char* argv[]){
                 word[size++] = ch;
             }
 
-            else if (ispunct(ch)) {
-                //a punctuation character  found in the beginning etc "word
-
-                
+            else if (ispunct(ch)) {              
                 // a punctuation character found and the word ends 
                 if(size > 1){
                     int hash = splitterHashFunction(word, numberOfBuilders);
@@ -107,7 +101,7 @@ int main(int argc, char* argv[]){
 
                 memset(word, '\0', capacity);
                 size = 0;
-                //else skip the punctuation character if it is in the beggining of the word
+                //else skip the punctuation character if it is in the beggining of the word(size = 0)
             }
 
             else if (isspace(ch) ) {
@@ -121,7 +115,6 @@ int main(int argc, char* argv[]){
                 memset(word, '\0', capacity);
                 size = 0;
                     
-
             } 
             i++;
         }
@@ -135,14 +128,8 @@ int main(int argc, char* argv[]){
     }
     free(word);
 
-    if(bytesRead == 0){
-    }
-    else if(bytesRead < 0){
-        perror("Error reading file");
-        exit(1);
-    }
-
     close(fd);
+    
     for(int i = 0; i < numberOfBuilders; i++){
         close(writeEndFds[i]);
     }

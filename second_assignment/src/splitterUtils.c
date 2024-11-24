@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+//a variation of the djb2 hash function that take the modulo of the hash with the number of builders
+//because we want to send the word to the builder (so the hash value should be <= than the number of builders)
 int splitterHashFunction(char *word, int numberOfBuilders){
 	unsigned int hash = 5381;
 	for (char* s = word; *s != '\0'; s++)
@@ -28,14 +30,16 @@ int* writeFdsToInt(char* pipeWriteEnds, int numOfBuilders){
 
 
 Map exclusionHashTable(char* fileName){
-	char buffer[1024];
+	char buffer[4096];
     int bytesRead;
     int lineCount = 0;
+
 	int fd = open(fileName, O_RDONLY);
 	if(fd == -1){
 		perror("Error opening file");
 		exit(1);
 	}
+
     // Read the file in chunks
     while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
         for (int i = 0; i < bytesRead; i++) {
@@ -52,13 +56,17 @@ Map exclusionHashTable(char* fileName){
 	int sizeOfWord = 0;
 	int capacity = 10;
 	char* word = malloc(capacity);
+
 	while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0){
 		for(int i = 0; i < bytesRead; i++){
+
 			ch = buffer[i];
+
 			if(sizeOfWord == capacity){
 				capacity *= 2;
 				word = realloc(word, capacity);
 			}
+			//in - line  file
 			if(ch == '\n'){
 				char* newWord = malloc(sizeOfWord);
 				strcpy(newWord, word);
@@ -66,22 +74,27 @@ Map exclusionHashTable(char* fileName){
 				memset(word, '\0', sizeOfWord);
 				sizeOfWord = 0;
 			}
+
 			else{
 				word[sizeOfWord] = ch;
 				sizeOfWord++;
 			}
 		}
 	}
+
+	// Handle the last word
 	if(sizeOfWord > 0){
 		char* lastWord = malloc(sizeOfWord);
 		strcpy(lastWord, word);
 		mapInsert(exclusionMap, lastWord, lastWord);
 	}
+
 	close(fd);
 	return exclusionMap;
-
 }
 
+
+//compare function for the map
 int splitterCompareWords(Pointer a, Pointer b){
 	MapNode nodeB = (MapNode)b;
 	return strcmp(a, mapNodeKey(nodeB));

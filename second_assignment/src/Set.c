@@ -125,7 +125,6 @@ Pointer setNodeValue(Set set, SetNode node) {
 }
 
 
-
 // returns the previous node (based to compare) of the currentNode. It returns NULL if it is the 
 // MIN of the set
 SetNode nodeFindPrevious(SetNode root, Set set, SetNode currentNode) {
