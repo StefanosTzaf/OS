@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/times.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
@@ -16,6 +17,15 @@ int usr2Counter = 0;
 
 
 int main(int argc, char* argv[]) {
+
+    double t1 , t2 , cpu_time ;
+    struct tms tb1 , tb2 ;
+    double ticspersec ;
+    //retrieves the number of clock ticks per second for your system and stores it in the variable ticspersec
+    ticspersec = ( double ) sysconf ( _SC_CLK_TCK );
+    //captures the current time (in clock ticks)
+    t1 = ( double ) times (& tb1) ;
+
     if(argc != 13){
         fprintf(stderr, "Usage: ./lexan -i <TextFile> -l <numOfSplitter> -m <numOfBuilders> -t <TopPopular> -e <ExclusoionListFile> -o <OutputFile>\n" );
     }
@@ -290,5 +300,10 @@ int main(int argc, char* argv[]) {
 
     printf("Signal SIGUSR1 was received %d times\n", usr1Counter);
     printf("Signal SIGUSR2 was received %d times\n", usr2Counter);
+
+
+    t2 = (double)times(&tb2) ;
+    cpu_time = (double)(( tb2 . tms_utime + tb2 . tms_stime ) - ( tb1 . tms_utime + tb1 . tms_stime ));
+    printf ("Run time of root was %lf sec ( REAL time ) although we used the CPU for %lf sec ( CPU time ).\n", (t2 - t1) / ticspersec , cpu_time / ticspersec );
     exit(0);
 }
