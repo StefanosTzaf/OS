@@ -43,3 +43,5 @@ starts writing data into a pipe with the root in a format that root will be able
     Also, for signals i have define two global variables to count the count of received signals and i have define
 the handler functions in rootUtils.c. In root i have used the struct sigaction sa1, to define the signals 
 behavior (for example read and write not to being stopped by signal).
+
+    Finally, the times of the builder are sent to the root and they are printed to the prompt
