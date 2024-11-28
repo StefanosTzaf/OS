@@ -42,15 +42,15 @@ int main(int argc, char* argv[]){
             //if the word arrives first time in the builder add it to  the hash table
             if(mapFind(wordHashTable, word) == NULL){
                char* newWord = malloc(sizeofWord + 1);
-               int* frequency = malloc(sizeof(int));
-               *frequency = 1;
+               int* occurenceCounter = malloc(sizeof(int));
+               *occurenceCounter = 1;
                strcpy(newWord, word);
-               mapInsert(wordHashTable, newWord, frequency);
+               mapInsert(wordHashTable, newWord, occurenceCounter);
             }
-            //else increment the frequency of the word
+            //else increment the occurenceCounter of the word
             else{
-               int* frequency = mapFind(wordHashTable, word);
-               (*frequency)++;
+               int* occurenceCounter = mapFind(wordHashTable, word);
+               (*occurenceCounter)++;
             }
             memset(word, '\0', sizeofWord);
             sizeofWord = 0;
@@ -78,19 +78,19 @@ int main(int argc, char* argv[]){
       char wordToPrint[sizeOfKey];
       strcpy(wordToPrint, mapNodeKey(node));
 
-      int frequency;
-      frequency = *(int*)mapNodeValue(node);
-      //convert frequency to string
-      char frequencyStr[countDigits(frequency)];
-      sprintf(frequencyStr, "%d", frequency);
+      int occurenceCounter;
+      occurenceCounter = *(int*)mapNodeValue(node);
+      //convert occurenceCounter to string
+      char occurenceStr[countDigits(occurenceCounter)];
+      sprintf(occurenceStr, "%d", occurenceCounter);
 
-      //a buffer to store a word like this: word*5-  (5 is the frequency of the word "*" and "-" to seperate frequency and real words)
-      int sizeOfBuffer = sizeOfKey + 3 + countDigits(frequency);
+      //a buffer to store a word like this: word*5-  (5 is the occurenceCounter of the word "*" and "-" to seperate occurenceCounter and real words)
+      int sizeOfBuffer = sizeOfKey + 3 + countDigits(occurenceCounter);
       char bufferToWrite[sizeOfBuffer];
 
       strcpy(bufferToWrite, wordToPrint);
       bufferToWrite[sizeOfKey] = '*';
-      strcpy(bufferToWrite + sizeOfKey + 1, frequencyStr);
+      strcpy(bufferToWrite + sizeOfKey + 1, occurenceStr);
       bufferToWrite[sizeOfBuffer - 2] = '-';
       bufferToWrite[sizeOfBuffer - 1] = '\0';
 

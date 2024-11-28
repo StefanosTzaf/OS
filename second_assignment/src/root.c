@@ -269,7 +269,7 @@ int main(int argc, char* argv[]) {
         close(pipesSplitterToBuilder[i][1]);
     }   
 
-    Set wordsWithFrequency = rootReadFromPipe(pipesBuilderToRoot[0]);
+    Set wordsWithOccurencyCounter = rootReadFromPipe(pipesBuilderToRoot[0]);
 
     // Wait for all the splitters and builders to finish and ensure that they have finished properly
     for (int i = 0; i < numOfSplitter; i++) {
@@ -290,11 +290,11 @@ int main(int argc, char* argv[]) {
 
     close(pipesBuilderToRoot[0]);
 
-    printingTopK(wordsWithFrequency, topPopular, outputFile, inputFile);
+    printingTopK(wordsWithOccurencyCounter, topPopular, outputFile, inputFile);
 
     free(firstByteOfEachLine);
     free(pipeWriteEnds);
-    setDestroy(wordsWithFrequency);
+    setDestroy(wordsWithOccurencyCounter);
 
     fprintf(stdout,"Signal SIGUSR1 was received %d times\n", usr1Counter);
     fprintf(stdout,"Signal SIGUSR2 was received %d times\n", usr2Counter);

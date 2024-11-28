@@ -3,7 +3,7 @@
 
 struct wordsInRoot{
 	char* word;
-	int frequency;
+	int occurenceCounter;
 };
 
 
@@ -24,15 +24,15 @@ char* printingFdsToString(int numOfBuilders, int pipesSplitterToBuilder[][2]){
 int compareSetNodes(Pointer a, Pointer b){
 	struct wordsInRoot* wordInRootA = (struct wordsInRoot*)a;
 	struct wordsInRoot* wordInRootB = (struct wordsInRoot*)b;
-	//firstly we compare the frequency of the words
-	if(wordInRootA->frequency > wordInRootB->frequency){
+	//firstly we compare the occurencyCounter of the words
+	if(wordInRootA->occurenceCounter > wordInRootB->occurenceCounter){
 		return 1;
 	}
-	else if(wordInRootA->frequency < wordInRootB->frequency){
+	else if(wordInRootA->occurenceCounter < wordInRootB->occurenceCounter){
 		return -1;
 	}
 	else{
-		//if the frequency is the same we compare the words
+		//if the occurencyCounter is the same we compare the words
 		return strcmp(wordInRootB->word, wordInRootA->word);
 	}
 }
@@ -53,9 +53,9 @@ Set rootReadFromPipe(int readEnd){
 	int capacity = 10;
 	char* word = malloc(capacity);
 
-	int sizeOfFrequency = 0;
-	int capacityFrequency = 10;
-	char* frequency = malloc(capacityFrequency);
+	int sizeOfOccurenceCounter = 0;
+	int capacityOccurence = 10;
+	char* occurenceCounter = malloc(capacityOccurence);
 
 	while (1) {
 		//reading from pipe until there is no more data
@@ -82,35 +82,35 @@ Set rootReadFromPipe(int readEnd){
 			else if( buffer[i] == '*'){
 				continue;
 			}
-			//creating the frequency 
+			//creating the occurenceCounter 
 			else if(isdigit(buffer[i])){
-				sizeOfFrequency++;
-				if (sizeOfFrequency >= capacityFrequency){
-					capacityFrequency *= 2;
-					frequency = realloc(frequency, capacityFrequency);
+				sizeOfOccurenceCounter++;
+				if (sizeOfOccurenceCounter >= capacityOccurence){
+					capacityOccurence *= 2;
+					occurenceCounter = realloc(occurenceCounter, capacityOccurence);
 				}
-				frequency[sizeOfFrequency - 1] = buffer[i];
+				occurenceCounter[sizeOfOccurenceCounter - 1] = buffer[i];
 			
 			}
-			//copying the frequency and the word to the struct
+			//copying the occurenceCounter and the word to the struct
 			else if(buffer[i] == '-' ){
-				//there will be alawys one more position because we realloc when the sizeOfFrequency becomes equal to the size
-				frequency[sizeOfFrequency] = '\0';
+				//there will be alawys one more position because we realloc when the sizeOfOccurenceCounter becomes equal to the size
+				occurenceCounter[sizeOfOccurenceCounter] = '\0';
 
 				struct wordsInRoot* wordInRoot = malloc(sizeof(struct wordsInRoot));
 				wordInRoot->word = malloc(sizeOfWord + 1);
 				strcpy(wordInRoot->word, word);
 				wordInRoot->word[sizeOfWord] = '\0';
 
-				wordInRoot->frequency = atoi(frequency);
+				wordInRoot->occurenceCounter = atoi(occurenceCounter);
 
 				setInsert(set, wordInRoot);
 
 				//ready for the next word
 				sizeOfWord = 0;
-				sizeOfFrequency = 0;
+				sizeOfOccurenceCounter = 0;
 				memset(word, '\0', capacity);
-				memset(frequency, '\0', capacityFrequency);
+				memset(occurenceCounter, '\0', capacityOccurence);
 
 			}
 			else if(buffer[i] == '\0'){
@@ -119,7 +119,7 @@ Set rootReadFromPipe(int readEnd){
 		}
 	}
 	free(word);
-	free(frequency);
+	free(occurenceCounter);
 	return set;
 }
 
@@ -127,6 +127,15 @@ Set rootReadFromPipe(int readEnd){
 
 void printingTopK(Set set, int k, char* outputFile, char* inputFile){
 
+	//counting the total words (interesting)
+	int totalWords = 0;
+	SetNode root = getRootNode(set);
+	SetNode node = setLast(set);
+	while(node != NULL){
+		struct wordsInRoot* wordInRoot = (struct wordsInRoot*)setNodeValue(set, node);
+		totalWords += wordInRoot->occurenceCounter;
+		node = nodeFindPrevious(root, set, node);
+	} 
 	char kStr[countDigits(k)];
 	sprintf(kStr, "%d", k);
 
@@ -140,9 +149,9 @@ void printingTopK(Set set, int k, char* outputFile, char* inputFile){
 	write(fd, inputFile, strlen(inputFile));
 	write(fd, " ]\n\n\n", 5);
 	
-	SetNode root = getRootNode(set);
-	SetNode node = setLast(set);
+	node = setLast(set);
 	
+	write(fd, "Template: {Word, Frequency,  Occurence Counter}\n\n", 49);
 	for(int i = 0; i < k; i++){
 		if(node == NULL){
 			break;
@@ -150,15 +159,24 @@ void printingTopK(Set set, int k, char* outputFile, char* inputFile){
 		char counter[countDigits(i + 1)];
 		sprintf(counter, "%d", i + 1);
 
+		//frequency of the word
 		struct wordsInRoot* wordInRoot = (struct wordsInRoot*)setNodeValue(set, node);
+
+
 		write(fd, counter, strlen(counter));
 		write(fd, ": {", 3);
 		write(fd, wordInRoot->word, strlen(wordInRoot->word));
-		write(fd, ", ", 2);
+		write(fd, ",  ", 3);
 
-		char frequency[countDigits(wordInRoot->frequency)];
-		sprintf(frequency, "%d", wordInRoot->frequency);
-		write(fd, frequency, strlen(frequency));
+		float frequency = ((float)wordInRoot->occurenceCounter / totalWords )* 100;
+		char frequencyStr[10];
+		sprintf(frequencyStr, "%.6f", frequency);
+		write(fd, frequencyStr, strlen(frequencyStr));
+		write(fd, "%,  ", 4);
+
+		char occurenceCounter[countDigits(wordInRoot->occurenceCounter)];
+		sprintf(occurenceCounter, "%d", wordInRoot->occurenceCounter);
+		write(fd, occurenceCounter, strlen(occurenceCounter));
 		write(fd, "}\n", 2);
 
 		node = nodeFindPrevious(root, set, node);
