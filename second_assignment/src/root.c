@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
 
     if(argc != 13){
         fprintf(stderr, "Usage: ./lexan -i <InputFile> -l <numOfSplitter> -m <numOfBuilders> -t <TopPopular> -e <ExclusoionListFile> -o <OutputFile>\n" );
+        exit(1);
     }
 
     int option;
@@ -57,7 +58,7 @@ int main(int argc, char* argv[]) {
             outputFile = optarg;
         } 
         else{
-            return 1;
+            exit(1);
         }
     }
 
@@ -65,7 +66,7 @@ int main(int argc, char* argv[]) {
     int fdInput = open(inputFile, O_RDONLY);
     if(fdInput == -1){
         fprintf(stderr, "Error opening file %s\n", inputFile);
-        return 1;
+        exit(1);
     }
 
 
