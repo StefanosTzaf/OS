@@ -63,6 +63,6 @@ int main(int argc, char *argv[]) {
 
     close(shmFd);
     munmap(sharedData, SHARED_MEMORY_SIZE);
-
+    shm_unlink(SHARED_MEMORY_NAME);
     return 0;
 }
