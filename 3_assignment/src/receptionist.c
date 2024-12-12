@@ -1,12 +1,17 @@
 #include <semaphore.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include "utils.h"
 
-int main() {
-    if (sem_unlink("/receptionist") == -1) {
-        perror("sem_unlink failed");
-        return 1;
-    }
-    printf("Semaphore 'receptionist' unlinked successfully.\n");
-    return 0;
+
+int main(int argc, char* argv[]){
+    shareDataSegment* sharedData = attachShm();
+    size_t sharedMemorySize = sizeof(shareDataSegment);
+
+
+    munmap(sharedData, sharedMemorySize);
+
+    exit(EXIT_SUCCESS);
 }

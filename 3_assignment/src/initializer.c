@@ -6,6 +6,10 @@
 #include <string.h>
 #include <semaphore.h>
 #include <utils.h>
+#include <sys/wait.h>
+
+
+#define FORKED_VISITORS 4
 
 int main(int argc, char *argv[]) {
     
@@ -35,10 +39,50 @@ int main(int argc, char *argv[]) {
     
     initializeSharedValues(sharedData);
     
-    sleep(25);
 
+
+
+    pid_t receptionistPid = fork();
+    if (receptionistPid == -1) {
+        perror("Error forking receptionist process");
+        exit(EXIT_FAILURE);
+    }
+    else if (receptionistPid == 0) {
+        execlp("./receptionist", "./receptionist", NULL);
+        exit(EXIT_FAILURE);
+    }
+
+
+
+
+    pid_t visitorsPids[FORKED_VISITORS];
+
+    for(int i = 0; i < FORKED_VISITORS; i++) {
+        visitorsPids[i] = fork();
+        if (visitorsPids[i] == -1) {
+            perror("Error forking visitor process");
+            exit(EXIT_FAILURE);
+        }
+        else if (visitorsPids[i] == 0) {
+            execlp("./visitor", "./visitor", NULL);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    int status;
+    if(waitpid(receptionistPid, &status, 0) == -1){
+        perror("Error waiting for splitter");
+        exit(EXIT_FAILURE);
+    }
+
+    for(int i = 0; i < FORKED_VISITORS; i++) {
+        if(waitpid(visitorsPids[i], &status, 0) == -1){
+            perror("Error waiting for visitor");
+            exit(EXIT_FAILURE);
+        }
+    }
     munmap(sharedData, sharedMemorySize);
     shm_unlink(SHARED_MEMORY_NAME);
 
-    return 0;
+    exit(EXIT_SUCCESS);
 }

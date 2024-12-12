@@ -1,5 +1,10 @@
 #include "utils.h"
 #include <semaphore.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->sharedStatistics.averageWaitingTime = 0.0;
@@ -36,7 +41,7 @@ void initializeSharedValues(shareDataSegment *sharedData) {
 
     // Initialize the tables
     for (int i = 0; i < 3; i++) {
-        sharedData->tables[i].isOccupied = true; // All tables are unoccupied initially
+        sharedData->tables[i].isOccupied = false; // All tables are unoccupied initially
         sharedData->tables[i].chairsOccupied = 0;
         for(int j = 0; j < 4; j++) {
             sharedData->tables[i].chairs[j] = -1; // No visitor is sitting on any chair initially
@@ -50,4 +55,34 @@ void initializeSharedValues(shareDataSegment *sharedData) {
 
     // Set the closing flag to false initially
     sharedData->closingFlag = false;
+}
+
+
+//function to attch shared memory (used in receptionist and visitor and monitor processes)
+//they not create shared memory, they just attach it
+shareDataSegment* attachShm(void){
+    int shmFd;
+    size_t sharedMemorySize = sizeof(shareDataSegment);
+    shareDataSegment* sharedData;
+
+    //open shared memory
+    shmFd = shm_open(SHARED_MEMORY_NAME, O_RDWR, 0666);
+    if (shmFd == -1) {
+        perror("shared memory open failed");
+        exit(EXIT_FAILURE);
+    }
+
+    //define the size
+    if (ftruncate(shmFd, sharedMemorySize) == -1) {
+        perror("ftruncate failed");
+        exit(EXIT_FAILURE);
+    }
+
+    //Map shared memory in current address space
+    sharedData = mmap(0, sharedMemorySize, PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
+    if (sharedData == MAP_FAILED) {
+        perror("mmap failed");
+        exit(EXIT_FAILURE);
+    }
+    return sharedData;
 }

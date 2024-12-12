@@ -21,6 +21,7 @@
         "rootutils.h": "c",
         "ctype.h": "c",
         "set.h": "c",
-        "semaphore.h": "c"
+        "semaphore.h": "c",
+        "shm_structs.h": "c"
     }
 }
