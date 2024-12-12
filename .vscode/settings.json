@@ -20,6 +20,7 @@
         "types.h": "c",
         "rootutils.h": "c",
         "ctype.h": "c",
-        "set.h": "c"
+        "set.h": "c",
+        "semaphore.h": "c"
     }
 }
