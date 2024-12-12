@@ -5,9 +5,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <semaphore.h>
-#include "shm_structs.h"
-
-#define SHARED_MEMORY_NAME "/bar_in_nemea"
+#include <utils.h>
 
 int main(int argc, char *argv[]) {
     
@@ -35,7 +33,9 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     
-
+    initializeSharedValues(sharedData);
+    
+    sleep(25);
 
     munmap(sharedData, sharedMemorySize);
     shm_unlink(SHARED_MEMORY_NAME);

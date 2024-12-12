@@ -2,6 +2,7 @@
 #include <semaphore.h>
 #include <stdbool.h>
 
+#define SHARED_MEMORY_NAME "/bar_in_nemea"
 #define MAX_VISITORS 50
 //struct for statistics of the bar
 struct statistics{
@@ -24,7 +25,7 @@ struct statistics{
 //struct for circular buffer managment implemenitig FCFS policy inside the bar
 struct waitingCircularBuffer{
 
-    pid_t waitingCircularBuffer[MAX_VISITORS];
+    pid_t buffer[MAX_VISITORS];
     int front;
     int back;
     sem_t positionSem[MAX_VISITORS];
@@ -56,7 +57,7 @@ struct orderCircularBuffer{
     struct menuOrder orderCircularBuffer[12];
     int front;
     int back;
-    //semaphore for each CHAIR (each viditor that it will sit in a chair will lock there till it will order)
+    //semaphore for each CHAIR (each visitor that it will sit in a chair will lock there till it will order)
     //only one process it would be suspended in each semaphore for chair
     sem_t chairSem[12];
 
