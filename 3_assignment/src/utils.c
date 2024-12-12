@@ -20,11 +20,13 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     //initialize the FCFS waiting circular buffer
     sharedData->fcfsBuffer.front = 0;
     sharedData->fcfsBuffer.back = 0;
+    //every semaphore in buffer is initialized to 1 while no one has already taken the position in buffer
     for (int i = 0; i < MAX_VISITORS; i++) {
-        sem_init(& (sharedData->fcfsBuffer.positionSem[i]), 1, 0);
+        sem_init(& (sharedData->fcfsBuffer.positionSem[i]), 1, 1);
         sharedData->fcfsBuffer.buffer[i] = -1;
     }
 
+    
     sem_init(&sharedData->exceedingVisitorsSem, 1, MAX_VISITORS);
 
     //Initialize the order circular buffer
