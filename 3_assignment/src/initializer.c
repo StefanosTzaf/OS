@@ -7,18 +7,52 @@
 #include <semaphore.h>
 #include <utils.h>
 #include <sys/wait.h>
-
+#include <getopt.h>
 
 #define FORKED_VISITORS 4
 
 int main(int argc, char *argv[]) {
     
+
+    if(argc != 7){
+        fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s sharedMemoryName\n");
+        exit(EXIT_FAILURE);
+    }
+    int option;
+    int maxOrderTime;
+    int maxRestTime;
+    char sharedMemoryName[64];
+
+    while((option = getopt(argc, argv, "d:s:r:")) != -1){
+        if(option == 'd'){
+            maxOrderTime = atoi(optarg);
+            if(maxOrderTime <= 0){
+                fprintf(stderr, "Give valid number for orderTime please\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if(option == 's'){
+            snprintf(sharedMemoryName, sizeof(sharedMemoryName), "/%s", optarg);
+        }
+        else if(option == 'r'){
+            maxRestTime = atoi(optarg);
+            if(maxRestTime <= 0){
+                fprintf(stderr, "Give valid number for restTime please\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else{
+            fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s sharedMemoryName\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
     int shmFd;
     size_t sharedMemorySize = sizeof(shareDataSegment);
     shareDataSegment* sharedData;
 
     //open shared memory
-    shmFd = shm_open(SHARED_MEMORY_NAME, O_CREAT | O_RDWR, 0666);
+    shmFd = shm_open(sharedMemoryName, O_CREAT | O_RDWR, 0666);
     if (shmFd == -1) {
         perror("shared memory open failed");
         exit(EXIT_FAILURE);
@@ -43,12 +77,17 @@ int main(int argc, char *argv[]) {
 
 
     pid_t receptionistPid = fork();
+    char orderTimeStr[16];
+    char restTimeStr[16];
+    snprintf(orderTimeStr, sizeof(orderTimeStr), "%d", maxOrderTime);
+    snprintf(restTimeStr, sizeof(restTimeStr), "%d", maxRestTime);
+
     if (receptionistPid == -1) {
         perror("Error forking receptionist process");
         exit(EXIT_FAILURE);
     }
     else if (receptionistPid == 0) {
-        execlp("./receptionist", "./receptionist", NULL);
+        execlp("./receptionist", "./receptionist", "-d", orderTimeStr, "-s", sharedMemoryName, NULL);
         exit(EXIT_FAILURE);
     }
 
@@ -64,7 +103,7 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
         else if (visitorsPids[i] == 0) {
-            execlp("./visitor", "./visitor", NULL);
+            execlp("./visitor", "./visitor", "-d", restTimeStr, "-s", sharedMemoryName, NULL);
             exit(EXIT_FAILURE);
         }
     }
@@ -81,8 +120,10 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
     }
+
+
     munmap(sharedData, sharedMemorySize);
-    shm_unlink(SHARED_MEMORY_NAME);
+    shm_unlink(sharedMemoryName);
 
     exit(EXIT_SUCCESS);
 }

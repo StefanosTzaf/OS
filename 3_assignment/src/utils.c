@@ -34,11 +34,11 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->orderBuffer.back = 0;
     for (int i = 0; i < 12; i++) {
         sem_init(&sharedData->orderBuffer.chairSem[i], 1, 1);
-        sharedData->orderBuffer.orderCircularBuffer[i].visitor = -1;
-        sharedData->orderBuffer.orderCircularBuffer[i].water = false;
-        sharedData->orderBuffer.orderCircularBuffer[i].wine = false;
-        sharedData->orderBuffer.orderCircularBuffer[i].cheese = false;
-        sharedData->orderBuffer.orderCircularBuffer[i].salad = false;
+        sharedData->orderBuffer.lastOrders[i].visitor = -1;
+        sharedData->orderBuffer.lastOrders[i].water = false;
+        sharedData->orderBuffer.lastOrders[i].wine = false;
+        sharedData->orderBuffer.lastOrders[i].cheese = false;
+        sharedData->orderBuffer.lastOrders[i].salad = false;
     }
 
     // Initialize the tables
@@ -62,13 +62,13 @@ void initializeSharedValues(shareDataSegment *sharedData) {
 
 //function to attch shared memory (used in receptionist and visitor and monitor processes)
 //they not create shared memory, they just attach it
-shareDataSegment* attachShm(void){
+shareDataSegment* attachShm(char* sharedMemoryName) {
     int shmFd;
     size_t sharedMemorySize = sizeof(shareDataSegment);
     shareDataSegment* sharedData;
 
     //open shared memory
-    shmFd = shm_open(SHARED_MEMORY_NAME, O_RDWR, 0666);
+    shmFd = shm_open(sharedMemoryName, O_RDWR, 0666);
     if (shmFd == -1) {
         perror("shared memory open failed");
         exit(EXIT_FAILURE);

@@ -2,7 +2,6 @@
 #include <semaphore.h>
 #include <stdbool.h>
 
-#define SHARED_MEMORY_NAME "/bar_in_nemea"
 #define MAX_VISITORS 50
 //struct for statistics of the bar
 struct statistics{
@@ -41,7 +40,7 @@ struct table{
 };
 
 //what every visitor choosed from menu 
-struct menuOrder{
+typedef struct{
 
     pid_t visitor;
     bool water;
@@ -49,12 +48,12 @@ struct menuOrder{
     bool cheese;
     bool salad;
 
-};
+} menuOrder;
 
 //struct for circular buffer managment for orders (FCFS again)
 struct orderCircularBuffer{
 
-    struct menuOrder orderCircularBuffer[12];
+    menuOrder lastOrders[12];
     int front;
     int back;
     //semaphore for each CHAIR (each visitor that it will sit in a chair will lock there till it will order)

@@ -5,17 +5,17 @@ LDFLAGS = -lrt -pthread
 
 
 INITIALIZER_OBJS = src/initializer.o src/utils.o
-INITIALIZER_EXEC = programs/initializer
+INITIALIZER_EXEC = initializer
 
 VISITOR_OBJS = src/visitor.o src/utils.o
-VISITOR_EXEC = programs/visitor
+VISITOR_EXEC = visitor
 
 RECEPTION_OBJS = src/receptionist.o src/utils.o
-RECEPTION_EXEC = programs/receptionist
+RECEPTION_EXEC = receptionist
 
 
 MONITOR_OBJS = src/monitor.o src/utils.o
-MONITOR_EXEC = programs/monitor
+MONITOR_EXEC = monitor
 
 all: $(INITIALIZER_EXEC) $(VISITOR_EXEC) $(RECEPTION_EXEC) $(MONITOR_EXEC)
 

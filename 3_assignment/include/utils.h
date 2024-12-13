@@ -2,4 +2,4 @@
 
 void initializeSharedValues(shareDataSegment *sharedData);
 
-shareDataSegment* attachShm(void);
+shareDataSegment* attachShm(char* sharedMemoryName);

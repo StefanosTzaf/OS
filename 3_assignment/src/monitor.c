@@ -4,9 +4,28 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
+
+
 
 int main(int argc, char* argv[]){
-    shareDataSegment* sharedData = attachShm();
+    if(argc != 3){
+        fprintf(stderr, "Usage: ./monitor -s sharedMemoryName\n");
+        exit(EXIT_FAILURE);
+    }
+    int option;
+    char sharedMemoryName[64];
+    if ((option = getopt(argc, argv, "s:")) != -1) {
+        if(option == 's'){
+            snprintf(sharedMemoryName, sizeof(sharedMemoryName), "/%s", optarg);
+        }
+        else{
+            fprintf(stderr, "Usage: ./monitor -s sharedMemoryName\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
     
     printf("\n");
