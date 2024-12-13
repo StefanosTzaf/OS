@@ -72,6 +72,18 @@ int main(int argc, char* argv[]){
 
         sem_post(&(sharedData->mutex));
 
+        //if there is no order to serve AND no one waiting inside the bar to be served AND tables are not occupied
+        //AND bar is closing --------> exit (close the bar)
+        if(sharedData->closingFlag && 
+        sharedData->orderBuffer.front == sharedData->orderBuffer.back &&
+        sharedData->fcfsBuffer.front == sharedData->fcfsBuffer.back &&
+        sharedData->tables[0].isOccupied == false && sharedData->tables[1].isOccupied == false &&
+        sharedData->tables[2].isOccupied == false){
+           
+            break;  
+
+        }
+
     }
 
 
