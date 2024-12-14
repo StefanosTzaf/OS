@@ -17,20 +17,20 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->sharedStatistics.consumedSalads = 0;
     sharedData->sharedStatistics.visitorsServed = 0;
 
-    //initialize the FCFS waiting circular buffer
-    sharedData->fcfsBuffer.front = 0;
-    sharedData->fcfsBuffer.back = 0;
-    sharedData->fcfsBuffer.count = 0;
-    //every semaphore in buffer is initialized to 1 while no one has already taken the position in buffer
+    // initialize the FCFS waiting circular buffer
+    sharedData->fcfsWaitingBuffer.front = 0;
+    sharedData->fcfsWaitingBuffer.back = 0;
+    sharedData->fcfsWaitingBuffer.count = 0;
+    // every semaphore in buffer is initialized to 1 while no one has already taken the position in buffer
     for (int i = 0; i < MAX_VISITORS; i++) {
-        sem_init(& (sharedData->fcfsBuffer.positionSem[i]), 1, 1);
-        sharedData->fcfsBuffer.buffer[i] = -1;
+        sem_init(& (sharedData->fcfsWaitingBuffer.positionSem[i]), 1, 1);
+        sharedData->fcfsWaitingBuffer.buffer[i] = -1;
     }
 
     
     sem_init(&sharedData->exceedingVisitorsSem, 1, MAX_VISITORS);
 
-    //Initialize the order circular buffer
+    // Initialize the order circular buffer
     sharedData->orderBuffer.front = 0;
     sharedData->orderBuffer.back = 0;
     sharedData->orderBuffer.count = 0;
@@ -62,25 +62,81 @@ void initializeSharedValues(shareDataSegment *sharedData) {
 }
 
 
-//function to attch shared memory (used in receptionist and visitor and monitor processes)
-//they not create shared memory, they just attach it
+// function to attch shared memory (used in receptionist and visitor and monitor processes)
+// they not create shared memory, they just attach it
 shareDataSegment* attachShm(char* sharedMemoryName) {
     int shmFd;
     size_t sharedMemorySize = sizeof(shareDataSegment);
     shareDataSegment* sharedData;
 
-    //open shared memory
+    // open shared memory
     shmFd = shm_open(sharedMemoryName, O_RDWR, 0666);
     if (shmFd == -1) {
         perror("shared memory open failed");
         exit(EXIT_FAILURE);
     }
 
-    //Map shared memory in current address space
+    // Map shared memory in current address space
     sharedData = mmap(0, sharedMemorySize, PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
     if (sharedData == MAP_FAILED) {
         perror("mmap failed");
         exit(EXIT_FAILURE);
     }
     return sharedData;
+}
+
+
+// return the first empty table index, else return -1
+int isAnyTableEmpty(shareDataSegment* sharedData){
+    for(int i = 0; i < 3; i++){
+        if(sharedData->tables[i].isOccupied == false){
+            return i;
+        }
+    }
+    return -1;
+}
+
+
+menuOrder randomizeOrder(pid_t visitorID) {
+    menuOrder order;
+    order.visitor = visitorID;
+
+    // Randomize drinks - at least one drink is selected
+    // 0 = water only, 1 = wine only, 2 = both
+    int drinkChoice = rand() % 3;
+    if(drinkChoice == 0) {
+        order.wine = false;
+        order.water = true;
+    }
+    else if(drinkChoice == 1) {
+        order.wine = true;
+        order.water = false;
+    }
+    else {
+        order.wine = true;
+        order.water = true;
+    }
+
+    // Randomize food - 0 to 2 food items (it is possible for visitor not to order anything for food)
+    // 0 = nothing, 1 = cheese, 2 = salad, 3 = both
+    int foodChoice = rand() % 4;
+
+    if(foodChoice == 0){
+        order.cheese = false;
+        order.salad = false;
+    }
+    else if(foodChoice == 1){
+        order.cheese = true;
+        order.salad = false;
+    }
+    else if(foodChoice == 2){
+        order.salad = true;
+        order.cheese = false;
+    }
+    else if(foodChoice == 3){
+        order.cheese = true;
+        order.salad = true;
+    }
+
+    return order;
 }

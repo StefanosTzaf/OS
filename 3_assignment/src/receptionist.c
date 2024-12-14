@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
         sem_wait(&(sharedData->receptionistSem));
         sem_wait(&(sharedData->mutex));
         
-        //if there is order to serve
+        // if there is order to serve
         if (sharedData->orderBuffer.count > 0) {
 
             int index = sharedData->orderBuffer.front;
@@ -68,19 +68,19 @@ int main(int argc, char* argv[]){
             // from now on he can leave the bar after a random time(visitor source code)
             sem_post(&(sharedData->orderBuffer.chairSem[index]));
             
-            //updating front (wrap around)
+            // updating front (wrap around)
             sharedData->orderBuffer.front = (sharedData->orderBuffer.front + 1) % 12;
         }
 
 
         sem_post(&(sharedData->mutex));
 
-        //must awake a visitor to serve him
+        // must awake a visitor to serve him
 
-        //if there is no order to serve AND no one waiting inside the bar to be served AND tables are not occupied
-        //AND bar is closing --------> exit (close the bar)
+        // if there is no order to serve AND no one waiting inside the bar to be served AND tables are not occupied
+        // AND bar is closing --------> exit (close the bar)
         if(sharedData->closingFlag && 
-        sharedData->fcfsBuffer.count == 0 &&
+        sharedData->fcfsWaitingBuffer.count == 0 &&
         sharedData->orderBuffer.count == 0 &&
         sharedData->tables[0].isOccupied == false && sharedData->tables[1].isOccupied == false &&
         sharedData->tables[2].isOccupied == false){

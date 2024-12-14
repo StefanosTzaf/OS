@@ -28,7 +28,10 @@ int main(int argc, char* argv[]){
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
     
+    sem_wait(&(sharedData->mutex));
+
     printf("\n");
+
     for(int i = 0; i < 3; i++) {
         printf("Table %d -> ", i);
         if(sharedData->tables[i].isOccupied) {
@@ -47,7 +50,8 @@ int main(int argc, char* argv[]){
     printf("Cheese: %d\n", sharedData->sharedStatistics.consumedCheese);
     printf("Salads: %d\n\n", sharedData->sharedStatistics.consumedSalads);
 
-
+    sem_post(&(sharedData->mutex));
+    
     munmap(sharedData, sharedMemorySize);
     exit(EXIT_SUCCESS);
 }
