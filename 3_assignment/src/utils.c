@@ -20,6 +20,7 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     //initialize the FCFS waiting circular buffer
     sharedData->fcfsBuffer.front = 0;
     sharedData->fcfsBuffer.back = 0;
+    sharedData->fcfsBuffer.count = 0;
     //every semaphore in buffer is initialized to 1 while no one has already taken the position in buffer
     for (int i = 0; i < MAX_VISITORS; i++) {
         sem_init(& (sharedData->fcfsBuffer.positionSem[i]), 1, 1);
@@ -32,6 +33,7 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     //Initialize the order circular buffer
     sharedData->orderBuffer.front = 0;
     sharedData->orderBuffer.back = 0;
+    sharedData->orderBuffer.count = 0;
     for (int i = 0; i < 12; i++) {
         sem_init(&sharedData->orderBuffer.chairSem[i], 1, 1);
         sharedData->orderBuffer.lastOrders[i].visitor = -1;
@@ -71,12 +73,6 @@ shareDataSegment* attachShm(char* sharedMemoryName) {
     shmFd = shm_open(sharedMemoryName, O_RDWR, 0666);
     if (shmFd == -1) {
         perror("shared memory open failed");
-        exit(EXIT_FAILURE);
-    }
-
-    //define the size
-    if (ftruncate(shmFd, sharedMemorySize) == -1) {
-        perror("ftruncate failed");
         exit(EXIT_FAILURE);
     }
 

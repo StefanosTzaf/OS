@@ -44,10 +44,9 @@ int main(int argc, char* argv[]){
         sem_wait(&(sharedData->mutex));
         
         //if there is order to serve
-        if (sharedData->orderBuffer.front != sharedData->orderBuffer.back) {
+        if (sharedData->orderBuffer.count > 0) {
 
             int index = sharedData->orderBuffer.front;
-            //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^isws pointer
             menuOrder currentOrder = sharedData->orderBuffer.lastOrders[index];
 
             sharedData->sharedStatistics.visitorsServed++;
@@ -65,18 +64,24 @@ int main(int argc, char* argv[]){
                 sharedData->sharedStatistics.consumedSalads++;
             }
 
-
+            // awake the first visitor in the queue of ordering in a specific chair FCFS,
+            // from now on he can leave the bar after a random time(visitor source code)
+            sem_post(&(sharedData->orderBuffer.chairSem[index]));
+            
             //updating front (wrap around)
             sharedData->orderBuffer.front = (sharedData->orderBuffer.front + 1) % 12;
         }
 
+
         sem_post(&(sharedData->mutex));
+
+        //must awake a visitor to serve him
 
         //if there is no order to serve AND no one waiting inside the bar to be served AND tables are not occupied
         //AND bar is closing --------> exit (close the bar)
         if(sharedData->closingFlag && 
-        sharedData->orderBuffer.front == sharedData->orderBuffer.back &&
-        sharedData->fcfsBuffer.front == sharedData->fcfsBuffer.back &&
+        sharedData->fcfsBuffer.count == 0 &&
+        sharedData->orderBuffer.count == 0 &&
         sharedData->tables[0].isOccupied == false && sharedData->tables[1].isOccupied == false &&
         sharedData->tables[2].isOccupied == false){
            
@@ -85,7 +90,8 @@ int main(int argc, char* argv[]){
         }
 
     }
-
+    
+    
 
     munmap(sharedData, sharedMemorySize);
 

@@ -27,6 +27,7 @@ struct waitingCircularBuffer{
     pid_t buffer[MAX_VISITORS];
     int front;
     int back;
+    int count;
     sem_t positionSem[MAX_VISITORS];
 
 };
@@ -56,6 +57,7 @@ struct orderCircularBuffer{
     menuOrder lastOrders[12];
     int front;
     int back;
+    int count;
     //semaphore for each CHAIR (each visitor that it will sit in a chair will lock there till it will order)
     //only one process it would be suspended in each semaphore for chair
     sem_t chairSem[12];
