@@ -113,11 +113,11 @@ int main(int argc, char* argv[]){
     int randomTime = lower + (rand() % (maxRestTime - lower + 1));
 
     sem_post(&(sharedData->mutex));
-    
+
     sleep(randomTime);
 
 
-    
+
     //TODO to inform others to sit if he is the last one in the table
 
 

@@ -6,7 +6,7 @@
 #include "utils.h"
 #include <unistd.h>
 #include <getopt.h>
-
+#include <time.h>
 
 int main(int argc, char* argv[]){
 
@@ -38,6 +38,7 @@ int main(int argc, char* argv[]){
 
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
+    srand(time(NULL));
 
     while(1){
         sem_wait(&(sharedData->receptionistSem));
@@ -63,6 +64,16 @@ int main(int argc, char* argv[]){
             if(currentOrder.salad){
                 sharedData->sharedStatistics.consumedSalads++;
             }
+
+            int lower = (int)(0.5 * maxOrderTime);
+            int randomTime = lower + (rand() % (maxOrderTime - lower + 1));
+
+            //free the mutex before sleeping for a random time
+            sem_post(&(sharedData->mutex));
+
+            sleep(randomTime);
+            
+            sem_wait(&(sharedData->mutex));
 
             // awake the first visitor in the queue of ordering in a specific chair FCFS,
             // from now on he can leave the bar after a random time(visitor source code)
