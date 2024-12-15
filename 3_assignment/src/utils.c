@@ -140,3 +140,20 @@ menuOrder randomizeOrder(pid_t visitorID) {
 
     return order;
 }
+
+void updateStatistics(shareDataSegment* sharedData, menuOrder currentOrder){
+    sharedData->sharedStatistics.visitorsServed++;
+
+    if (currentOrder.water) {
+        sharedData->sharedStatistics.consumedWater++;
+    }
+    if(currentOrder.wine){
+        sharedData->sharedStatistics.consumedWine++;
+    }
+    if(currentOrder.cheese){
+        sharedData->sharedStatistics.consumedCheese++;
+    }
+    if(currentOrder.salad){
+        sharedData->sharedStatistics.consumedSalads++;
+    }
+}

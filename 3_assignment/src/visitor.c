@@ -70,6 +70,7 @@ int main(int argc, char* argv[]){
 
 
             menuOrder order = randomizeOrder(getpid());
+            updateStatistics(sharedData, order);
 
             // put the order in the order buffer
             sharedData->orderBuffer.lastOrders[sharedData->orderBuffer.back] = order;
