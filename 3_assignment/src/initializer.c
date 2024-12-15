@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
             snprintf(logFileName, sizeof(logFileName), "%s", optarg);
         }
         else{
-            fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s sharedMemoryName\n");
+            fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s sharedMemoryName -l logFileName.txt\n");
             exit(EXIT_FAILURE);
         }
     }

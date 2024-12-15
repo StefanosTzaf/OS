@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
             snprintf(logFileName, sizeof(logFileName), "%s", optarg);
         }
         else{
-            fprintf(stderr, "Usage: ./receptionist -d <orderTime> -s sharedMemoryName\n");
+            fprintf(stderr, "Usage: ./receptionist -d <orderTime> -s sharedMemoryName -l logFileName.txt\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -60,25 +60,12 @@ int main(int argc, char* argv[]){
             int index = sharedData->orderBuffer.front;
             menuOrder currentOrder = sharedData->orderBuffer.lastOrders[index];
 
-            sharedData->sharedStatistics.visitorsServed++;
-
-            if (currentOrder.water) {
-                sharedData->sharedStatistics.consumedWater++;
-            }
-            if(currentOrder.wine){
-                sharedData->sharedStatistics.consumedWine++;
-            }
-            if(currentOrder.cheese){
-                sharedData->sharedStatistics.consumedCheese++;
-            }
-            if(currentOrder.salad){
-                sharedData->sharedStatistics.consumedSalads++;
-            }
+            updateStatistics(sharedData, currentOrder);
 
             int lower = (int)(0.5 * maxOrderTime);
             int randomTime = lower + (rand() % (maxOrderTime - lower + 1));
 
-            //free the mutex before sleeping for a random time
+            // free the mutex before sleeping for a random time
             sem_post(&(sharedData->mutex));
             
             // sleep for a random time preparing a speciffic order

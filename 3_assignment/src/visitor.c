@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <time.h>
+#include <string.h>
 
 
 int main(int argc, char* argv[]){
@@ -31,7 +32,7 @@ int main(int argc, char* argv[]){
             snprintf(logFileName, sizeof(logFileName), "%s", optarg);
         }
         else{
-            fprintf(stderr, "Usage: ./visitor -d <restTime> -s sharedMemoryName\n");
+            fprintf(stderr, "Usage: ./visitor -d <restTime> -s sharedMemoryName -l logFileName.txt\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -82,8 +83,8 @@ int main(int argc, char* argv[]){
             }
 
 
+
             menuOrder order = randomizeOrder(getpid());
-            updateStatistics(sharedData, order);
 
             // put the order in the order buffer
             sharedData->orderBuffer.lastOrders[sharedData->orderBuffer.back] = order;
@@ -91,8 +92,12 @@ int main(int argc, char* argv[]){
             sharedData->orderBuffer.back = (sharedData->orderBuffer.back + 1) % 12;
             sharedData->orderBuffer.count++;
 
-            sem_wait(&(sharedData->orderBuffer.chairSem[chairIndex]));
+            // inform receptionist that there is an order to serve
+            sem_post(&(sharedData->receptionistSem));
+            sem_post(&(sharedData->mutex));
 
+            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ean den prolavei na ginei suspend edw poion tha jypnisei o receptionist
+            sem_wait(&(sharedData->orderBuffer.chairSem[chairIndex]));
         }
     }
     
