@@ -14,16 +14,17 @@
 int main(int argc, char *argv[]) {
     
 
-    if(argc != 7){
-        fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s sharedMemoryName\n");
+    if(argc != 9){
+        fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s sharedMemoryName -l logFileName.txt\n");
         exit(EXIT_FAILURE);
     }
     int option;
     int maxOrderTime;
     int maxRestTime;
     char sharedMemoryName[64];
+    char logFileName[64];
 
-    while((option = getopt(argc, argv, "d:s:r:")) != -1){
+    while((option = getopt(argc, argv, "d:s:r:l:")) != -1){
         if(option == 'd'){
             maxOrderTime = atoi(optarg);
             if(maxOrderTime <= 0){
@@ -41,11 +42,25 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
             }
         }
+        else if(option == 'l'){
+            snprintf(logFileName, sizeof(logFileName), "%s", optarg);
+        }
         else{
             fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s sharedMemoryName\n");
             exit(EXIT_FAILURE);
         }
     }
+
+    int logFd = open(logFileName, O_CREAT | O_RDWR | O_TRUNC, 0666);
+    if (logFd == -1) {
+        perror("log file open failed");
+        exit(EXIT_FAILURE);
+    }
+
+    char* logFileCreation = " -- Log file for BAR IN NEMEA --\n\n\n\0";
+    write(logFd, logFileCreation, strlen(logFileCreation));
+    //close the log file , visitors and receptionist will write to this file and open by themselves
+    close(logFd);
 
     int shmFd;
     size_t sharedMemorySize = sizeof(shareDataSegment);
@@ -87,7 +102,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     else if (receptionistPid == 0) {
-        execlp("./receptionist", "./receptionist", "-d", orderTimeStr, "-s", sharedMemoryName, NULL);
+        execlp("./receptionist", "./receptionist", "-d", orderTimeStr, "-s", sharedMemoryName, "-l", logFileName , NULL);
         exit(EXIT_FAILURE);
     }
 
@@ -97,13 +112,15 @@ int main(int argc, char *argv[]) {
     pid_t visitorsPids[FORKED_VISITORS];
 
     for(int i = 0; i < FORKED_VISITORS; i++) {
+        //create a visitor every one second
+        sleep(1);
         visitorsPids[i] = fork();
         if (visitorsPids[i] == -1) {
             perror("Error forking visitor process");
             exit(EXIT_FAILURE);
         }
         else if (visitorsPids[i] == 0) {
-            execlp("./visitor", "./visitor", "-d", restTimeStr, "-s", sharedMemoryName, NULL);
+            execlp("./visitor", "./visitor", "-d", restTimeStr, "-s", sharedMemoryName, "-l", logFileName, NULL);
             exit(EXIT_FAILURE);
         }
     }

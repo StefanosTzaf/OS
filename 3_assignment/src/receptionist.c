@@ -10,15 +10,16 @@
 
 int main(int argc, char* argv[]){
 
-    if(argc != 5){
-        fprintf(stderr, "Usage: ./receptionist -d <orderTime> -s sharedMemoryName\n");
+    if(argc != 7){
+        fprintf(stderr, "Usage: ./receptionist -d <orderTime> -s sharedMemoryName -l logFileName.txt\n");
         exit(EXIT_FAILURE);
     }
     int option;
     int maxOrderTime;
     char sharedMemoryName[64];
+    char logFileName[64];
 
-    while((option = getopt(argc, argv, "d:s:")) != -1){
+    while((option = getopt(argc, argv, "d:s:l:")) != -1){
         if(option == 'd'){
             maxOrderTime = atoi(optarg);
             if(maxOrderTime <= 0){
@@ -29,12 +30,20 @@ int main(int argc, char* argv[]){
         else if(option == 's'){
             snprintf(sharedMemoryName, sizeof(sharedMemoryName), "/%s", optarg);
         }
+        else if(option == 'l'){
+            snprintf(logFileName, sizeof(logFileName), "%s", optarg);
+        }
         else{
             fprintf(stderr, "Usage: ./receptionist -d <orderTime> -s sharedMemoryName\n");
             exit(EXIT_FAILURE);
         }
     }
 
+    int logFd = open(logFileName,  O_RDWR | O_APPEND , 0666);
+    if(logFd == -1){
+        perror("log file open failed");
+        exit(EXIT_FAILURE);
+    }
 
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
@@ -106,7 +115,7 @@ int main(int argc, char* argv[]){
         
     }
     
-    
+    close(logFd);
     munmap(sharedData, sharedMemorySize);
 
     exit(EXIT_SUCCESS);

@@ -11,26 +11,38 @@
 
 int main(int argc, char* argv[]){
 
-    if(argc != 5){
-        fprintf(stderr, "Usage: ./visitor -d <restTime> -s sharedMemoryName\n");
+    if(argc != 7){
+        fprintf(stderr, "Usage: ./visitor -d <restTime> -s sharedMemoryName -l logFileName.txt\n");
         exit(EXIT_FAILURE);
     }
     int option;
     int maxRestTime;
     char sharedMemoryName[64];
+    char logFileName[64];
 
-    while((option = getopt(argc, argv, "d:s:")) != -1){
+    while((option = getopt(argc, argv, "d:s:l:")) != -1){
         if(option == 'd'){
             maxRestTime = atoi(optarg);
         }
         else if(option == 's'){
             snprintf(sharedMemoryName, sizeof(sharedMemoryName), "/%s", optarg);
         }
+        else if(option == 'l'){
+            snprintf(logFileName, sizeof(logFileName), "%s", optarg);
+        }
         else{
             fprintf(stderr, "Usage: ./visitor -d <restTime> -s sharedMemoryName\n");
             exit(EXIT_FAILURE);
         }
     }
+
+    int logFd = open(logFileName, O_RDWR | O_APPEND , 0666);
+    if(logFd == -1){
+        perror("log file open failed");
+        exit(EXIT_FAILURE);
+    }
+    
+
 
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
@@ -40,6 +52,7 @@ int main(int argc, char* argv[]){
 
     if(sharedData->closingFlag){
         munmap(sharedData, sharedMemorySize);
+        close(logFd);
         exit(EXIT_SUCCESS);
     } 
 
@@ -126,7 +139,7 @@ int main(int argc, char* argv[]){
     //TODO to inform others to sit if he is the last one in the table
 
 
-
+    close(logFd);
     munmap(sharedData, sharedMemorySize);
     exit(EXIT_SUCCESS);
 
