@@ -16,12 +16,12 @@ int main(int argc, char* argv[]){
         exit(EXIT_FAILURE);
     }
     int option;
-    int maxOrderTime;
+    int maxRestTime;
     char sharedMemoryName[64];
 
     while((option = getopt(argc, argv, "d:s:")) != -1){
         if(option == 'd'){
-            maxOrderTime = atoi(optarg);
+            maxRestTime = atoi(optarg);
         }
         else if(option == 's'){
             snprintf(sharedMemoryName, sizeof(sharedMemoryName), "/%s", optarg);
@@ -34,6 +34,9 @@ int main(int argc, char* argv[]){
 
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
+
+    // fully random seed based to time)
+    srand(time(NULL));
 
     // if there is no place for visitor to wait inside the bar they should wait outside.
     // So if in this semaphore P() has been applied more than MAX_VISITORS times then the fcfsWaitingBuffer is full 
@@ -50,7 +53,7 @@ int main(int argc, char* argv[]){
 
     sem_wait(&(sharedData->mutex));
 
-
+    int chairIndex;
     // if no one is waiting in the buffer it can check in the bar
     if(sharedData->fcfsWaitingBuffer.count == 0){
         int tableIndex = isAnyTableEmpty(sharedData);
@@ -63,12 +66,12 @@ int main(int argc, char* argv[]){
                 sharedData->tables[tableIndex].isOccupied = true;
             }
 
-            // create a random order (fully random while seed is time)
-            srand(time(NULL));
+
             menuOrder order = randomizeOrder(getpid());
 
             // put the order in the order buffer
             sharedData->orderBuffer.lastOrders[sharedData->orderBuffer.back] = order;
+            chairIndex = sharedData->orderBuffer.back;
             sharedData->orderBuffer.back = (sharedData->orderBuffer.back + 1) % 12;
             sharedData->orderBuffer.count++;
 
@@ -84,12 +87,42 @@ int main(int argc, char* argv[]){
         sem_post(&(sharedData->mutex));
         //suspend in this semaphore after unlocking mutex
         sem_wait(&(sharedData->fcfsWaitingBuffer.positionSem[position]));
+
+        //when it is awake, it can order
+        menuOrder order = randomizeOrder(getpid());
+        sharedData->orderBuffer.lastOrders[sharedData->orderBuffer.back] = order;
+        chairIndex = sharedData->orderBuffer.back;
+        sharedData->orderBuffer.back = (sharedData->orderBuffer.back + 1) % 12;
+        sharedData->orderBuffer.count++;
+
     }
 
+    sem_post(&(sharedData->mutex));
+    // it should be suspended in the semaphore of his chair
+    sem_wait(&(sharedData->orderBuffer.chairSem[chairIndex]));
 
+
+
+    sem_wait(&(sharedData->mutex));
+    // now the visitor should have been served (because only receptionist can awake him from the semaphore with orders!!)
+    //so it has to wait a random time -- eat and discuss --and then leave the bar
+
+    int lower = (int)(0.7 * maxRestTime);
+ 
+    // random integer in the interval [lower *0.7, maxRestTime]
+    int randomTime = lower + (rand() % (maxRestTime - lower + 1));
 
     sem_post(&(sharedData->mutex));
     
+    sleep(randomTime);
+
+
+    
+    //TODO to inform others to sit if he is the last one in the table
+
+
+
     munmap(sharedData, sharedMemorySize);
     exit(EXIT_SUCCESS);
+
 }
