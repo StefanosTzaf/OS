@@ -38,18 +38,20 @@ int main(int argc, char* argv[]){
     // fully random seed based to time)
     srand(time(NULL));
 
-    // if there is no place for visitor to wait inside the bar they should wait outside.
-    // So if in this semaphore P() has been applied more than MAX_VISITORS times then the fcfsWaitingBuffer is full 
-    sem_wait(&(sharedData->exceedingVisitorsSem));
-    
-
     if(sharedData->closingFlag){
         munmap(sharedData, sharedMemorySize);
         exit(EXIT_SUCCESS);
     } 
 
-    // if the execution has reached here, there is space in waiting buffer OR yhe waiting buffer is absolutely free
-    // and the bar is not closing
+
+    // if there is no place for visitor to wait inside the bar they should wait outside.
+    // So if in this semaphore P() has been applied more than MAX_VISITORS times then the fcfsWaitingBuffer is full 
+    sem_wait(&(sharedData->exceedingVisitorsSem));
+    
+
+
+    // if the execution has reached here, there is space in waiting buffer OR the waiting buffer is absolutely free
+    // and the bar is NOT closing
 
     sem_wait(&(sharedData->mutex));
 
@@ -74,6 +76,8 @@ int main(int argc, char* argv[]){
             chairIndex = sharedData->orderBuffer.back;
             sharedData->orderBuffer.back = (sharedData->orderBuffer.back + 1) % 12;
             sharedData->orderBuffer.count++;
+
+            sem_wait(&(sharedData->orderBuffer.chairSem[chairIndex]));
 
         }
     }

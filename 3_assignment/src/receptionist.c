@@ -38,6 +38,7 @@ int main(int argc, char* argv[]){
 
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
+    
     srand(time(NULL));
 
     while(1){
@@ -70,7 +71,8 @@ int main(int argc, char* argv[]){
 
             //free the mutex before sleeping for a random time
             sem_post(&(sharedData->mutex));
-
+            
+            // sleep for a random time preparing a speciffic order
             sleep(randomTime);
             
             sem_wait(&(sharedData->mutex));
@@ -81,29 +83,30 @@ int main(int argc, char* argv[]){
             
             // updating front (wrap around)
             sharedData->orderBuffer.front = (sharedData->orderBuffer.front + 1) % 12;
+            sharedData->orderBuffer.count--;
+
+            sem_post(&(sharedData->mutex));
         }
-
-
-        sem_post(&(sharedData->mutex));
-
-        // must awake a visitor to serve him
 
         // if there is no order to serve AND no one waiting inside the bar to be served AND tables are not occupied
         // AND bar is closing --------> exit (close the bar)
+        sem_wait(&(sharedData->mutex));
+
         if(sharedData->closingFlag && 
         sharedData->fcfsWaitingBuffer.count == 0 &&
         sharedData->orderBuffer.count == 0 &&
         sharedData->tables[0].isOccupied == false && sharedData->tables[1].isOccupied == false &&
         sharedData->tables[2].isOccupied == false){
-           
+        
+            sem_post(&(sharedData->mutex));
             break;  
 
         }
-
+        sem_post(&(sharedData->mutex));
+        
     }
     
     
-
     munmap(sharedData, sharedMemorySize);
 
     exit(EXIT_SUCCESS);
