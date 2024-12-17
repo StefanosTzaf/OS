@@ -9,7 +9,7 @@
 #include <sys/wait.h>
 #include <getopt.h>
 
-#define FORKED_VISITORS 30
+#define FORKED_VISITORS 100
 
 int main(int argc, char *argv[]) {
     

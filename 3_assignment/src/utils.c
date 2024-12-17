@@ -217,14 +217,15 @@ void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableInde
     }
 
     for(int i = 0; i < visitorsWaitingInBuffer; i++){
-        // awake visitors 
+        // awake visitors and give them a chair in the empty table
 
         sem_post(&(sharedData->fcfsWaitingBuffer.positionSem[sharedData->fcfsWaitingBuffer.front]));
+
+        // updating front (wrap around)
         sharedData->fcfsWaitingBuffer.front = (sharedData->fcfsWaitingBuffer.front + 1) % MAX_VISITORS;
         sharedData->fcfsWaitingBuffer.count--;
         // more positions are free in the buffer
         sem_post(&(sharedData->exceedingVisitorsSem));
-        sitInTheFirstEmptyChair(sharedData, sharedData->fcfsWaitingBuffer.buffer[sharedData->fcfsWaitingBuffer.front], emptyTableIndex);
     }
 
 }

@@ -174,7 +174,7 @@ int main(int argc, char* argv[]){
         }
     }
     else{
-        // printf("problem with table index\n");
+         printf("problem with table index\n");
     }
 
     sem_post(&(sharedData->mutex));
