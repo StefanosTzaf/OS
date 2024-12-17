@@ -8,6 +8,7 @@
 #include <getopt.h>
 #include <sys/time.h>
 #include <string.h>
+#include <math.h>
 
 
 int main(int argc, char* argv[]){
@@ -51,7 +52,7 @@ int main(int argc, char* argv[]){
     // fully random seed based to time
     struct timeval tv;
     gettimeofday(&tv, NULL);
-    unsigned long seed = tv.tv_sec * 1000000 + tv.tv_usec;
+    unsigned long seed = tv.tv_sec * 1000000 + tv.tv_usec ;
     srand(seed);
 
     //logging data
@@ -143,7 +144,7 @@ int main(int argc, char* argv[]){
     // now the visitor should have been served (because only receptionist can awake him from the semaphore with orders!!)
     //so it has to wait a random time -- eat and discuss --and then leave the bar
 
-    int lower = (int)(0.7 * maxRestTime);
+    int lower = (int)(ceil(0.7 * maxRestTime));
  
     sprintf(buffer, "\n[SERVED] Visitor with ID: %d has been served and is now eating. \n", getpid());
     write(logFd, buffer, strlen(buffer));
@@ -169,9 +170,11 @@ int main(int argc, char* argv[]){
 
 
         if(sharedData->tables[tableIndex].chairsOccupied == 0){
-            sharedData->tables[tableIndex].isOccupied = false;
             lastVisitorInformingOthers(sharedData, tableIndex);
         }
+    }
+    else{
+        // printf("problem with table index\n");
     }
 
     sem_post(&(sharedData->mutex));

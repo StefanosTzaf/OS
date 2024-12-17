@@ -72,7 +72,7 @@ int main(int argc, char* argv[]){
 
             int lower = (int)(ceil(0.5 * maxOrderTime));
             int randomTime = lower + (rand() % (maxOrderTime - lower + 1));
-            // printf("Ordering time: %d\n", randomTime);
+
 
             // free the mutex before sleeping for a random time
             sem_post(&(sharedData->mutex));

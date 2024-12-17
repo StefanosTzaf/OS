@@ -19,17 +19,15 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->sharedStatistics.visitorsServed = 0;
     
 
-    // initialize the FCFS waiting circular buffer
+    // Initialize the FCFS waiting circular buffer
     sharedData->fcfsWaitingBuffer.front = 0;
     sharedData->fcfsWaitingBuffer.back = 0;
     sharedData->fcfsWaitingBuffer.count = 0;
-    // every semaphore in buffer is initialized to 0 while we want the first process that execute P() to be susepended
     for (int i = 0; i < MAX_VISITORS; i++) {
         sem_init(& (sharedData->fcfsWaitingBuffer.positionSem[i]), 1, 0);
         sharedData->fcfsWaitingBuffer.buffer[i] = -1;
     }
 
-    
     sem_init(&sharedData->exceedingVisitorsSem, 1, MAX_VISITORS);
 
     // Initialize the order circular buffer
@@ -37,7 +35,6 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->orderBuffer.back = 0;
     sharedData->orderBuffer.count = 0;
     for (int i = 0; i < 12; i++) {
-        // the first process that execute P() to this chair to be suspended and waiting for its order
         sem_init(&sharedData->orderBuffer.chairSem[i], 1, 0);
         sharedData->orderBuffer.lastOrders[i].visitor = -1;
         sharedData->orderBuffer.lastOrders[i].water = false;
@@ -65,14 +62,13 @@ void initializeSharedValues(shareDataSegment *sharedData) {
 }
 
 
-// function to attch shared memory (used in receptionist and visitor and monitor processes)
-// they not create shared memory, they just attach it
+// Function to attach shared memory
 shareDataSegment* attachShm(char* sharedMemoryName) {
     int shmFd;
     size_t sharedMemorySize = sizeof(shareDataSegment);
     shareDataSegment* sharedData;
 
-    // open shared memory
+    // Open shared memory
     shmFd = shm_open(sharedMemoryName, O_RDWR, 0666);
     if (shmFd == -1) {
         perror("shared memory open failed");
@@ -205,8 +201,15 @@ void sitInTheFirstEmptyChair(shareDataSegment* sharedData, pid_t visitor, int ta
 }
 
 void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableIndex){
-    int visitorsWaitingInBuffer = sharedData->fcfsWaitingBuffer.count;
+    
+    //table is empty now
+    sharedData->tables[emptyTableIndex].isOccupied = false;
+    sharedData->tables[emptyTableIndex].chairsOccupied = 0;
+    for(int j = 0; j < 4; j++){
+        sharedData->tables[emptyTableIndex].chairs[j] = -1;
+    }
 
+    int visitorsWaitingInBuffer = sharedData->fcfsWaitingBuffer.count;
     // if there are up to 4 visitora waiting in the buffer, wake them all up
     //and give them the table else wake up the first 4
     if(visitorsWaitingInBuffer > 4){
@@ -215,6 +218,7 @@ void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableInde
 
     for(int i = 0; i < visitorsWaitingInBuffer; i++){
         // awake visitors 
+
         sem_post(&(sharedData->fcfsWaitingBuffer.positionSem[sharedData->fcfsWaitingBuffer.front]));
         sharedData->fcfsWaitingBuffer.front = (sharedData->fcfsWaitingBuffer.front + 1) % MAX_VISITORS;
         sharedData->fcfsWaitingBuffer.count--;

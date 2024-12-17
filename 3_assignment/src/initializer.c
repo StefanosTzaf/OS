@@ -9,7 +9,7 @@
 #include <sys/wait.h>
 #include <getopt.h>
 
-#define FORKED_VISITORS 300
+#define FORKED_VISITORS 30
 
 int main(int argc, char *argv[]) {
     
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
 
     int status;
     if(waitpid(receptionistPid, &status, 0) == -1){
-        perror("Error waiting for splitter");
+        perror("Error waiting for receptionist");
         exit(EXIT_FAILURE);
     }
 
