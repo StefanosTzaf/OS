@@ -17,7 +17,7 @@ struct statistics{
     int consumedCheese;       // total cheese consumed
     int consumedSalads;       // total salads consumed
     
-    int visitorsServed;             //total visitors
+    int visitorsServed;       //total visitors
 
 };
 
