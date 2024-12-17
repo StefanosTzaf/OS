@@ -32,9 +32,25 @@ int main(int argc, char* argv[]){
     munmap(sharedData, sharedMemorySize);
  
     sharedData->closingFlag = true;
+
     
- 
- 
+    //TODO: WAITING FOR VISITORS TO LEAVE
+
+
+    //TODO: PRINTING STATS
+    
+    //destroying semaphores
+    for(int i = 0; i < MAX_VISITORS; i++){
+        sem_destroy(&(sharedData->fcfsWaitingBuffer.positionSem[i]));
+    }
+    sem_destroy(&(sharedData->exceedingVisitorsSem));
+    for(int i = 0; i < 12; i++){
+        sem_destroy(&(sharedData->orderBuffer.chairSem[i]));
+    }
+    sem_destroy(&(sharedData->mutex));
+    sem_destroy(&(sharedData->receptionistSem));
+
+    //destroying shared memory
     shm_unlink(sharedMemoryName);
 
     exit(EXIT_SUCCESS);
