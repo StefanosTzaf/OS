@@ -17,6 +17,7 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->sharedStatistics.consumedCheese = 0;
     sharedData->sharedStatistics.consumedSalads = 0;
     sharedData->sharedStatistics.visitorsServed = 0;
+    
 
     // initialize the FCFS waiting circular buffer
     sharedData->fcfsWaitingBuffer.front = 0;
@@ -176,4 +177,49 @@ void updateStatistics(shareDataSegment* sharedData, menuOrder currentOrder){
     if(currentOrder.salad){
         sharedData->sharedStatistics.consumedSalads++;
     }
+}
+
+int findChairInTable(shareDataSegment* sharedData, pid_t visitor, int tableIndex){
+    for(int i = 0; i < 4; i++){
+        if(sharedData->tables[tableIndex].chairs[i] == visitor){
+            return i;
+        }
+    }
+    return -1;
+
+}
+
+void sitInTheFirstEmptyChair(shareDataSegment* sharedData, pid_t visitor, int tableIndex){
+    for(int i = 0; i < 4; i++){
+        if(sharedData->tables[tableIndex].chairs[i] == -1){
+            sharedData->tables[tableIndex].chairs[i] = visitor;
+            sharedData->tables[tableIndex].chairsOccupied++;
+             // if the table just became full update occupied value
+            if(sharedData->tables[tableIndex].chairsOccupied == 4){
+                sharedData->tables[tableIndex].isOccupied = true;
+            }
+            return;
+        }
+    }
+}
+
+void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableIndex){
+    int visitorsWaitingInBuffer = sharedData->fcfsWaitingBuffer.count;
+
+    // if there are up to 4 visitora waiting in the buffer, wake them all up
+    //and give them the table else wake up the first 4
+    if(visitorsWaitingInBuffer > 4){
+        visitorsWaitingInBuffer = 4;
+    }
+
+    for(int i = 0; i < visitorsWaitingInBuffer; i++){
+        // awake visitors 
+        sem_post(&(sharedData->fcfsWaitingBuffer.positionSem[sharedData->fcfsWaitingBuffer.front]));
+        sharedData->fcfsWaitingBuffer.front = (sharedData->fcfsWaitingBuffer.front + 1) % MAX_VISITORS;
+        sharedData->fcfsWaitingBuffer.count--;
+        // more positions are free in the buffer
+        sem_post(&(sharedData->exceedingVisitorsSem));
+        sitInTheFirstEmptyChair(sharedData, sharedData->fcfsWaitingBuffer.buffer[sharedData->fcfsWaitingBuffer.front], emptyTableIndex);
+    }
+
 }

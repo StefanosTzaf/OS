@@ -56,7 +56,7 @@ int main(int argc, char* argv[]){
     write(logFd, buffer, strlen(buffer));
 
     if(sharedData->closingFlag){
-        sprintf(buffer,"\nVisitor with ID: %d has just left because bar is closing\n", getpid());
+        sprintf(buffer,"\n[LEAVING] Visitor with ID: %d has just left because bar is closing\n", getpid());
         write(logFd, buffer, strlen(buffer));
         munmap(sharedData, sharedMemorySize);
         close(logFd);
@@ -69,50 +69,54 @@ int main(int argc, char* argv[]){
     sem_wait(&(sharedData->exceedingVisitorsSem));
     
 
-
     // if the execution has reached here, there is space in waiting buffer OR the waiting buffer is absolutely free
     // and the bar is NOT closing
 
     sem_wait(&(sharedData->mutex));
-    int myTable = -1;
+
     int chairIndex;
-    // if no one is waiting in the buffer it can check in the bar
-    if(sharedData->fcfsWaitingBuffer.count == 0){
-        int tableIndex = isAnyTableEmpty(sharedData);
-        // if there is space in a table and is not occupied
-        if(tableIndex != -1){
-            myTable = tableIndex;
-            sharedData->tables[tableIndex].chairsOccupied++;
-            
-            //if the table just became full update occupied value
-            if(sharedData->tables[tableIndex].chairsOccupied == 4){
-                sharedData->tables[tableIndex].isOccupied = true;
-            }
+    int tableIndex = isAnyTableEmpty(sharedData);
 
-            menuOrder order = randomizeOrder(getpid(), logFd);
+    // if no one is waiting in the buffer he can check in the bar, if there is space in a table and is not occupied sit there
+    if(sharedData->fcfsWaitingBuffer.count == 0 && tableIndex != -1){
 
-            // put the order in the order buffer
-            sharedData->orderBuffer.lastOrders[sharedData->orderBuffer.back] = order;
-            chairIndex = sharedData->orderBuffer.back;
-            sharedData->orderBuffer.back = (sharedData->orderBuffer.back + 1) % 12;
-            sharedData->orderBuffer.count++;
+        // visitor did not wait in the buffer so exceeding buffer semaphore should be incremented
+        sem_post(&(sharedData->exceedingVisitorsSem));
 
-            // inform receptionist that there is an order to serve
-            sem_post(&(sharedData->receptionistSem));
-        }
+
+        sitInTheFirstEmptyChair(sharedData, getpid(), tableIndex);
+
+        menuOrder order = randomizeOrder(getpid(), logFd);
+
+        // put the order in the order buffer
+        sharedData->orderBuffer.lastOrders[sharedData->orderBuffer.back] = order;
+
+        // chair to sleep 
+        chairIndex = sharedData->orderBuffer.back;
+        sharedData->orderBuffer.back = (sharedData->orderBuffer.back + 1) % 12;
+        sharedData->orderBuffer.count++;
+
     }
     
-    // if there is no space in the tables or is someone waiting in the buffer just wait at the buffer
+    // if there is no space in the tables or is someone waiting in the buffer just wait at the buffer's end (FCFS)
     else{
         int position = sharedData->fcfsWaitingBuffer.back;
         sharedData->fcfsWaitingBuffer.buffer[position] = getpid();
         sharedData->fcfsWaitingBuffer.back = (sharedData->fcfsWaitingBuffer.back + 1) % MAX_VISITORS;
         sharedData->fcfsWaitingBuffer.count++;
+
         sem_post(&(sharedData->mutex));
         //suspend in this semaphore after unlocking mutex
         sem_wait(&(sharedData->fcfsWaitingBuffer.positionSem[position]));
 
-        //when it is awake, it can order
+
+        // here the visitor has been awaken by a last leaving visitor so this visitor has incremeted the excededing buffer semaphore not here
+        sem_wait(&(sharedData->mutex));
+
+        tableIndex = isAnyTableEmpty(sharedData);
+        sitInTheFirstEmptyChair(sharedData, getpid(), tableIndex);
+
+        //when he awakes, he can order
         menuOrder order = randomizeOrder(getpid(), logFd);
         sharedData->orderBuffer.lastOrders[sharedData->orderBuffer.back] = order;
         chairIndex = sharedData->orderBuffer.back;
@@ -121,10 +125,14 @@ int main(int argc, char* argv[]){
 
     }
 
+    // inform receptionist that there is an order to serve
+    sem_post(&(sharedData->receptionistSem));
+
     sem_post(&(sharedData->mutex));
 
     // it should be suspended in the semaphore of his chair (after mutex unlock)
     sem_wait(&(sharedData->orderBuffer.chairSem[chairIndex]));
+
 
 
     sem_wait(&(sharedData->mutex));
@@ -148,15 +156,21 @@ int main(int argc, char* argv[]){
     sprintf(buffer, "\n[LEAVE] Visitor with ID: %d has just left the bar\n", getpid());
     write(logFd, buffer, strlen(buffer));
     
-    if(myTable != -1){
-        sharedData->tables[myTable].chairsOccupied--;
-        if(sharedData->tables[myTable].chairsOccupied == 0){
-            sharedData->tables[myTable].isOccupied = false;
+    // defensive case
+    if(tableIndex != -1){
+        sharedData->tables[tableIndex].chairsOccupied--;
+        //inform others that the chair is empty
+        int chair = findChairInTable(sharedData, getpid(), tableIndex);
+        sharedData->tables[tableIndex].chairs[chair] = -1;
+
+
+        if(sharedData->tables[tableIndex].chairsOccupied == 0){
+            sharedData->tables[tableIndex].isOccupied = false;
+            lastVisitorInformingOthers(sharedData, tableIndex);
         }
     }
 
     sem_post(&(sharedData->mutex));
-    //TODO to inform others to sit if he is the last one in the table
 
 
     close(logFd);

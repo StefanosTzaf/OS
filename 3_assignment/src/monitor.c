@@ -40,10 +40,16 @@ int main(int argc, char* argv[]){
         else{
             printf("Unoccupied\n");
         }
-        printf("Chairs occupied on this table: %d\n\n", sharedData->tables[i].chairsOccupied);
+        printf("Chairs occupied on this table: %d\n", sharedData->tables[i].chairsOccupied);
+        for(int j = 0; j < 4; j++) {
+            if(sharedData->tables[i].chairs[j] != -1) {
+                printf("   Visitor : %d is sitting on chair %d\n", sharedData->tables[i].chairs[j], j);
+            }
+        }
+        printf("\n\n");
     }
 
-    printf("            Total products consumed by %d visitors:\n\n",sharedData->sharedStatistics.visitorsServed); 
+    printf("\n            Total products consumed by %d visitors:\n\n",sharedData->sharedStatistics.visitorsServed); 
 
     printf("Water:  %d\n", sharedData->sharedStatistics.consumedWater);
     printf("Wine:   %d\n", sharedData->sharedStatistics.consumedWine);
