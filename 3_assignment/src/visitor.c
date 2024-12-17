@@ -48,10 +48,16 @@ int main(int argc, char* argv[]){
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
 
-    // fully random seed based to time)
+    // fully random seed based to time
     srand(time(NULL));
+    //logging data
+    char buffer[256];
+    sprintf(buffer,"\n[INFO] Visitor with ID: %d has just arrived\n", getpid());
+    write(logFd, buffer, strlen(buffer));
 
     if(sharedData->closingFlag){
+        sprintf(buffer,"\nVisitor with ID: %d has just left because bar is closing\n", getpid());
+        write(logFd, buffer, strlen(buffer));
         munmap(sharedData, sharedMemorySize);
         close(logFd);
         exit(EXIT_SUCCESS);
@@ -68,13 +74,14 @@ int main(int argc, char* argv[]){
     // and the bar is NOT closing
 
     sem_wait(&(sharedData->mutex));
-
+    int myTable = -1;
     int chairIndex;
     // if no one is waiting in the buffer it can check in the bar
     if(sharedData->fcfsWaitingBuffer.count == 0){
         int tableIndex = isAnyTableEmpty(sharedData);
         // if there is space in a table and is not occupied
         if(tableIndex != -1){
+            myTable = tableIndex;
             sharedData->tables[tableIndex].chairsOccupied++;
             
             //if the table just became full update occupied value
@@ -82,9 +89,7 @@ int main(int argc, char* argv[]){
                 sharedData->tables[tableIndex].isOccupied = true;
             }
 
-
-
-            menuOrder order = randomizeOrder(getpid());
+            menuOrder order = randomizeOrder(getpid(), logFd);
 
             // put the order in the order buffer
             sharedData->orderBuffer.lastOrders[sharedData->orderBuffer.back] = order;
@@ -94,10 +99,6 @@ int main(int argc, char* argv[]){
 
             // inform receptionist that there is an order to serve
             sem_post(&(sharedData->receptionistSem));
-            sem_post(&(sharedData->mutex));
-
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ean den prolavei na ginei suspend edw poion tha jypnisei o receptionist
-            sem_wait(&(sharedData->orderBuffer.chairSem[chairIndex]));
         }
     }
     
@@ -112,7 +113,7 @@ int main(int argc, char* argv[]){
         sem_wait(&(sharedData->fcfsWaitingBuffer.positionSem[position]));
 
         //when it is awake, it can order
-        menuOrder order = randomizeOrder(getpid());
+        menuOrder order = randomizeOrder(getpid(), logFd);
         sharedData->orderBuffer.lastOrders[sharedData->orderBuffer.back] = order;
         chairIndex = sharedData->orderBuffer.back;
         sharedData->orderBuffer.back = (sharedData->orderBuffer.back + 1) % 12;
@@ -121,9 +122,9 @@ int main(int argc, char* argv[]){
     }
 
     sem_post(&(sharedData->mutex));
-    // it should be suspended in the semaphore of his chair
-    sem_wait(&(sharedData->orderBuffer.chairSem[chairIndex]));
 
+    // it should be suspended in the semaphore of his chair (after mutex unlock)
+    sem_wait(&(sharedData->orderBuffer.chairSem[chairIndex]));
 
 
     sem_wait(&(sharedData->mutex));
@@ -132,15 +133,29 @@ int main(int argc, char* argv[]){
 
     int lower = (int)(0.7 * maxRestTime);
  
+    sprintf(buffer, "\n[SERVED] Visitor with ID: %d has been served and is now eating. \n", getpid());
+    write(logFd, buffer, strlen(buffer));
+
     // random integer in the interval [lower *0.7, maxRestTime]
     int randomTime = lower + (rand() % (maxRestTime - lower + 1));
 
     sem_post(&(sharedData->mutex));
 
     sleep(randomTime);
+    
+    sem_wait(&(sharedData->mutex));
+    // visitor has finished eating and is leaving the bar
+    sprintf(buffer, "\n[LEAVE] Visitor with ID: %d has just left the bar\n", getpid());
+    write(logFd, buffer, strlen(buffer));
+    
+    if(myTable != -1){
+        sharedData->tables[myTable].chairsOccupied--;
+        if(sharedData->tables[myTable].chairsOccupied == 0){
+            sharedData->tables[myTable].isOccupied = false;
+        }
+    }
 
-
-
+    sem_post(&(sharedData->mutex));
     //TODO to inform others to sit if he is the last one in the table
 
 

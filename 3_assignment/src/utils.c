@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->sharedStatistics.averageWaitingTime = 0.0;
@@ -35,7 +36,7 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->orderBuffer.back = 0;
     sharedData->orderBuffer.count = 0;
     for (int i = 0; i < 12; i++) {
-        sem_init(&sharedData->orderBuffer.chairSem[i], 1, 1);
+        sem_init(&sharedData->orderBuffer.chairSem[i], 1, 0);
         sharedData->orderBuffer.lastOrders[i].visitor = -1;
         sharedData->orderBuffer.lastOrders[i].water = false;
         sharedData->orderBuffer.lastOrders[i].wine = false;
@@ -97,7 +98,7 @@ int isAnyTableEmpty(shareDataSegment* sharedData){
 }
 
 
-menuOrder randomizeOrder(pid_t visitorID) {
+menuOrder randomizeOrder(pid_t visitorID, int logFd) {
     menuOrder order;
     order.visitor = visitorID;
 
@@ -137,6 +138,25 @@ menuOrder randomizeOrder(pid_t visitorID) {
         order.cheese = true;
         order.salad = true;
     }
+
+    //log file update
+    char logMessage[256];
+    snprintf(logMessage, sizeof(logMessage), 
+             "\n[ORDER] Visitor with ID: %d ordered %s%s%s%s",
+             visitorID,
+             order.cheese ? "cheese, " : "",
+             order.salad ? "salad, " : "",
+             order.wine ? "wine, " : "",
+             order.water ? "water, " : "");
+
+    // Remove , and add new line
+
+    if(logMessage[strlen(logMessage) - 2] == ','){
+        logMessage[strlen(logMessage) - 2] = '\n';
+        logMessage[strlen(logMessage) - 1] = '\0';
+    }
+
+    write(logFd, logMessage, strlen(logMessage));
 
     return order;
 }

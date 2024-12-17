@@ -6,6 +6,6 @@ shareDataSegment* attachShm(char* sharedMemoryName);
 
 int isAnyTableEmpty(shareDataSegment* sharedData);
 
-menuOrder randomizeOrder(pid_t visitorID);
+menuOrder randomizeOrder(pid_t visitorID, int logFd);
 
 void updateStatistics(shareDataSegment* sharedData, menuOrder currentOrder);

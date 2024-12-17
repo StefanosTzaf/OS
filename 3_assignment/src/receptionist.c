@@ -70,12 +70,14 @@ int main(int argc, char* argv[]){
             
             // sleep for a random time preparing a speciffic order
             sleep(randomTime);
-            
-            sem_wait(&(sharedData->mutex));
 
+            sem_wait(&(sharedData->mutex));
             // awake the first visitor in the queue of ordering in a specific chair FCFS,
             // from now on he can leave the bar after a random time(visitor source code)
+
             sem_post(&(sharedData->orderBuffer.chairSem[index]));
+
+            
             
             // updating front (wrap around)
             sharedData->orderBuffer.front = (sharedData->orderBuffer.front + 1) % 12;
