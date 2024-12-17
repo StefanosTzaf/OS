@@ -23,9 +23,9 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->fcfsWaitingBuffer.front = 0;
     sharedData->fcfsWaitingBuffer.back = 0;
     sharedData->fcfsWaitingBuffer.count = 0;
-    // every semaphore in buffer is initialized to 1 while no one has already taken the position in buffer
+    // every semaphore in buffer is initialized to 0 while we want the first process that execute P() to be susepended
     for (int i = 0; i < MAX_VISITORS; i++) {
-        sem_init(& (sharedData->fcfsWaitingBuffer.positionSem[i]), 1, 1);
+        sem_init(& (sharedData->fcfsWaitingBuffer.positionSem[i]), 1, 0);
         sharedData->fcfsWaitingBuffer.buffer[i] = -1;
     }
 
@@ -37,6 +37,7 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->orderBuffer.back = 0;
     sharedData->orderBuffer.count = 0;
     for (int i = 0; i < 12; i++) {
+        // the first process that execute P() to this chair to be suspended and waiting for its order
         sem_init(&sharedData->orderBuffer.chairSem[i], 1, 0);
         sharedData->orderBuffer.lastOrders[i].visitor = -1;
         sharedData->orderBuffer.lastOrders[i].water = false;

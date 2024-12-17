@@ -1,7 +1,7 @@
 CC = gcc
 
 CFLAGS = -Wall -I ./include
-LDFLAGS = -lrt -pthread
+LDFLAGS = -lrt -pthread -lm
 
 
 INITIALIZER_OBJS = src/initializer.o src/utils.o

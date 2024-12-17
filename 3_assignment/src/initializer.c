@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     
 
     if(argc != 9){
-        fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s sharedMemoryName -l logFileName.txt\n");
+        fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s <sharedMemoryName> -l <logFileName.txt>\n");
         exit(EXIT_FAILURE);
     }
     int option;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
             snprintf(logFileName, sizeof(logFileName), "%s", optarg);
         }
         else{
-            fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s sharedMemoryName -l logFileName.txt\n");
+            fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s <sharedMemoryName> -l <logFileName.txt>\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 
     char* logFileCreation = " -- Log file for BAR IN NEMEA --\n\n\n\0";
     write(logFd, logFileCreation, strlen(logFileCreation));
-    //close the log file , visitors and receptionist will write to this file and open by themselves
+    // close the log file , visitors and receptionist will write to this file and open by themselves
     close(logFd);
 
     int shmFd;
@@ -91,19 +91,24 @@ int main(int argc, char *argv[]) {
 
 
 
-    pid_t receptionistPid = fork();
+    pid_t pid = fork();
+    pid_t receptionistPid;
+
     char orderTimeStr[16];
     char restTimeStr[16];
     snprintf(orderTimeStr, sizeof(orderTimeStr), "%d", maxOrderTime);
     snprintf(restTimeStr, sizeof(restTimeStr), "%d", maxRestTime);
 
-    if (receptionistPid == -1) {
+    if (pid == -1) {
         perror("Error forking receptionist process");
         exit(EXIT_FAILURE);
     }
-    else if (receptionistPid == 0) {
+    else if (pid == 0) {
         execlp("./receptionist", "./receptionist", "-d", orderTimeStr, "-s", sharedMemoryName, "-l", logFileName , NULL);
         exit(EXIT_FAILURE);
+    }
+    else{
+        receptionistPid = pid;
     }
 
 
@@ -112,14 +117,17 @@ int main(int argc, char *argv[]) {
     pid_t visitorsPids[FORKED_VISITORS];
 
     for(int i = 0; i < FORKED_VISITORS; i++) {
-        visitorsPids[i] = fork();
-        if (visitorsPids[i] == -1) {
+        pid_t currentPid = fork();
+        if (currentPid == -1) {
             perror("Error forking visitor process");
             exit(EXIT_FAILURE);
         }
-        else if (visitorsPids[i] == 0) {
+        else if (currentPid == 0) {
             execlp("./visitor", "./visitor", "-d", restTimeStr, "-s", sharedMemoryName, "-l", logFileName, NULL);
             exit(EXIT_FAILURE);
+        }
+        else{
+            visitorsPids[i] = currentPid;
         }
     }
 

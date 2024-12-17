@@ -157,7 +157,7 @@ int main(int argc, char* argv[]){
     
     sem_wait(&(sharedData->mutex));
     // visitor has finished eating and is leaving the bar
-    sprintf(buffer, "\n[LEAVE] Visitor with ID: %d has just left the bar\n", getpid());
+    sprintf(buffer, "\n[LEAVE] Visitor with ID: %d was eating for %d seconds and has just left the bar\n", getpid(), randomTime);
     write(logFd, buffer, strlen(buffer));
     
     // defensive case

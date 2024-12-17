@@ -7,6 +7,9 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <sys/time.h>
+#include <math.h>
+#include <string.h>
+
 
 int main(int argc, char* argv[]){
 
@@ -50,24 +53,26 @@ int main(int argc, char* argv[]){
     
     struct timeval tv;
     gettimeofday(&tv, NULL);  // Get current time in seconds and microseconds
-    // Combine seconds and microseconds fo seed
+    // Combine seconds and microseconds for seed
     unsigned long seed = tv.tv_sec * 1000000 + tv.tv_usec;
     srand(seed); 
 
     while(1){
+        bool servedSomeone = false;
         sem_wait(&(sharedData->receptionistSem));
         sem_wait(&(sharedData->mutex));
         
         // if there is order to serve
         if (sharedData->orderBuffer.count > 0) {
-
+            servedSomeone = true;
             int index = sharedData->orderBuffer.front;
             menuOrder currentOrder = sharedData->orderBuffer.lastOrders[index];
 
             updateStatistics(sharedData, currentOrder);
 
-            int lower = (int)(0.5 * maxOrderTime);
+            int lower = (int)(ceil(0.5 * maxOrderTime));
             int randomTime = lower + (rand() % (maxOrderTime - lower + 1));
+            // printf("Ordering time: %d\n", randomTime);
 
             // free the mutex before sleeping for a random time
             sem_post(&(sharedData->mutex));
@@ -75,24 +80,28 @@ int main(int argc, char* argv[]){
             // sleep for a random time preparing a speciffic order
             sleep(randomTime);
 
+
+
             sem_wait(&(sharedData->mutex));
+            char buffer[256];
+            sprintf(buffer, "\n[RECEPTIONIST] It took %d seconds to prepare the order of visitor with ID: %d\n", randomTime, currentOrder.visitor);
+            write(logFd, buffer, strlen(buffer));
+
             // awake the first visitor in the queue of ordering in a specific chair FCFS,
             // from now on he can leave the bar after a random time(visitor source code)
 
             sem_post(&(sharedData->orderBuffer.chairSem[index]));
-
-            
-            
             // updating front (wrap around)
             sharedData->orderBuffer.front = (sharedData->orderBuffer.front + 1) % 12;
             sharedData->orderBuffer.count--;
 
-            sem_post(&(sharedData->mutex));
         }
 
+        if(!servedSomeone){
+            sem_wait(&(sharedData->mutex)); //otherwise we already have the mutex
+        }
         // if there is no order to serve AND no one waiting inside the bar to be served AND tables are not occupied
         // AND bar is closing --------> exit (close the bar)
-        sem_wait(&(sharedData->mutex));
 
         if(sharedData->closingFlag && 
         sharedData->fcfsWaitingBuffer.count == 0 &&
