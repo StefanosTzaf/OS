@@ -31,6 +31,8 @@ int main(int argc, char* argv[]){
     sem_wait(&(sharedData->mutex));
 
     printf("\n");
+    printf("Visitors waiting in the queue: %d\n", sharedData->fcfsWaitingBuffer.count);
+    printf("\n\n");
 
     for(int i = 0; i < 3; i++) {
         printf("Table %d -> ", i);

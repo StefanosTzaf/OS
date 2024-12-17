@@ -6,7 +6,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <getopt.h>
-#include <time.h>
+#include <sys/time.h>
 #include <string.h>
 
 
@@ -49,7 +49,11 @@ int main(int argc, char* argv[]){
     size_t sharedMemorySize = sizeof(shareDataSegment);
 
     // fully random seed based to time
-    srand(time(NULL));
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    unsigned long seed = tv.tv_sec * 1000000 + tv.tv_usec;
+    srand(seed);
+
     //logging data
     char buffer[256];
     sprintf(buffer,"\n[INFO] Visitor with ID: %d has just arrived\n", getpid());

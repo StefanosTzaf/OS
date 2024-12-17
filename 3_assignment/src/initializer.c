@@ -9,7 +9,7 @@
 #include <sys/wait.h>
 #include <getopt.h>
 
-#define FORKED_VISITORS 8
+#define FORKED_VISITORS 300
 
 int main(int argc, char *argv[]) {
     
@@ -112,8 +112,6 @@ int main(int argc, char *argv[]) {
     pid_t visitorsPids[FORKED_VISITORS];
 
     for(int i = 0; i < FORKED_VISITORS; i++) {
-        //create a visitor every one second
-        sleep(1);
         visitorsPids[i] = fork();
         if (visitorsPids[i] == -1) {
             perror("Error forking visitor process");

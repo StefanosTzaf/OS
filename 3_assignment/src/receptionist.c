@@ -6,7 +6,7 @@
 #include "utils.h"
 #include <unistd.h>
 #include <getopt.h>
-#include <time.h>
+#include <sys/time.h>
 
 int main(int argc, char* argv[]){
 
@@ -48,7 +48,11 @@ int main(int argc, char* argv[]){
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
     
-    srand(time(NULL));
+    struct timeval tv;
+    gettimeofday(&tv, NULL);  // Get current time in seconds and microseconds
+    // Combine seconds and microseconds fo seed
+    unsigned long seed = tv.tv_sec * 1000000 + tv.tv_usec;
+    srand(seed); 
 
     while(1){
         sem_wait(&(sharedData->receptionistSem));
