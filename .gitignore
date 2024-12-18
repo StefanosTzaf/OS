@@ -6,8 +6,8 @@
 !*.c
 !*.h
 !*.mk
+!*.md
 !Makefile
 !.gitignore
-!README.md
 !.vscode/*.json
 !*.jpeg

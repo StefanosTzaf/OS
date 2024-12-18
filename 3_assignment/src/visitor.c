@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <sys/time.h>
+#include <sys/times.h>
 #include <string.h>
 #include <math.h>
 
@@ -43,7 +44,12 @@ int main(int argc, char* argv[]){
         perror("log file open failed");
         exit(EXIT_FAILURE);
     }
-    
+
+
+    double totalTimeInBar_1, totalTimeInBar_2, totalTimeWaiting_1, totalTimeWaiting_2;
+    double ticspersec;
+    ticspersec = (double) sysconf (_SC_CLK_TCK);
+
 
 
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
@@ -69,6 +75,9 @@ int main(int argc, char* argv[]){
     } 
 
 
+    // start counting the total time that visitor waited in the bar till he takes a seat
+    totalTimeWaiting_1 = (double) times (NULL);
+
     // if there is no place for visitor to wait inside the bar they should wait outside.
     // So if in this semaphore P() has been applied more than MAX_VISITORS times then the fcfsWaitingBuffer is full 
     sem_wait(&(sharedData->exceedingVisitorsSem));
@@ -78,6 +87,8 @@ int main(int argc, char* argv[]){
     // and the bar is NOT closing
 
     sem_wait(&(sharedData->mutex));
+    //start counting the total time that visitor stayed in the bar
+    totalTimeInBar_1 = (double) times (NULL);
 
     int chairIndex;
     int tableIndex = isAnyTableEmpty(sharedData);
@@ -88,6 +99,7 @@ int main(int argc, char* argv[]){
         // visitor did not wait in the buffer so exceeding buffer semaphore should be incremented
         sem_post(&(sharedData->exceedingVisitorsSem));
 
+        totalTimeWaiting_2 = (double) times (NULL);
 
         sitInTheFirstEmptyChair(sharedData, getpid(), tableIndex);
 
@@ -119,6 +131,8 @@ int main(int argc, char* argv[]){
         sem_wait(&(sharedData->mutex));
 
         tableIndex = isAnyTableEmpty(sharedData);
+
+        totalTimeWaiting_2 = (double) times (NULL);
         sitInTheFirstEmptyChair(sharedData, getpid(), tableIndex);
 
         //when he awakes, he can order
@@ -156,7 +170,19 @@ int main(int argc, char* argv[]){
 
     sleep(randomTime);
     
+    
     sem_wait(&(sharedData->mutex));
+
+    // visitor just left the bar 
+    totalTimeInBar_2 = (double) times (NULL);
+
+    sharedData->sharedStatistics.totalStayTime += (totalTimeInBar_2 - totalTimeInBar_1) / ticspersec;
+    sharedData->sharedStatistics.totalWaitingTime += (totalTimeWaiting_2 - totalTimeWaiting_1) / ticspersec;
+
+   // printf("Time in bar: %lf\n",(totalTimeInBar_2 - totalTimeInBar_1) / ticspersec);
+    printf("Time waiting: %lf\n",(totalTimeWaiting_2 - totalTimeWaiting_1) / ticspersec);
+
+
     // visitor has finished eating and is leaving the bar
     sprintf(buffer, "\n[LEAVE] Visitor with ID: %d was eating for %d seconds and has just left the bar\n", getpid(), randomTime);
     write(logFd, buffer, strlen(buffer));
