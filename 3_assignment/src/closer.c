@@ -29,30 +29,10 @@ int main(int argc, char* argv[]){
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
 
-    munmap(sharedData, sharedMemorySize);
- 
+    sem_wait(&(sharedData->mutex));
     sharedData->closingFlag = true;
+    sem_post(&(sharedData->mutex));
 
-    
-    //TODO: WAITING FOR VISITORS TO LEAVE
-
-
-    //TODO: PRINTING STATS
-    
-    //destroying semaphores
-    for(int i = 0; i < MAX_VISITORS; i++){
-        sem_destroy(&(sharedData->fcfsWaitingBuffer.positionSem[i]));
-    }
-    sem_destroy(&(sharedData->exceedingVisitorsSem));
-    for(int i = 0; i < 12; i++){
-        sem_destroy(&(sharedData->orderBuffer.chairSem[i]));
-    }
-    sem_destroy(&(sharedData->mutex));
-    sem_destroy(&(sharedData->receptionistSem));
-
-    //destroying shared memory
-    shm_unlink(sharedMemoryName);
-
+    munmap(sharedData, sharedMemorySize);
     exit(EXIT_SUCCESS);
-
 }

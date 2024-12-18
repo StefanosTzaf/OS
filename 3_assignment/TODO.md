@@ -2,6 +2,6 @@
 
 --χρονος αναμονης στο bar συμπεριλαμβάνεται ο χρόνος wait?
 
---closer πως θα περιμένει τα άλλα processes
-
 --loger για χρόνους
+
+--closer to print the last statistics

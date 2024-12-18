@@ -57,14 +57,33 @@ int main(int argc, char* argv[]){
     unsigned long seed = tv.tv_sec * 1000000 + tv.tv_usec;
     srand(seed); 
 
+
     while(1){
-        bool servedSomeone = false;
+
+        // if there is no order to serve AND no one waiting inside the bar to be served AND tables are not occupied
+        // AND bar is closing --------> exit (close the bar)
+
+        sem_wait(&(sharedData->mutex));
+
+        if(sharedData->closingFlag && 
+        sharedData->fcfsWaitingBuffer.count == 0 &&
+        sharedData->orderBuffer.count == 0 &&
+        sharedData->tables[0].isOccupied == false && sharedData->tables[1].isOccupied == false &&
+        sharedData->tables[2].isOccupied == false){
+        
+            sem_post(&(sharedData->mutex));
+            break;  
+
+        }
+
+        sem_post(&(sharedData->mutex));
+
         sem_wait(&(sharedData->receptionistSem));
         sem_wait(&(sharedData->mutex));
         
         // if there is order to serve
         if (sharedData->orderBuffer.count > 0) {
-            servedSomeone = true;
+
             int index = sharedData->orderBuffer.front;
             menuOrder currentOrder = sharedData->orderBuffer.lastOrders[index];
 
@@ -97,27 +116,11 @@ int main(int argc, char* argv[]){
 
         }
 
-        if(!servedSomeone){
-            sem_wait(&(sharedData->mutex)); //otherwise we already have the mutex
-        }
-        // if there is no order to serve AND no one waiting inside the bar to be served AND tables are not occupied
-        // AND bar is closing --------> exit (close the bar)
-
-        if(sharedData->closingFlag && 
-        sharedData->fcfsWaitingBuffer.count == 0 &&
-        sharedData->orderBuffer.count == 0 &&
-        sharedData->tables[0].isOccupied == false && sharedData->tables[1].isOccupied == false &&
-        sharedData->tables[2].isOccupied == false){
-        
-            sem_post(&(sharedData->mutex));
-            break;  
-
-        }
         sem_post(&(sharedData->mutex));
-        
     }
     
     close(logFd);
+    closingTheBar(sharedData, sharedMemoryName);
     munmap(sharedData, sharedMemorySize);
 
     exit(EXIT_SUCCESS);

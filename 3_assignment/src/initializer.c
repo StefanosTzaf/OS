@@ -9,7 +9,7 @@
 #include <sys/wait.h>
 #include <getopt.h>
 
-#define FORKED_VISITORS 54
+#define FORKED_VISITORS 15
 
 int main(int argc, char *argv[]) {
     
@@ -146,7 +146,5 @@ int main(int argc, char *argv[]) {
 
 
     munmap(sharedData, sharedMemorySize);
-    shm_unlink(sharedMemoryName);
-
     exit(EXIT_SUCCESS);
 }

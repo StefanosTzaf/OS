@@ -216,6 +216,15 @@ void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableInde
         visitorsWaitingInBuffer = 4;
     }
 
+
+    if(sharedData->closingFlag && 
+        sharedData->fcfsWaitingBuffer.count == 0 &&
+        sharedData->orderBuffer.count == 0 &&
+        sharedData->tables[0].isOccupied == false && sharedData->tables[1].isOccupied == false &&
+        sharedData->tables[2].isOccupied == false){
+            sem_post(&(sharedData->receptionistSem));
+    }
+
     for(int i = 0; i < visitorsWaitingInBuffer; i++){
         // awake visitors and give them a chair in the empty table
 
@@ -228,4 +237,22 @@ void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableInde
         sem_post(&(sharedData->exceedingVisitorsSem));
     }
 
+
+}
+
+
+bool closingTheBar(shareDataSegment* sharedData, char* sharedMemoryName){
+    //destroying semaphores
+    for(int i = 0; i < MAX_VISITORS; i++){
+        sem_destroy(&(sharedData->fcfsWaitingBuffer.positionSem[i]));
+    }
+    sem_destroy(&(sharedData->exceedingVisitorsSem));
+    for(int i = 0; i < 12; i++){
+        sem_destroy(&(sharedData->orderBuffer.chairSem[i]));
+    }
+    sem_destroy(&(sharedData->mutex));
+    sem_destroy(&(sharedData->receptionistSem));
+
+    //destroying shared memory
+    shm_unlink(sharedMemoryName);
 }

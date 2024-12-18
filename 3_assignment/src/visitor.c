@@ -67,6 +67,7 @@ int main(int argc, char* argv[]){
     write(logFd, buffer, strlen(buffer));
 
     if(sharedData->closingFlag){
+        fprintf(stdout, "Sorry bar is closing\n");
         sprintf(buffer,"\n[LEAVING] Visitor with ID: %d has just left because bar is closing\n", getpid());
         write(logFd, buffer, strlen(buffer));
         munmap(sharedData, sharedMemorySize);
@@ -179,10 +180,6 @@ int main(int argc, char* argv[]){
     sharedData->sharedStatistics.totalStayTime += (totalTimeInBar_2 - totalTimeInBar_1) / ticspersec;
     sharedData->sharedStatistics.totalWaitingTime += (totalTimeWaiting_2 - totalTimeWaiting_1) / ticspersec;
 
-   // printf("Time in bar: %lf\n",(totalTimeInBar_2 - totalTimeInBar_1) / ticspersec);
-    printf("Time waiting: %lf\n",(totalTimeWaiting_2 - totalTimeWaiting_1) / ticspersec);
-
-
     // visitor has finished eating and is leaving the bar
     sprintf(buffer, "\n[LEAVE] Visitor with ID: %d was eating for %d seconds and has just left the bar\n", getpid(), randomTime);
     write(logFd, buffer, strlen(buffer));
@@ -198,9 +195,6 @@ int main(int argc, char* argv[]){
         if(sharedData->tables[tableIndex].chairsOccupied == 0){
             lastVisitorInformingOthers(sharedData, tableIndex);
         }
-    }
-    else{
-         printf("problem with table index\n");
     }
 
     sem_post(&(sharedData->mutex));

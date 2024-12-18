@@ -15,3 +15,5 @@ int findChairInTable(shareDataSegment* sharedData, pid_t visitor, int tableIndex
 void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableIndex);
 
 void sitInTheFirstEmptyChair(shareDataSegment* sharedData, pid_t visitor, int tableIndex);
+
+bool closingTheBar(shareDataSegment* sharedData, char* sharedMemoryName);
