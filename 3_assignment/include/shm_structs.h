@@ -3,12 +3,14 @@
 #include <stdbool.h>
 
 #define MAX_VISITORS 30
+
 //struct for statistics of the bar
 struct statistics{
 
+    //average has not to be stored while it can be easily calculated
     double totalWaitingTime;   // total waiting time
 
-    double totalStayTime;      // total consumption
+    double totalStayTime;      // total time visitors stayed in the bar (from sitting to leaving)
 
     int consumedWine;         // total wine consumed
     int consumedWater;        // total water consumed
@@ -33,7 +35,7 @@ struct waitingCircularBuffer{
 struct table{
 
     bool isOccupied;     // if table is occupied and receptionist cannot assign it to a visitor
-    pid_t chairs[4];     // who has sit in each chair
+    pid_t chairs[4];     // who has sat in each chair
     int chairsOccupied;  // how many chairs are occupied
 
 };
@@ -81,8 +83,6 @@ typedef struct {
    
     // if a process that is called to close the bar has set this flag to true,
     // visitors will be served but no more will be accepted
-
-    // !! VISITORS SHOULD CHECK WHEN COMING THIS BOOL TO LEAVE INSTANTLY IF TRUE
     bool closingFlag; 
 
 } shareDataSegment;

@@ -8,6 +8,7 @@
 #include <string.h>
 
 void initializeSharedValues(shareDataSegment *sharedData) {
+
     sharedData->sharedStatistics.totalWaitingTime = 0.0;
     sharedData->sharedStatistics.totalStayTime = 0.0;
     sharedData->sharedStatistics.consumedWine = 0;
@@ -22,8 +23,11 @@ void initializeSharedValues(shareDataSegment *sharedData) {
     sharedData->fcfsWaitingBuffer.back = 0;
     sharedData->fcfsWaitingBuffer.count = 0;
     for (int i = 0; i < MAX_VISITORS; i++) {
+
+        // Initialize the semaphores for each position to 0, the first visitor will be suspended there
         sem_init(& (sharedData->fcfsWaitingBuffer.positionSem[i]), 1, 0);
         sharedData->fcfsWaitingBuffer.buffer[i] = -1;
+
     }
 
     sem_init(&sharedData->exceedingVisitorsSem, 1, MAX_VISITORS);
@@ -214,7 +218,8 @@ void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableInde
         visitorsWaitingInBuffer = 4;
     }
 
-
+    // if bar is closing and there are no visitors waiting in the buffer and no orders to serve and all tables are empty
+    //wake up the receptionist to close the bar. Otherwise the receptionist will be waiting for a visitor to serve(deadlock).
     if(sharedData->closingFlag && 
         sharedData->fcfsWaitingBuffer.count == 0 &&
         sharedData->orderBuffer.count == 0 &&

@@ -14,7 +14,7 @@
 int main(int argc, char* argv[]){
 
     if(argc != 7){
-        fprintf(stderr, "Usage: ./receptionist -d <orderTime> -s sharedMemoryName -l logFileName.txt\n");
+        fprintf(stderr, "Usage: ./receptionist -d <orderTime> -s <sharedMemoryName> -l <logFileName.txt>\n");
         exit(EXIT_FAILURE);
     }
     int option;
@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
             snprintf(logFileName, sizeof(logFileName), "%s", optarg);
         }
         else{
-            fprintf(stderr, "Usage: ./receptionist -d <orderTime> -s sharedMemoryName -l logFileName.txt\n");
+            fprintf(stderr, "Usage: ./receptionist -d <orderTime> -s <sharedMemoryName> -l <logFileName.txt>\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]){
     while(1){
 
         // if there is no order to serve AND no one waiting inside the bar to be served AND tables are not occupied
-        // AND bar is closing --------> exit (close the bar)
+        // AND bar is closing --------> exit (close the bar and clear the shared memory)
 
         sem_wait(&(sharedData->mutex));
 
@@ -78,7 +78,9 @@ int main(int argc, char* argv[]){
 
         sem_post(&(sharedData->mutex));
 
+        // wait for an order to serve
         sem_wait(&(sharedData->receptionistSem));
+
         sem_wait(&(sharedData->mutex));
         
         // if there is order to serve
@@ -89,16 +91,16 @@ int main(int argc, char* argv[]){
 
             updateStatistics(sharedData, currentOrder);
 
-            int lower = (int)(ceil(0.5 * maxOrderTime));
-            int randomTime = lower + (rand() % (maxOrderTime - lower + 1));
 
+            int lower = (int)(ceil(0.5 * maxOrderTime));
+            // random integer in the interval [maxOrderTime *0.5, maxOrderTime]
+            int randomTime = lower + (rand() % (maxOrderTime - lower + 1));
 
             // free the mutex before sleeping for a random time
             sem_post(&(sharedData->mutex));
             
-            // sleep for a random time preparing a speciffic order
+            // sleep for a random time -- preparing a speciffic order
             sleep(randomTime);
-
 
 
             sem_wait(&(sharedData->mutex));

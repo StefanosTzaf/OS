@@ -13,7 +13,6 @@
 
 int main(int argc, char *argv[]) {
     
-
     if(argc != 9){
         fprintf(stderr, "Usage: ./initializer -d <orderTime> -r <restTime> -s <sharedMemoryName> -l <logFileName.txt>\n");
         exit(EXIT_FAILURE);
@@ -51,6 +50,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // open log file and create if not exists
     int logFd = open(logFileName, O_CREAT | O_RDWR | O_TRUNC, 0666);
     if (logFd == -1) {
         perror("log file open failed");
@@ -66,30 +66,29 @@ int main(int argc, char *argv[]) {
     size_t sharedMemorySize = sizeof(shareDataSegment);
     shareDataSegment* sharedData;
 
-    //open shared memory
+    // open shared memory
     shmFd = shm_open(sharedMemoryName, O_CREAT | O_RDWR, 0666);
     if (shmFd == -1) {
         perror("shared memory open failed");
         exit(EXIT_FAILURE);
     }
 
-    //define the size
+    // define the size
     if (ftruncate(shmFd, sharedMemorySize) == -1) {
         perror("ftruncate failed");
         exit(EXIT_FAILURE);
     }
 
-    //Map shared memory in current address space
+    // Map shared memory in current address space
     sharedData = mmap(0, sharedMemorySize, PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
     if (sharedData == MAP_FAILED) {
         perror("mmap failed");
         exit(EXIT_FAILURE);
     }
     
+   
     initializeSharedValues(sharedData);
     
-
-
 
     pid_t pid = fork();
     pid_t receptionistPid;
@@ -112,8 +111,6 @@ int main(int argc, char *argv[]) {
     }
 
 
-
-
     pid_t visitorsPids[FORKED_VISITORS];
 
     for(int i = 0; i < FORKED_VISITORS; i++) {
@@ -131,6 +128,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // wait for all children to finish
     int status;
     if(waitpid(receptionistPid, &status, 0) == -1){
         perror("Error waiting for receptionist");

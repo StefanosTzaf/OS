@@ -15,7 +15,7 @@
 int main(int argc, char* argv[]){
 
     if(argc != 7){
-        fprintf(stderr, "Usage: ./visitor -d <restTime> -s sharedMemoryName -l logFileName.txt\n");
+        fprintf(stderr, "Usage: ./visitor -d <restTime> -s <sharedMemoryName> -l <logFileName.txt>\n");
         exit(EXIT_FAILURE);
     }
     int option;
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
             snprintf(logFileName, sizeof(logFileName), "%s", optarg);
         }
         else{
-            fprintf(stderr, "Usage: ./visitor -d <restTime> -s sharedMemoryName -l logFileName.txt\n");
+            fprintf(stderr, "Usage: ./visitor -d <restTime> -s <sharedMemoryName> -l <logFileName.txt>\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -194,7 +194,7 @@ int main(int argc, char* argv[]){
         sharedData->tables[tableIndex].chairs[chair] = -1;
 
 
-        if(sharedData->tables[tableIndex].chairsOccupied == 0){
+        if(sharedData->tables[tableIndex].chairsOccupied == 0 && sharedData->tables[tableIndex].isOccupied){
             lastVisitorInformingOthers(sharedData, tableIndex);
         }
     }
