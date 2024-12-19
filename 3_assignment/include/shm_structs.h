@@ -2,7 +2,7 @@
 #include <semaphore.h>
 #include <stdbool.h>
 
-#define MAX_VISITORS 50
+#define MAX_VISITORS 30
 //struct for statistics of the bar
 struct statistics{
 

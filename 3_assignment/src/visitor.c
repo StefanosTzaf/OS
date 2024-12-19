@@ -89,7 +89,6 @@ int main(int argc, char* argv[]){
 
     sem_wait(&(sharedData->mutex));
     //start counting the total time that visitor stayed in the bar
-    totalTimeInBar_1 = (double) times (NULL);
 
     int chairIndex;
     int tableIndex = isAnyTableEmpty(sharedData);
@@ -103,6 +102,7 @@ int main(int argc, char* argv[]){
         totalTimeWaiting_2 = (double) times (NULL);
 
         sitInTheFirstEmptyChair(sharedData, getpid(), tableIndex);
+        totalTimeInBar_1 = (double) times (NULL);
 
         menuOrder order = randomizeOrder(getpid(), logFd);
 
@@ -135,6 +135,8 @@ int main(int argc, char* argv[]){
 
         totalTimeWaiting_2 = (double) times (NULL);
         sitInTheFirstEmptyChair(sharedData, getpid(), tableIndex);
+        //start counting the total time that visitor stayed in the bar
+        totalTimeInBar_1 = (double) times (NULL);
 
         //when he awakes, he can order
         menuOrder order = randomizeOrder(getpid(), logFd);
