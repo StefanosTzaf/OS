@@ -13,7 +13,7 @@ Command Line Execution :
  
  -- receptionist: ./receptionist -d <orderTime> -s <sharedMemoryName> -l <logFileName.txt\n>
     sharedMemoryName and logFile name should be the same as in initializer! 
-    ***For more convinience receptionist is created with fork and exec* inside initializer***
+    ***For more convenience receptionist is created with fork and exec* inside initializer***
  
  -- visitor: ./visitor -d <restTime> -s <sharedMemoryName> -l <logFileName.txt\n>
     SharedMemoryName and logFile name should be the same as in initializer too.
@@ -42,11 +42,11 @@ Shared Memory:
     (defined in the headerfile and easily modifiable). One semaphore for each position of the buffer ensures
     that only one process would be suspended there. The othe variable have to do with the positions of the buffer
     and wrap-around ability.
-    If we had not this buffer fcfs could not be assured while in one semafore are just suspended processes and wake
+    If we did not have this buffer fcfs could not be assured while in one semafore are just suspended processes and wake
     up randomly. Now with one semaphore for every buffer position we know who came first.
     
-    However this can not be defined dynammicaly (shared memory segment has to ve defined before the execution). So there is
-    an extra semaphore for exceeding visitors, intialized to MAX_VISITORS. Only when Fcfs buffer if full visitors will be suspended there
+    However this can not be defined dynammicaly (the shared memory segment has to ve defined before the execution). So there is
+    an extra semaphore for exceeding visitors, initialized to MAX_VISITORS. Only when Fcfs buffer if full visitors will be suspended there
     (without fairness of fcfs in this case).
 
     Thex next sub-struct is about orders. For orders there is also a circular buffer to ensure that the first customer ordered
@@ -57,7 +57,7 @@ Shared Memory:
     Also there are one semaphore for mutual exclusion and one for receptionist (receptioniist will be suspended there whenever
     there is no work to do).
 
-    At the end there is an array of struct table that stores the state of tables (occupied or not - which chairs etc).
+    Finally, there is an array of struct table that stores the state of tables (occupied or not - which chairs etc).
 
     A bool variable indicates if the bar is closing or not.
 
@@ -66,9 +66,9 @@ Shared Memory:
 Function of the bar:
 
     Everything starts with initializer call. After initializer is called, receptionist is made as mentioned. Also some visitors are
-    made and executed. Receptionist at first is suspended in its semaphore while there is not work do. Whenever wakes up, cheks if the 
-    bar is about to close, otherwise is starting preparing orders with the with policy FCFS. If there is an order to serve updates 
-    statistics and sleepfor a random time in the interval given. Then receptionist awakes the visitor sitting in the chair with the order
+    made and executed. Receptionist at first is suspended in its semaphore while there is not work do. Whenever wakes up, checks if the 
+    bar is about to close, otherwise is starting preparing orders with the with FCFS policy. If there is an order to serve updates 
+    statistics and sleeps for a random time in the interval given. Then receptionist awakes the visitor sitting in the chair with the order
     just prepared.
 
     Visitor: Visitor is created by initializer or by the command line (both choices available). Visitor checks if bar is closing so as no
@@ -76,7 +76,7 @@ Function of the bar:
     have to be suspended there till there is some space in buffer). Then visitor checks if the buffer is empty AND if there is a table 
     available to take a seat immediatelly. If not, visitor will be suspended in the buffer. When visitor takes a seat make an order and wait for it in 
     his chair semaphore after awakening receptionist. When visitor's order is ready and has been woken up by receptionist, visitor eats for a 
-    ranodm time in the interval given and then leaves the bar.
+    random time in the interval given and then leaves the bar.
     
     IMPORTANT: Before leaving, if visitor was the last one of its table and table was occupied, then wakes up 4 visitors (if there are any) that are 
     waiting in the buffer to take a seat. Also if he is the last one in the bar and the bar is closing wakes up receptionist to close the bar.
