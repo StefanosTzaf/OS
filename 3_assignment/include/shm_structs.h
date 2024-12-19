@@ -6,10 +6,8 @@
 //struct for statistics of the bar
 struct statistics{
 
-    double averageWaitingTime; // average waiting time
     double totalWaitingTime;   // total waiting time
 
-    double averageStayTime;    // average consumption
     double totalStayTime;      // total consumption
 
     int consumedWine;         // total wine consumed

@@ -4,4 +4,7 @@
 
 --loger για χρόνους
 
---closer to print the last statistics
+
+readme
+closer logic last visitor and closer itself awaking receptionist
+average times no needed in shared memory

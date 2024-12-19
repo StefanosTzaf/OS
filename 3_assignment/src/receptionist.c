@@ -119,8 +119,13 @@ int main(int argc, char* argv[]){
         sem_post(&(sharedData->mutex));
     }
     
+    representStatistics(sharedData);
+
     close(logFd);
-    closingTheBar(sharedData, sharedMemoryName);
+    if (closingTheBar(sharedData, sharedMemoryName) != 0){
+        perror("closingTheBar failed");
+        exit(EXIT_FAILURE);
+    }
     munmap(sharedData, sharedMemorySize);
 
     exit(EXIT_SUCCESS);

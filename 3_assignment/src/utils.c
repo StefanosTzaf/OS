@@ -8,9 +8,7 @@
 #include <string.h>
 
 void initializeSharedValues(shareDataSegment *sharedData) {
-    sharedData->sharedStatistics.averageWaitingTime = 0.0;
     sharedData->sharedStatistics.totalWaitingTime = 0.0;
-    sharedData->sharedStatistics.averageStayTime = 0.0;
     sharedData->sharedStatistics.totalStayTime = 0.0;
     sharedData->sharedStatistics.consumedWine = 0;
     sharedData->sharedStatistics.consumedWater = 0;
@@ -240,19 +238,62 @@ void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableInde
 
 }
 
+void representStatistics(shareDataSegment* sharedData){
+    fprintf(stdout, "\n\t\t\tStatistics of the day for ~ Bar in Nemea ~\n\n\n");
+    fprintf(stdout, "Total visitors served: %d\n\n", sharedData->sharedStatistics.visitorsServed);
+    fprintf(stdout, "Water consumed: %d\n", sharedData->sharedStatistics.consumedWater);
+    fprintf(stdout, "Wine consumed: %d\n", sharedData->sharedStatistics.consumedWine);
+    fprintf(stdout, "Cheese consumed: %d\n", sharedData->sharedStatistics.consumedCheese);
+    fprintf(stdout, "Salads consumed: %d\n\n", sharedData->sharedStatistics.consumedSalads);
+    fprintf(stdout, "Average waiting time: %.5f seconds\n", sharedData->sharedStatistics.totalWaitingTime/sharedData->sharedStatistics.visitorsServed);
+    fprintf(stdout, "Average stay time: %.5f seconds\n\n", sharedData->sharedStatistics.totalStayTime/sharedData->sharedStatistics.visitorsServed);
 
-bool closingTheBar(shareDataSegment* sharedData, char* sharedMemoryName){
+}
+
+
+int closingTheBar(shareDataSegment* sharedData, char* sharedMemoryName){
     //destroying semaphores
+    int returnValue;
+
     for(int i = 0; i < MAX_VISITORS; i++){
-        sem_destroy(&(sharedData->fcfsWaitingBuffer.positionSem[i]));
+        returnValue = sem_destroy(&(sharedData->fcfsWaitingBuffer.positionSem[i]));
+        if(returnValue == -1){
+            perror("sem_destroy failed");
+            return -1;
+        }
     }
-    sem_destroy(&(sharedData->exceedingVisitorsSem));
+
+    returnValue = sem_destroy(&(sharedData->exceedingVisitorsSem));
+    if(returnValue == -1){
+        perror("sem_destroy failed");
+        return -1;
+    }
+
     for(int i = 0; i < 12; i++){
-        sem_destroy(&(sharedData->orderBuffer.chairSem[i]));
+        returnValue = sem_destroy(&(sharedData->orderBuffer.chairSem[i]));
+        if(returnValue == -1){
+            perror("sem_destroy failed");
+            return -1;
+        }
     }
-    sem_destroy(&(sharedData->mutex));
-    sem_destroy(&(sharedData->receptionistSem));
+    returnValue = sem_destroy(&(sharedData->mutex));
+    if(returnValue == -1){
+        perror("sem_destroy failed");
+        return -1;
+    }
+
+    returnValue = sem_destroy(&(sharedData->receptionistSem));
+    if(returnValue == -1){
+        perror("sem_destroy failed");
+        return -1;
+    }
 
     //destroying shared memory
-    shm_unlink(sharedMemoryName);
+    returnValue = shm_unlink(sharedMemoryName);
+    if(returnValue == -1){
+        perror("shm_unlink failed");
+        return -1;
+    }
+
+    return 0;
 }

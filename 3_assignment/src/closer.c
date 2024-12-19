@@ -29,9 +29,22 @@ int main(int argc, char* argv[]){
     shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
 
-    sem_wait(&(sharedData->mutex));
-    sharedData->closingFlag = true;
-    sem_post(&(sharedData->mutex));
+    if(sharedData->closingFlag == 0){
+        sem_wait(&(sharedData->mutex));
+        sharedData->closingFlag = true;
+
+        if(sharedData->fcfsWaitingBuffer.count == 0 &&
+        sharedData->orderBuffer.count == 0 &&
+        sharedData->tables[0].isOccupied == false && sharedData->tables[1].isOccupied == false &&
+        sharedData->tables[2].isOccupied == false){
+
+            //if there is no one in the bar, just inform the receptionist that he should close the bar
+            sem_post(&(sharedData->receptionistSem));
+        }
+
+        sem_post(&(sharedData->mutex));
+
+    }
 
     munmap(sharedData, sharedMemorySize);
     exit(EXIT_SUCCESS);

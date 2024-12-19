@@ -16,4 +16,6 @@ void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableInde
 
 void sitInTheFirstEmptyChair(shareDataSegment* sharedData, pid_t visitor, int tableIndex);
 
-bool closingTheBar(shareDataSegment* sharedData, char* sharedMemoryName);
+int closingTheBar(shareDataSegment* sharedData, char* sharedMemoryName);
+
+void representStatistics(shareDataSegment* sharedData);
