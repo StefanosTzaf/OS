@@ -65,14 +65,22 @@ Shared Memory:
 
 Function of the bar:
 
-    Everything starts with initializer call. After initializer is called, receptionist is made as mentioned. Also some visitors are made and executed. Receptionist at first is suspended in its semaphore while there is not work do. Whenever wakes up, cheks if the bar is about to 
-    close, otherwise is starting preparing orders with the with policy FCFS. If there is an order to serve updates statistics and sleepfor a random time in the interval given. Then receptionist awakes the visitor sitting in the chair with the order just prepared
+    Everything starts with initializer call. After initializer is called, receptionist is made as mentioned. Also some visitors are
+    made and executed. Receptionist at first is suspended in its semaphore while there is not work do. Whenever wakes up, cheks if the 
+    bar is about to close, otherwise is starting preparing orders with the with policy FCFS. If there is an order to serve updates 
+    statistics and sleepfor a random time in the interval given. Then receptionist awakes the visitor sitting in the chair with the order
+    just prepared.
 
-    Visitor: Visitor is created by initializer or by the command line (both choices available). Visitor checks if bar is closing so as no to enter the bar. After that, decreases the exceeding buffer semapphore (if its value is less than 0 circular buffer is full and new visitors
-    have to be suspended there till there is some space in buffer). Then visitor checks if the buffer is empty AND if there is a table available to take a seat immediatelly. If not, visitor will be suspended in the buffer. When visitor takes a seat make an order and wait for it in 
-    his chair semaphore after awakening receptionist. When visitor's order is ready and has been woken up by receptionist, visitor eats for a ranodm time in the interval given and then leaves the bar.
+    Visitor: Visitor is created by initializer or by the command line (both choices available). Visitor checks if bar is closing so as no
+    to enter the bar. After that, decreases the exceeding buffer semapphore (if its value is less than 0 circular buffer is full and new visitors
+    have to be suspended there till there is some space in buffer). Then visitor checks if the buffer is empty AND if there is a table 
+    available to take a seat immediatelly. If not, visitor will be suspended in the buffer. When visitor takes a seat make an order and wait for it in 
+    his chair semaphore after awakening receptionist. When visitor's order is ready and has been woken up by receptionist, visitor eats for a 
+    ranodm time in the interval given and then leaves the bar.
     
-    IMPORTANT: Before leaving, if visitor was the last one of its table and table was occupied, then wakes up 4 visitors (if there are any) that are waiting in the buffer to take a seat. Also if he is the last one in the bar and the bar is closing wakes up receptionist to close the bar. These two functions are important so as to avoid deadlocks.
+    IMPORTANT: Before leaving, if visitor was the last one of its table and table was occupied, then wakes up 4 visitors (if there are any) that are 
+    waiting in the buffer to take a seat. Also if he is the last one in the bar and the bar is closing wakes up receptionist to close the bar.
+    These two functions are important so as to avoid deadlocks.
    
 
 Closing the bar:
@@ -90,5 +98,6 @@ Clarifications for times:
 
 Monitors and logging: 
 
-   Monitors can be called at any time by command line. They print the current state of shared memory. Logging file is created by initializer and is used by all processes to log facts. The same logg file should given if a visitor is created by command line. Txt format is strongly 
+   Monitors can be called at any time by command line. They print the current state of shared memory. Logging file is created by initializer 
+   and is used by all processes to log facts. The same logg file should given if a visitor is created by command line. Txt format is strongly 
    recommended for the log file (give as arguement log.txt not only log).
