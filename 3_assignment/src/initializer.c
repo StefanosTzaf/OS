@@ -144,5 +144,7 @@ int main(int argc, char *argv[]) {
 
 
     munmap(sharedData, sharedMemorySize);
+    close(shmFd);
+    
     exit(EXIT_SUCCESS);
 }

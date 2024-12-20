@@ -26,7 +26,9 @@ int main(int argc, char* argv[]){
         }
     }
 
-    shareDataSegment* sharedData = attachShm(sharedMemoryName);
+    int sharedFd;
+    shareDataSegment* sharedData = attachShm(sharedMemoryName, &sharedFd);
+
     size_t sharedMemorySize = sizeof(shareDataSegment);
 
     if(sharedData->closingFlag == 0){
@@ -47,5 +49,6 @@ int main(int argc, char* argv[]){
     }
 
     munmap(sharedData, sharedMemorySize);
+    close(sharedFd);
     exit(EXIT_SUCCESS);
 }

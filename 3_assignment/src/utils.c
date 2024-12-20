@@ -65,7 +65,7 @@ void initializeSharedValues(shareDataSegment *sharedData) {
 
 
 // Function to attach shared memory
-shareDataSegment* attachShm(char* sharedMemoryName) {
+shareDataSegment* attachShm(char* sharedMemoryName, int* sharedFd){
     int shmFd;
     size_t sharedMemorySize = sizeof(shareDataSegment);
     shareDataSegment* sharedData;
@@ -83,6 +83,7 @@ shareDataSegment* attachShm(char* sharedMemoryName) {
         perror("mmap failed");
         exit(EXIT_FAILURE);
     }
+    *sharedFd = shmFd;
     return sharedData;
 }
 
@@ -243,7 +244,7 @@ void lastVisitorInformingOthers(shareDataSegment* sharedData, int emptyTableInde
 
 }
 
-void representStatistics(shareDataSegment* sharedData){
+void presentStatistics(shareDataSegment* sharedData){
     fprintf(stdout, "\n\t\t\tStatistics of the day for ~ Bar in Nemea ~\n\n\n");
     fprintf(stdout, "Total visitors served: %d\n\n", sharedData->sharedStatistics.visitorsServed);
     fprintf(stdout, "Water consumed: %d\n", sharedData->sharedStatistics.consumedWater);

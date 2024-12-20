@@ -50,9 +50,10 @@ int main(int argc, char* argv[]){
     double ticspersec;
     ticspersec = (double) sysconf (_SC_CLK_TCK);
 
+    //to be able to close it at the end of the process
+    int sharedFd;
+    shareDataSegment* sharedData = attachShm(sharedMemoryName, &sharedFd);
 
-
-    shareDataSegment* sharedData = attachShm(sharedMemoryName);
     size_t sharedMemorySize = sizeof(shareDataSegment);
 
     // fully random seed based to time
@@ -204,6 +205,7 @@ int main(int argc, char* argv[]){
 
     close(logFd);
     munmap(sharedData, sharedMemorySize);
+    close(sharedFd);
     exit(EXIT_SUCCESS);
 
 }

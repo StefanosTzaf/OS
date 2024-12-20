@@ -47,10 +47,11 @@ int main(int argc, char* argv[]){
         perror("log file open failed");
         exit(EXIT_FAILURE);
     }
+    int sharedFd;
 
-    shareDataSegment* sharedData = attachShm(sharedMemoryName);
+    shareDataSegment* sharedData = attachShm(sharedMemoryName, &sharedFd);
     size_t sharedMemorySize = sizeof(shareDataSegment);
-    
+    printf("Receptionist process has started %d\n", sharedFd);
     struct timeval tv;
     gettimeofday(&tv, NULL);  // Get current time in seconds and microseconds
     // Combine seconds and microseconds for seed
@@ -121,7 +122,7 @@ int main(int argc, char* argv[]){
         sem_post(&(sharedData->mutex));
     }
     
-    representStatistics(sharedData);
+    presentStatistics(sharedData);
 
     close(logFd);
     if (closingTheBar(sharedData, sharedMemoryName) != 0){
@@ -129,6 +130,7 @@ int main(int argc, char* argv[]){
         exit(EXIT_FAILURE);
     }
     munmap(sharedData, sharedMemorySize);
-
+    close(sharedFd);
+    
     exit(EXIT_SUCCESS);
 }

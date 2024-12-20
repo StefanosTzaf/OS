@@ -2,7 +2,7 @@
 
 void initializeSharedValues(shareDataSegment *sharedData);
 
-shareDataSegment* attachShm(char* sharedMemoryName);
+shareDataSegment* attachShm(char* sharedMemoryName, int* sharedFd);
 
 int isAnyTableEmpty(shareDataSegment* sharedData);
 
@@ -18,4 +18,4 @@ void sitInTheFirstEmptyChair(shareDataSegment* sharedData, pid_t visitor, int ta
 
 int closingTheBar(shareDataSegment* sharedData, char* sharedMemoryName);
 
-void representStatistics(shareDataSegment* sharedData);
+void presentStatistics(shareDataSegment* sharedData);

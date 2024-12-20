@@ -25,7 +25,8 @@ int main(int argc, char* argv[]){
         }
     }
 
-    shareDataSegment* sharedData = attachShm(sharedMemoryName);
+    int sharedFd;
+    shareDataSegment* sharedData = attachShm(sharedMemoryName, &sharedFd);
     size_t sharedMemorySize = sizeof(shareDataSegment);
     
     sem_wait(&(sharedData->mutex));
@@ -62,5 +63,6 @@ int main(int argc, char* argv[]){
     sem_post(&(sharedData->mutex));
     
     munmap(sharedData, sharedMemorySize);
+    close(sharedFd);
     exit(EXIT_SUCCESS);
 }
