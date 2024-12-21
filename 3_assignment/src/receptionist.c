@@ -51,7 +51,6 @@ int main(int argc, char* argv[]){
 
     shareDataSegment* sharedData = attachShm(sharedMemoryName, &sharedFd);
     size_t sharedMemorySize = sizeof(shareDataSegment);
-    printf("Receptionist process has started %d\n", sharedFd);
     struct timeval tv;
     gettimeofday(&tv, NULL);  // Get current time in seconds and microseconds
     // Combine seconds and microseconds for seed

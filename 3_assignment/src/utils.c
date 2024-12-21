@@ -251,8 +251,15 @@ void presentStatistics(shareDataSegment* sharedData){
     fprintf(stdout, "Wine consumed: %d\n", sharedData->sharedStatistics.consumedWine);
     fprintf(stdout, "Cheese consumed: %d\n", sharedData->sharedStatistics.consumedCheese);
     fprintf(stdout, "Salads consumed: %d\n\n", sharedData->sharedStatistics.consumedSalads);
-    fprintf(stdout, "Average waiting time: %.5f seconds\n", sharedData->sharedStatistics.totalWaitingTime/sharedData->sharedStatistics.visitorsServed);
-    fprintf(stdout, "Average stay time: %.5f seconds\n\n", sharedData->sharedStatistics.totalStayTime/sharedData->sharedStatistics.visitorsServed);
+
+    if(sharedData->sharedStatistics.visitorsServed == 0){
+        fprintf(stdout, "Average waiting time: 0 seconds\n");
+        fprintf(stdout, "Average stay time: 0 seconds\n\n");
+    }
+    else{
+        fprintf(stdout, "Average waiting time: %.5f seconds\n", sharedData->sharedStatistics.totalWaitingTime/sharedData->sharedStatistics.visitorsServed);
+        fprintf(stdout, "Average stay time: %.5f seconds\n\n", sharedData->sharedStatistics.totalStayTime/sharedData->sharedStatistics.visitorsServed);
+    }
 
 }
 

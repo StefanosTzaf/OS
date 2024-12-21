@@ -58,8 +58,14 @@ int main(int argc, char* argv[]){
     printf("Wine:   %d\n", sharedData->sharedStatistics.consumedWine);
     printf("Cheese: %d\n", sharedData->sharedStatistics.consumedCheese);
     printf("Salads: %d\n", sharedData->sharedStatistics.consumedSalads);
-    printf("Average waitng time until now: %.5f\n", sharedData->sharedStatistics.totalWaitingTime / sharedData->sharedStatistics.visitorsServed);
-    printf("Average time inside the bar until now: %.5f\n\n", sharedData->sharedStatistics.totalStayTime / sharedData->sharedStatistics.visitorsServed);
+    if(sharedData->sharedStatistics.visitorsServed == 0){
+        printf("Average waitng time until now: 0\n");
+        printf("Average time inside the bar until now: 0\n\n");
+    }
+    else{
+        printf("Average waitng time until now: %.5f\n", sharedData->sharedStatistics.totalWaitingTime / sharedData->sharedStatistics.visitorsServed);
+        printf("Average time inside the bar until now: %.5f\n\n", sharedData->sharedStatistics.totalStayTime / sharedData->sharedStatistics.visitorsServed);
+    }
     sem_post(&(sharedData->mutex));
     
     munmap(sharedData, sharedMemorySize);
