@@ -62,6 +62,11 @@ Shared Memory:
     A bool variable indicates if the bar is closing or not.
 
 
+Clarification:
+   If a visitor has sat and the table has not been occupied by 4 and he leaves the bar, then the chair can be occupied by another visitor.
+   As mentioned in the assignment, only when the table is full it should be freed from all the visitors that have sat there to be
+   available again fo others.
+
 
 Function of the bar:
 

@@ -1,1 +1,0 @@
-trapezia otan den gemisoun bazw kialloouys
